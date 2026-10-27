@@ -30,7 +30,7 @@ private fun RouteColor.color(): Color = when (this) {
 }
 
 @Composable
-fun RouteShape(segments: List<RouteSegment>, modifier: Modifier = Modifier) {
+fun RouteShape(segments: List<RouteSegment>, modifier: Modifier = Modifier, progress: Float = 1f) {
     val background = MaterialTheme.colorScheme.surfaceContainerHigh
     val outline = MaterialTheme.colorScheme.surface
     val points = remember(segments) { segments.flatMap { it.points } }
@@ -58,9 +58,15 @@ fun RouteShape(segments: List<RouteSegment>, modifier: Modifier = Modifier) {
         )
 
         val width = 5.dp.toPx()
-        val paths = segments.map { segment ->
+        var budget = (points.size * progress.coerceIn(0f, 1f)).toInt().coerceAtLeast(1)
+        var head = points.first()
+        val paths = segments.mapNotNull { segment ->
+            if (budget <= 0) return@mapNotNull null
+            val visible = segment.points.take(budget)
+            budget -= visible.size
+            visible.lastOrNull()?.let { head = it }
             Path().apply {
-                segment.points.forEachIndexed { i, p ->
+                visible.forEachIndexed { i, p ->
                     val o = project(p.lat, p.lon)
                     if (i == 0) moveTo(o.x, o.y) else lineTo(o.x, o.y)
                 }
@@ -74,7 +80,9 @@ fun RouteShape(segments: List<RouteSegment>, modifier: Modifier = Modifier) {
         }
 
         val radius = 7.dp.toPx()
-        listOf(points.first() to ZoneColors.Normal, points.last() to ZoneColors.Above).forEach { (p, color) ->
+        val markers = if (progress >= 1f) listOf(points.first() to ZoneColors.Normal, points.last() to ZoneColors.Above)
+        else listOf(points.first() to ZoneColors.Normal, head to Color.White)
+        markers.forEach { (p, color) ->
             val o = project(p.lat, p.lon)
             drawCircle(Color.White, radius + 2.dp.toPx(), o)
             drawCircle(color, radius, o)

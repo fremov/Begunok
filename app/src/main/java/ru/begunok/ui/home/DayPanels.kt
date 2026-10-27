@@ -1,20 +1,38 @@
 package ru.begunok.ui.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -27,22 +45,33 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.begunok.ui.Format
+import ru.begunok.ui.common.AnimatedNumber
+import ru.begunok.ui.common.RingTimer
+import ru.begunok.ui.common.pressScale
+import ru.begunok.ui.theme.StageColors
 import ru.begunok.ui.theme.ZoneColors
+import ru.begunok.ui.theme.numberStyle
 import ru.begunok.workout.DayType
 import ru.begunok.workout.Exercise
 import ru.begunok.workout.ExerciseCatalog
@@ -52,9 +81,6 @@ import ru.begunok.workout.Progression
 import ru.begunok.workout.StrengthView
 import ru.begunok.workout.WorkoutState
 import ru.begunok.workout.formatSpan
-
-private val WorkColor = Color(0xFFFC4C02)
-private val RestColor = Color(0xFF1E88E5)
 
 @Composable
 internal fun DayTypePicker(selected: DayType?, onSelect: (DayType?) -> Unit) {
@@ -72,50 +98,86 @@ internal fun DayTypePicker(selected: DayType?, onSelect: (DayType?) -> Unit) {
 }
 
 @Composable
+private fun PanelCard(content: @Composable () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) { content() }
+    }
+}
+
+@Composable
 internal fun PlanCard(preview: PlanPreview, program: IntervalProgram?, onEdit: () -> Unit) {
     val plan = preview.plan
     val strength = plan.strength
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("План", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                TextButton(onClick = onEdit) {
-                    Icon(Icons.Filled.Edit, contentDescription = null)
-                    Text("  Упражнения")
-                }
+    PanelCard {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("План", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            TextButton(onClick = onEdit) {
+                Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                Text("  Упражнения")
             }
-            var n = 1
-            if (plan.warmupSec > 0) Text("${n++}. Разминка ${formatSpan(plan.warmupSec)}, быстрый шаг")
-            val run = plan.jog?.let { "${it.name} ${formatSpan(it.runSec)}" }
-                ?: program?.let { "${it.name}: ${it.description}" }
-                ?: "Бег без интервалов"
-            Text("${n++}. $run")
-            Text("${n++}. Перерыв, площадка начинается по кнопке")
-            Text("${n}. ${strength.description}")
-            if (strength.exercises.isEmpty()) {
-                Text("Упражнения не выбраны", color = MaterialTheme.colorScheme.error)
-            }
-            strength.exercises.forEach { exercise ->
-                val target = preview.targets[exercise.id] ?: exercise.startTarget
-                ExerciseLine(exercise, target, if (strength.circuit) null else strength.sets)
-            }
-            Text(
-                "Сделали все подходы — цель +1. Дошли до верхней границы ступени — следующая тренировка начнётся " +
-                    "со следующей, более сложной ступени.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
+        val steps = buildList {
+            if (plan.warmupSec > 0) add(StageColors.Warmup to "Разминка ${formatSpan(plan.warmupSec)}, быстрый шаг")
+            add(
+                StageColors.Run to (
+                    plan.jog?.let { "${it.name} ${formatSpan(it.runSec)}" }
+                        ?: program?.let { "${it.name}: ${it.description}" }
+                        ?: "Бег без интервалов"
+                    ),
+            )
+            add(StageColors.Rest to "Перерыв, площадка начинается по кнопке")
+            add(StageColors.Done to strength.description)
+        }
+        steps.forEachIndexed { i, (color, text) ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(26.dp)
+                        .clip(CircleShape)
+                        .background(color.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center,
+                ) { Text("${i + 1}", color = color, style = MaterialTheme.typography.labelLarge) }
+                Spacer(Modifier.width(10.dp))
+                Text(text, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+        if (strength.exercises.isEmpty()) {
+            Text("Упражнения не выбраны", color = MaterialTheme.colorScheme.error)
+        }
+        strength.exercises.forEach { exercise ->
+            val target = preview.targets[exercise.id] ?: exercise.startTarget
+            ExerciseLine(exercise, target, if (strength.circuit) null else strength.sets)
+        }
+        Text(
+            "Сделали все подходы — цель +1. Дошли до верхней границы ступени — следующая тренировка начнётся " +
+                "со следующей, более сложной ступени.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
 @Composable
 private fun ExerciseLine(exercise: Exercise, target: Int, sets: Int?) {
     val (level, levels) = ExerciseCatalog.level(exercise.variationId) ?: (1 to 1)
-    Column(Modifier.fillMaxWidth().padding(start = 12.dp)) {
-        Row(Modifier.fillMaxWidth()) {
-            Text(exercise.name, Modifier.weight(1f))
-            Text(if (sets == null) exercise.amount(target) else "$sets × ${exercise.amount(target)}", fontWeight = FontWeight.SemiBold)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+    ) {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(exercise.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+            Text(
+                if (sets == null) exercise.amount(target) else "$sets × ${exercise.amount(target)}",
+                style = numberStyle(22),
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
         val span = (exercise.maxTarget - exercise.startTarget).coerceAtLeast(1)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -140,25 +202,33 @@ private fun ExerciseLine(exercise: Exercise, target: Int, sets: Int?) {
 @Composable
 internal fun RunProgressCard(progress: RunProgress, onLevelUp: (IntervalProgram) -> Unit) {
     val needed = Progression.LEVEL_UP_SESSIONS
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Прогресс бега", style = MaterialTheme.typography.titleMedium)
-            Text("${progress.program.name}: успешных тренировок подряд ${minOf(progress.streak, needed)} из $needed")
-            LinearProgressIndicator(
-                progress = { (progress.streak.toFloat() / needed).coerceIn(0f, 1f) },
-                modifier = Modifier.fillMaxWidth(),
-            )
-            val next = progress.next
-            if (progress.levelUpReady && next != null) {
-                Text("Пора на «${next.name}»: ${next.description}")
-                Button(onClick = { onLevelUp(next) }) { Text("Перейти на ${next.name}") }
-            } else {
-                Text(
-                    if (next == null) "Это последний уровень" else "Дальше: «${next.name}» — ${next.description}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    PanelCard {
+        Text("Прогресс бега", style = MaterialTheme.typography.titleLarge)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
+            repeat(needed) { i ->
+                Box(
+                    Modifier
+                        .weight(1f)
+                        .height(10.dp)
+                        .clip(RoundedCornerShape(5.dp))
+                        .background(
+                            if (i < progress.streak) MaterialTheme.colorScheme.tertiary
+                            else MaterialTheme.colorScheme.surfaceContainerHighest,
+                        )
                 )
             }
+        }
+        Text("${progress.program.name}: успешных тренировок подряд ${minOf(progress.streak, needed)} из $needed")
+        val next = progress.next
+        if (progress.levelUpReady && next != null) {
+            Text("Пора на «${next.name}»: ${next.description}", style = MaterialTheme.typography.titleMedium)
+            Button(onClick = { onLevelUp(next) }) { Text("Перейти на ${next.name}") }
+        } else {
+            Text(
+                if (next == null) "Это последний уровень" else "Дальше: «${next.name}» — ${next.description}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -173,48 +243,56 @@ internal fun KeepScreenOn() {
 }
 
 @Composable
-internal fun StageBanner(label: String, color: Color, trailing: String? = null) {
-    Row(
-        modifier = Modifier
+private fun Hero(color: Color, content: @Composable () -> Unit) {
+    Column(
+        Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(color)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(label, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-        trailing?.let { Text(it, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold) }
+            .clip(RoundedCornerShape(32.dp))
+            .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.6f))))
+            .padding(18.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) { content() }
+}
+
+@Composable
+private fun HeroTitle(text: String, subtitle: String? = null) {
+    Column(Modifier.fillMaxWidth()) {
+        Text(text, style = numberStyle(34), color = Color.White)
+        subtitle?.let { Text(it, style = MaterialTheme.typography.titleMedium, color = Color.White.copy(alpha = 0.9f)) }
     }
 }
 
 @Composable
 internal fun BreakPanel(state: WorkoutState, onStart: () -> Unit, onRunResult: (Boolean) -> Unit) {
-    StageBanner("ПЕРЕРЫВ", RestColor, Format.duration(state.activeMs - state.stageStartMs))
-    if (state.programName != null) {
-        Text("Беговая часть получилась?", style = MaterialTheme.typography.titleMedium)
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ChoiceButton("Да, всё пробежал", state.runCompleted == true, Modifier.weight(1f)) { onRunResult(true) }
-            ChoiceButton("Нет, не всё", state.runCompleted == false, Modifier.weight(1f)) { onRunResult(false) }
-        }
-        Text(
-            "От этого зависит, когда предложить следующий уровень бега.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    Hero(StageColors.Rest) {
+        HeroTitle("ПЕРЕРЫВ", "отдохните и дойдите до площадки")
+        AnimatedNumber(Format.duration(state.activeMs - state.stageStartMs), numberStyle(72), color = Color.White)
     }
-    Text("Отдохните, попейте воды и дойдите до площадки.", style = MaterialTheme.typography.bodyLarge)
-    Button(
-        onClick = onStart,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp),
-    ) { Text("Начать тренировку на площадке", fontSize = 20.sp, textAlign = TextAlign.Center) }
+    if (state.programName != null) {
+        PanelCard {
+            Text("Беговая часть получилась?", style = MaterialTheme.typography.titleMedium)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ChoiceButton("Да, всё пробежал", state.runCompleted == true, Modifier.weight(1f)) { onRunResult(true) }
+                ChoiceButton("Нет, не всё", state.runCompleted == false, Modifier.weight(1f)) { onRunResult(false) }
+            }
+            Text(
+                "От этого зависит, когда предложить следующий уровень бега.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+    StartButton("Начать площадку", "подходы с таймером отдыха", onStart)
 }
 
 @Composable
 private fun ChoiceButton(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     if (selected) {
-        Button(onClick = onClick, modifier = modifier) { Text(label, textAlign = TextAlign.Center) }
+        Button(onClick = onClick, modifier = modifier) {
+            Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+            Text(" $label", textAlign = TextAlign.Center)
+        }
     } else {
         OutlinedButton(onClick = onClick, modifier = modifier) { Text(label, textAlign = TextAlign.Center) }
     }
@@ -229,54 +307,106 @@ internal fun StrengthPanel(
     onSkipRest: () -> Unit,
     onFinish: () -> Unit,
 ) {
-    val exercise = view.exercise
-    if (exercise == null) {
-        StageBanner("ПЛОЩАДКА ВЫПОЛНЕНА", ZoneColors.Normal)
-        levelUps.forEach {
-            Text(
-                "Новая ступень: ${it.from.name} → ${it.to.name}",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-            )
+    val haptics = LocalHapticFeedback.current
+    var flash by remember { mutableIntStateOf(0) }
+    val done: (Int, Boolean) -> Unit = { reps, success ->
+        if (success) {
+            flash++
+            haptics.performHapticFeedback(HapticFeedbackType.Confirm)
         }
-        DoneList(view)
-        Button(
-            onClick = onFinish,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp),
-        ) { Text("Завершить тренировку", fontSize = 20.sp) }
-        return
+        onDone(reps)
     }
-    val progress = if (view.circuit) {
-        "Круг ${view.set} из ${view.sets} · упражнение ${view.exerciseNumber} из ${view.exerciseCount}"
-    } else {
-        "Упражнение ${view.exerciseNumber} из ${view.exerciseCount} · подход ${view.set} из ${view.sets}"
+    Box(contentAlignment = Alignment.Center) {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            AnimatedContent(
+                targetState = view,
+                contentKey = { it.stepIndex to it.finished },
+                transitionSpec = { (fadeIn(tween(350)) + scaleIn(initialScale = 0.92f)) togetherWith fadeOut(tween(200)) },
+                label = "step",
+            ) { step -> StepContent(step, levelUps, done, onStartTimed, onSkipRest, onFinish) }
+            DoneList(view)
+        }
+        SuccessFlash(flash)
     }
-    if (view.resting) {
-        StageBanner("ОТДЫХ", RestColor, Format.duration((view.remainingSec ?: 0) * 1000L))
-        Text(progress, style = MaterialTheme.typography.titleMedium)
-        Text(
-            "Далее: ${exercise.name}, ${exercise.amount(view.target)}",
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-        )
-        OutlinedButton(onClick = onSkipRest, modifier = Modifier.fillMaxWidth()) { Text("Пропустить отдых") }
-    } else {
-        StageBanner(exercise.name.uppercase(), WorkColor)
-        Text(progress, style = MaterialTheme.typography.titleMedium)
-        Text(exercise.hint, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        WorkStep(view, exercise, onDone, onStartTimed)
-    }
-    DoneList(view)
 }
 
 @Composable
-private fun WorkStep(view: StrengthView, exercise: Exercise, onDone: (Int) -> Unit, onStartTimed: () -> Unit) {
+private fun StepContent(
+    view: StrengthView,
+    levelUps: List<LevelUp>,
+    onDone: (Int, Boolean) -> Unit,
+    onStartTimed: () -> Unit,
+    onSkipRest: () -> Unit,
+    onFinish: () -> Unit,
+) {
+    val exercise = view.exercise
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (exercise == null) {
+            Hero(StageColors.Done) {
+                Icon(Icons.Filled.EmojiEvents, contentDescription = null, tint = Color.White, modifier = Modifier.size(56.dp))
+                HeroTitle("ПЛОЩАДКА ВЫПОЛНЕНА", "отличная работа!")
+            }
+            levelUps.forEach {
+                PanelCard {
+                    Text("Новая ступень", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.tertiary)
+                    Text("${it.from.name} → ${it.to.name}", style = MaterialTheme.typography.titleLarge)
+                }
+            }
+            StartButton("Завершить", "сохранить тренировку", onFinish)
+            return@Column
+        }
+        val progress = if (view.circuit) {
+            "круг ${view.set} из ${view.sets} · упражнение ${view.exerciseNumber} из ${view.exerciseCount}"
+        } else {
+            "упражнение ${view.exerciseNumber} из ${view.exerciseCount} · подход ${view.set} из ${view.sets}"
+        }
+        if (view.resting) {
+            Hero(StageColors.Rest) {
+                HeroTitle("ОТДЫХ", progress)
+                val total = view.remainingSec?.let { maxOf(it, 1) } ?: 1
+                val full = remember(view.stepIndex) { total }
+                RingTimer(
+                    progress = (view.remainingSec ?: 0).toFloat() / full,
+                    color = Color.White,
+                    trackColor = Color.White.copy(alpha = 0.25f),
+                    modifier = Modifier.size(200.dp),
+                ) { Text(Format.duration((view.remainingSec ?: 0) * 1000L), style = numberStyle(56), color = Color.White) }
+                Text(
+                    "Далее: ${exercise.name}, ${exercise.amount(view.target)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            OutlinedButton(onClick = onSkipRest, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                Icon(Icons.Filled.SkipNext, contentDescription = null)
+                Text("  Пропустить отдых")
+            }
+        } else {
+            Hero(StageColors.Work) {
+                HeroTitle(exercise.name.uppercase(), progress)
+                Text(exercise.hint, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
+                if (exercise.timed && view.timedRunning) {
+                    RingTimer(
+                        progress = (view.remainingSec ?: 0).toFloat() / view.target.coerceAtLeast(1),
+                        color = Color.White,
+                        trackColor = Color.White.copy(alpha = 0.25f),
+                        modifier = Modifier.size(200.dp),
+                    ) { Text(Format.duration((view.remainingSec ?: 0) * 1000L), style = numberStyle(56), color = Color.White) }
+                } else {
+                    Text(exercise.amount(view.target), style = numberStyle(88), color = Color.White)
+                }
+            }
+            WorkButtons(view, exercise, onDone, onStartTimed)
+        }
+    }
+}
+
+@Composable
+private fun WorkButtons(view: StrengthView, exercise: Exercise, onDone: (Int, Boolean) -> Unit, onStartTimed: () -> Unit) {
     if (exercise.timed && view.timedRunning) {
-        Text(Format.duration((view.remainingSec ?: 0) * 1000L), fontSize = 72.sp, fontWeight = FontWeight.Bold)
         OutlinedButton(
-            onClick = { onDone(0) },
+            onClick = { onDone(0, false) },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -286,15 +416,22 @@ private fun WorkStep(view: StrengthView, exercise: Exercise, onDone: (Int) -> Un
     }
     var failed by rememberSaveable(view.stepIndex) { mutableStateOf(false) }
     var value by rememberSaveable(view.stepIndex) { mutableIntStateOf((view.target - exercise.step).coerceAtLeast(0)) }
-    Text(exercise.amount(view.target), fontSize = 64.sp, fontWeight = FontWeight.Bold)
     if (!failed) {
+        val interaction = remember { MutableInteractionSource() }
         Button(
-            onClick = if (exercise.timed) onStartTimed else ({ onDone(view.target) }),
+            onClick = { if (exercise.timed) onStartTimed() else onDone(view.target, true) },
+            interactionSource = interaction,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp),
+                .height(72.dp)
+                .pressScale(interaction),
+            shape = RoundedCornerShape(36.dp),
             colors = ButtonDefaults.buttonColors(containerColor = ZoneColors.Normal, contentColor = Color.White),
-        ) { Text(if (exercise.timed) "Старт таймера" else "Получилось", fontSize = 20.sp) }
+        ) {
+            Icon(if (exercise.timed) Icons.Filled.PlayArrow else Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(28.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(if (exercise.timed) "Старт таймера" else "Получилось", fontSize = 22.sp)
+        }
         OutlinedButton(
             onClick = { failed = true },
             modifier = Modifier
@@ -302,23 +439,61 @@ private fun WorkStep(view: StrengthView, exercise: Exercise, onDone: (Int) -> Un
                 .height(56.dp),
         ) { Text("Не получилось", fontSize = 18.sp) }
     } else {
-        Text(if (exercise.timed) "Сколько секунд продержались?" else "Сколько получилось сделать?", style = MaterialTheme.typography.bodyLarge)
-        AmountStepper(exercise, value) { value = it }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedButton(onClick = { failed = false }, modifier = Modifier.weight(1f).height(56.dp)) { Text("Назад") }
-            Button(onClick = { onDone(value) }, modifier = Modifier.weight(1f).height(56.dp)) { Text("Сохранить") }
+        Card(
+            shape = RoundedCornerShape(28.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        ) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    if (exercise.timed) "Сколько секунд продержались?" else "Сколько получилось сделать?",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                AmountStepper(exercise, value) { value = it }
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedButton(onClick = { failed = false }, modifier = Modifier.weight(1f).height(56.dp)) { Text("Назад") }
+                    Button(onClick = { onDone(value, false) }, modifier = Modifier.weight(1f).height(56.dp)) { Text("Сохранить") }
+                }
+            }
         }
     }
 }
 
 @Composable
+private fun SuccessFlash(key: Int) {
+    if (key == 0) return
+    val progress = remember(key) { Animatable(0f) }
+    LaunchedEffect(key) { progress.animateTo(1f, tween(900)) }
+    val p = progress.value
+    if (p >= 1f) return
+    val scale = if (p < 0.35f) 0.4f + p / 0.35f * 0.8f else 1.2f - (p - 0.35f) * 0.3f
+    Box(
+        Modifier
+            .size(140.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+                alpha = if (p < 0.6f) 1f else (1f - p) / 0.4f
+            }
+            .clip(CircleShape)
+            .background(ZoneColors.Normal),
+        contentAlignment = Alignment.Center,
+    ) { Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(88.dp)) }
+}
+
+@Composable
 private fun AmountStepper(exercise: Exercise, value: Int, onChange: (Int) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        FilledTonalIconButton(onClick = { onChange((value - exercise.step).coerceAtLeast(0)) }) {
+        FilledTonalIconButton(onClick = { onChange((value - exercise.step).coerceAtLeast(0)) }, modifier = Modifier.size(56.dp)) {
             Icon(Icons.Filled.Remove, contentDescription = "Меньше")
         }
-        Text(if (exercise.timed) "$value с" else "$value", fontSize = 48.sp, fontWeight = FontWeight.Bold)
-        FilledTonalIconButton(onClick = { onChange(value + exercise.step) }) {
+        AnimatedNumber(if (exercise.timed) "$value с" else "$value", numberStyle(56))
+        FilledTonalIconButton(onClick = { onChange(value + exercise.step) }, modifier = Modifier.size(56.dp)) {
             Icon(Icons.Filled.Add, contentDescription = "Больше")
         }
     }
@@ -328,16 +503,25 @@ private fun AmountStepper(exercise: Exercise, value: Int, onChange: (Int) -> Uni
 private fun DoneList(view: StrengthView) {
     if (view.done.isEmpty()) return
     val exercises = view.exercises.associateBy { it.id }
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text("Сделано", style = MaterialTheme.typography.titleSmall)
+    PanelCard {
+        Text("Сделано", style = MaterialTheme.typography.titleMedium)
         view.done.groupBy { it.exerciseId }.forEach { (id, sets) ->
             val exercise = exercises[id] ?: return@forEach
             val ok = sets.all { it.reps >= it.target }
-            Text(
-                "${if (ok) "✓" else "✗"} ${exercise.name}: ${sets.joinToString(" · ") { exercise.amount(it.reps) }}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (ok) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.error,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier
+                        .size(22.dp)
+                        .clip(CircleShape)
+                        .background(if (ok) ZoneColors.Normal else MaterialTheme.colorScheme.error),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(if (ok) "✓" else "✗", color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.width(10.dp))
+                Text(exercise.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                Text(sets.joinToString(" · ") { exercise.amount(it.reps) }, style = numberStyle(20))
+            }
         }
     }
 }

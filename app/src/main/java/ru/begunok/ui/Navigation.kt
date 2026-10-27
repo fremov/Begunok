@@ -1,10 +1,22 @@
 package ru.begunok.ui
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -12,41 +24,54 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import ru.begunok.ui.workout.WorkoutDetailScreen
-import ru.begunok.ui.workout.WorkoutDetailViewModel
+import kotlinx.coroutines.launch
 import ru.begunok.AppContainer
-import ru.begunok.ui.history.HistoryScreen
+import ru.begunok.ui.common.LocalNavAnimatedScope
+import ru.begunok.ui.common.LocalSharedTransitionScope
+import ru.begunok.ui.history.AnalyticsScreen
 import ru.begunok.ui.history.AnalyticsViewModel
+import ru.begunok.ui.history.HistoryScreen
 import ru.begunok.ui.history.HistoryViewModel
-import ru.begunok.ui.plan.PlanEditorScreen
-import ru.begunok.ui.plan.PlanEditorViewModel
-import ru.begunok.workout.DayType
 import ru.begunok.ui.home.HomeScreen
 import ru.begunok.ui.home.HomeViewModel
+import ru.begunok.ui.plan.PlanEditorScreen
+import ru.begunok.ui.plan.PlanEditorViewModel
 import ru.begunok.ui.sensor.SensorScreen
 import ru.begunok.ui.sensor.SensorViewModel
 import ru.begunok.ui.settings.SettingsScreen
 import ru.begunok.ui.settings.SettingsViewModel
+import ru.begunok.ui.workout.WorkoutDetailScreen
+import ru.begunok.ui.workout.WorkoutDetailViewModel
+import ru.begunok.workout.DayType
 
-private enum class Tab(val route: String, val label: String, val icon: ImageVector) {
-    Home("home", "Тренировка", Icons.AutoMirrored.Filled.DirectionsRun),
-    History("history", "История", Icons.Filled.History),
-    Sensor("sensor", "Датчик", Icons.Filled.Bluetooth),
-    Settings("settings", "Настройки", Icons.Filled.Settings),
+private enum class Tab(val label: String, val icon: ImageVector) {
+    Home("Тренировка", Icons.AutoMirrored.Filled.DirectionsRun),
+    History("История", Icons.Filled.History),
+    Analytics("Аналитика", Icons.Filled.Insights),
+    Sensor("Датчик", Icons.Filled.Bluetooth),
+    Settings("Настройки", Icons.Filled.Settings),
 }
 
+private const val TABS = "tabs"
+
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun BegunokNavigation(
     container: AppContainer,
@@ -54,94 +79,134 @@ fun BegunokNavigation(
     onStopRequestHandled: () -> Unit,
 ) {
     val navController = rememberNavController()
+    val pager = rememberPagerState { Tab.entries.size }
+    val scope = rememberCoroutineScope()
     val backStack by navController.currentBackStackEntryAsState()
-    val currentRoute = backStack?.destination?.route
+    val onTabs = backStack?.destination?.route == TABS
 
     fun openTab(tab: Tab) {
-        if (tab == Tab.Home) {
-            navController.popBackStack(Tab.Home.route, inclusive = false)
-            return
-        }
-        navController.navigate(tab.route) {
-            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-            launchSingleTop = true
-            restoreState = true
-        }
+        if (!onTabs) navController.popBackStack(TABS, inclusive = false)
+        scope.launch { pager.animateScrollToPage(tab.ordinal) }
     }
 
     LaunchedEffect(stopRequested) {
-        if (stopRequested && currentRoute != Tab.Home.route) openTab(Tab.Home)
+        if (stopRequested) openTab(Tab.Home)
     }
+
+    BackHandler(enabled = onTabs && pager.currentPage != Tab.Home.ordinal) { openTab(Tab.Home) }
 
     Scaffold(
         bottomBar = {
             NavigationBar {
                 Tab.entries.forEach { tab ->
                     NavigationBarItem(
-                        selected = currentRoute == tab.route,
+                        selected = onTabs && pager.targetPage == tab.ordinal,
                         onClick = { openTab(tab) },
                         icon = { Icon(tab.icon, contentDescription = null) },
-                        label = { Text(tab.label) },
+                        label = { Text(tab.label, maxLines = 1) },
                     )
                 }
             }
         },
     ) { padding ->
-        NavHost(navController, startDestination = Tab.Home.route, modifier = Modifier.padding(padding)) {
-            composable(Tab.Home.route) {
-                HomeScreen(
-                    viewModel = viewModel {
-                        HomeViewModel(
-                            container.appContext,
-                            container.heartRateMonitor,
-                            container.settings,
-                            container.workouts,
-                            container.locationClient,
-                        )
-                    },
-                    stopRequested = stopRequested,
-                    onStopRequestHandled = onStopRequestHandled,
-                    onOpenSensor = { openTab(Tab.Sensor) },
-                    onOpenWorkout = { id -> navController.navigate("workout/$id") },
-                    onEditPlan = { type -> navController.navigate("plan/${type.name}") },
-                )
-            }
-            composable(
-                route = "plan/{type}",
-                arguments = listOf(navArgument("type") { type = NavType.StringType }),
-            ) { entry ->
-                val type = DayType.entries.firstOrNull { it.name == entry.arguments?.getString("type") } ?: DayType.Run
-                PlanEditorScreen(
-                    viewModel = viewModel(key = "plan-${type.name}") { PlanEditorViewModel(type, container.settings) },
-                    onBack = { navController.popBackStack() },
-                )
-            }
-            composable(
-                route = "workout/{id}",
-                arguments = listOf(navArgument("id") { type = NavType.LongType }),
-            ) { entry ->
-                val id = entry.arguments?.getLong("id") ?: 0L
-                WorkoutDetailScreen(
-                    viewModel = viewModel(key = "workout-$id") {
-                        WorkoutDetailViewModel(id, container.workouts, container.appContext)
-                    },
-                    onBack = { navController.popBackStack() },
-                    onHome = { openTab(Tab.Home) },
-                )
-            }
-            composable(Tab.History.route) {
-                HistoryScreen(
-                    viewModel = viewModel { HistoryViewModel(container.workouts) },
-                    analytics = viewModel { AnalyticsViewModel(container.workouts) },
-                    onOpen = { id -> navController.navigate("workout/$id") },
-                )
-            }
-            composable(Tab.Sensor.route) {
-                SensorScreen(viewModel { SensorViewModel(container.heartRateMonitor, container.bleScanner, container.settings) })
-            }
-            composable(Tab.Settings.route) {
-                SettingsScreen(viewModel { SettingsViewModel(container.appContext, container.settings, container.voicePack) })
+        SharedTransitionLayout(Modifier.padding(padding)) {
+            CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+                AppNavHost(navController, pager, container, stopRequested, onStopRequestHandled) { openTab(it) }
             }
         }
+    }
+}
+
+@Composable
+private fun AppNavHost(
+    navController: NavHostController,
+    pager: PagerState,
+    container: AppContainer,
+    stopRequested: Boolean,
+    onStopRequestHandled: () -> Unit,
+    openTab: (Tab) -> Unit,
+) {
+    NavHost(
+        navController,
+        startDestination = TABS,
+        enterTransition = { fadeIn(tween(320)) + slideInHorizontally(tween(380)) { it / 10 } },
+        exitTransition = { fadeOut(tween(220)) },
+        popEnterTransition = { fadeIn(tween(320)) },
+        popExitTransition = { fadeOut(tween(220)) + slideOutHorizontally(tween(320)) { it / 10 } },
+    ) {
+        screen(TABS) {
+            HorizontalPager(pager, key = { it }) { page ->
+                when (Tab.entries[page]) {
+                    Tab.Home -> HomeScreen(
+                        viewModel = viewModel {
+                            HomeViewModel(
+                                container.appContext,
+                                container.heartRateMonitor,
+                                container.settings,
+                                container.workouts,
+                                container.locationClient,
+                            )
+                        },
+                        stopRequested = stopRequested,
+                        onStopRequestHandled = onStopRequestHandled,
+                        onOpenSensor = { openTab(Tab.Sensor) },
+                        onOpenWorkout = { id -> navController.navigate("workout/$id?celebrate=true") },
+                        onEditPlan = { type -> navController.navigate("plan/${type.name}") },
+                    )
+                    Tab.History -> HistoryScreen(
+                        viewModel = viewModel { HistoryViewModel(container.workouts) },
+                        onOpen = { id -> navController.navigate("workout/$id") },
+                    )
+                    Tab.Analytics -> AnalyticsScreen(viewModel { AnalyticsViewModel(container.workouts) })
+                    Tab.Sensor -> SensorScreen(
+                        viewModel { SensorViewModel(container.heartRateMonitor, container.bleScanner, container.settings) },
+                    )
+                    Tab.Settings -> SettingsScreen(
+                        viewModel { SettingsViewModel(container.appContext, container.settings, container.voicePack) },
+                    )
+                }
+            }
+        }
+        screen(
+            route = "plan/{type}",
+            arguments = listOf(navArgument("type") { type = NavType.StringType }),
+        ) { entry ->
+            val type = DayType.entries.firstOrNull { it.name == entry.arguments?.getString("type") } ?: DayType.Run
+            PlanEditorScreen(
+                viewModel = viewModel(key = "plan-${type.name}") { PlanEditorViewModel(type, container.settings) },
+                onBack = { navController.popBackStack() },
+            )
+        }
+        screen(
+            route = "workout/{id}?celebrate={celebrate}",
+            arguments = listOf(
+                navArgument("id") { type = NavType.LongType },
+                navArgument("celebrate") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                },
+            ),
+        ) { entry ->
+            val id = entry.arguments?.getLong("id") ?: 0L
+            WorkoutDetailScreen(
+                workoutId = id,
+                celebrate = entry.arguments?.getBoolean("celebrate") == true,
+                viewModel = viewModel(key = "workout-$id") {
+                    WorkoutDetailViewModel(id, container.workouts, container.appContext)
+                },
+                onBack = { navController.popBackStack() },
+                onHome = { openTab(Tab.Home) },
+            )
+        }
+    }
+}
+
+private fun NavGraphBuilder.screen(
+    route: String,
+    arguments: List<NamedNavArgument> = emptyList(),
+    content: @Composable (NavBackStackEntry) -> Unit,
+) {
+    composable(route, arguments) { entry ->
+        CompositionLocalProvider(LocalNavAnimatedScope provides this) { content(entry) }
     }
 }

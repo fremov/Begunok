@@ -1,6 +1,27 @@
 package ru.begunok.ui.workout
 
 import android.content.Context
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import ru.begunok.ui.common.Confetti
+import ru.begunok.ui.common.appear
+import ru.begunok.ui.common.rememberCountUp
+import ru.begunok.ui.common.sharedBounds
+import ru.begunok.ui.theme.ZoneColors
+import ru.begunok.ui.theme.numberStyle
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -119,7 +140,13 @@ class WorkoutDetailViewModel(
 }
 
 @Composable
-fun WorkoutDetailScreen(viewModel: WorkoutDetailViewModel, onBack: () -> Unit, onHome: () -> Unit) {
+fun WorkoutDetailScreen(
+    workoutId: Long,
+    celebrate: Boolean,
+    viewModel: WorkoutDetailViewModel,
+    onBack: () -> Unit,
+    onHome: () -> Unit,
+) {
     val detail by viewModel.detail.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -136,97 +163,40 @@ fun WorkoutDetailScreen(viewModel: WorkoutDetailViewModel, onBack: () -> Unit, o
         }
     }
 
-    Column(Modifier.fillMaxSize()) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад") }
-            Column(Modifier.weight(1f)) {
-                Text(detail?.workout?.let(Format::workoutTitle) ?: "Тренировка", style = MaterialTheme.typography.titleLarge)
-                detail?.let { Text(Format.dateTime(it.workout.startTime), style = MaterialTheme.typography.bodySmall) }
+    Box(
+        Modifier
+            .fillMaxSize()
+            .sharedBounds("workout-$workoutId")
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        Column(Modifier.fillMaxSize()) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)) {
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад") }
+                Column(Modifier.weight(1f)) {
+                    Text(detail?.workout?.let(Format::workoutTitle) ?: "Тренировка", style = MaterialTheme.typography.titleLarge)
+                    detail?.let {
+                        Text(
+                            Format.dateTime(it.workout.startTime),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                if (detail != null) {
+                    IconButton(onClick = ::share) { Icon(Icons.Filled.Share, contentDescription = "Экспорт GPX") }
+                    IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Filled.Delete, contentDescription = "Удалить") }
+                }
             }
-            if (detail != null) {
-                IconButton(onClick = ::share) { Icon(Icons.Filled.Share, contentDescription = "Экспорт GPX") }
-                IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Filled.Delete, contentDescription = "Удалить") }
+            val d = detail
+            if (d == null) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(Modifier.size(48.dp))
+                }
+                return@Column
             }
+            DetailContent(d, celebrate, onShare = ::share, onHome = onHome)
         }
-        val d = detail
-        if (d == null) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(Modifier.size(48.dp))
-            }
-            return@Column
-        }
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            RouteShape(
-                d.segments,
-                Modifier
-                    .fillMaxWidth()
-                    .height(320.dp),
-            )
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(Modifier.fillMaxWidth()) {
-                    Stat("Дистанция, км", Format.distanceKm(d.workout.distanceM), Modifier.weight(1f), large = true)
-                    Stat("Время", Format.duration(d.workout.durationMs), Modifier.weight(1f), large = true)
-                    Stat(
-                        "Ср. темп",
-                        Format.pace(paceSecPerKm(d.workout.durationMs, d.workout.distanceM)),
-                        Modifier.weight(1f),
-                        large = true,
-                    )
-                }
-                Row(Modifier.fillMaxWidth()) {
-                    Stat("Ср. пульс", Format.heartRate(d.workout.avgHr), Modifier.weight(1f))
-                    Stat("Макс. пульс", Format.heartRate(d.workout.maxHr), Modifier.weight(1f))
-                    Stat(
-                        "Выше ${d.workout.upperLimit}",
-                        d.timeAbove?.let { "${(it * 100).roundToInt()}%" } ?: "—",
-                        Modifier.weight(1f),
-                    )
-                }
-                Text(
-                    "Цвет линии: зелёный — ниже границы, жёлтый — у границы, красный — выше",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Text("Пульс", style = MaterialTheme.typography.titleMedium)
-                if (d.heartRate.any { it.bpm != null }) {
-                    HeartRateChart(
-                        series = d.heartRate,
-                        upperLimit = d.workout.upperLimit,
-                        lowerLimit = d.workout.lowerLimit,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                    )
-                } else {
-                    Text("Нет данных о пульсе", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-
-                if (d.sets.isNotEmpty()) ExerciseSets(d.sets)
-
-                d.gpsCoverage?.let {
-                    Text(
-                        "GPS: точные координаты в ${(it * 100).roundToInt()}% времени тренировки",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                OutlinedButton(onClick = ::share, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Filled.Share, contentDescription = null)
-                    Text("  Экспорт в GPX")
-                }
-                Button(
-                    onClick = onHome,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                ) { Text("На главную", style = MaterialTheme.typography.titleMedium) }
-            }
-        }
+        if (celebrate && detail != null) Confetti(trigger = workoutId, modifier = Modifier.fillMaxSize())
     }
 
     if (confirmDelete) {
@@ -246,34 +216,167 @@ fun WorkoutDetailScreen(viewModel: WorkoutDetailViewModel, onBack: () -> Unit, o
 }
 
 @Composable
-private fun ExerciseSets(sets: List<ExerciseSetEntity>) {
-    Text("Площадка", style = MaterialTheme.typography.titleMedium)
-    sets.groupBy { it.exerciseId }.values.forEach { group ->
-        val first = group.first()
-        val target = group.maxOf { it.target }
-        val unit = if (first.timed) " с" else ""
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(first.exerciseName, style = MaterialTheme.typography.bodyLarge)
+private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> Unit, onHome: () -> Unit) {
+    val route = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { route.animateTo(1f, tween(1_800, easing = FastOutSlowInEasing)) }
+    val w = d.workout
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        if (celebrate) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .appear(0)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, Color(0xFFFF9A3D))))
+                    .padding(18.dp),
+            ) {
+                Text("ТРЕНИРОВКА ЗАВЕРШЕНА", style = numberStyle(30), color = Color.White)
+                Text("Отличная работа! Вот что получилось:", color = Color.White.copy(alpha = 0.9f))
+            }
+        }
+        RouteShape(
+            d.segments,
+            Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .appear(1)
+                .clip(RoundedCornerShape(28.dp)),
+            progress = route.value,
+        )
+        Row(Modifier.fillMaxWidth().appear(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            val km = rememberCountUp(w.distanceM.toFloat())
+            val ms = rememberCountUp(w.durationMs.toFloat())
+            StatCard("Дистанция, км", Format.distanceKm(km.toDouble()), Modifier.weight(1f), large = true)
+            StatCard("Время", Format.duration(ms.toLong()), Modifier.weight(1f), large = true)
+        }
+        Row(Modifier.fillMaxWidth().appear(3), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            val avg = rememberCountUp((w.avgHr ?: 0).toFloat())
+            val max = rememberCountUp((w.maxHr ?: 0).toFloat())
+            StatCard("Ср. темп", Format.pace(paceSecPerKm(w.durationMs, w.distanceM)), Modifier.weight(1f))
+            StatCard("Ср. пульс", if (w.avgHr == null) "—" else avg.roundToInt().toString(), Modifier.weight(1f))
+            StatCard("Макс.", if (w.maxHr == null) "—" else max.roundToInt().toString(), Modifier.weight(1f))
+        }
+        d.timeAbove?.let { above ->
+            Column(Modifier.appear(4), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    "цель $target$unit" + if (group.all { it.reps >= it.target }) " · выполнено" else "",
+                    "Выше ${w.upperLimit} уд/мин: ${(above * 100).roundToInt()}% времени",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                LinearProgressIndicator(
+                    progress = { (above * route.value).toFloat() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(10.dp),
+                    color = ZoneColors.Above,
+                    trackColor = ZoneColors.Normal.copy(alpha = 0.6f),
+                )
+                Text(
+                    "Цвет линии маршрута: зелёный — ниже границы, жёлтый — у границы, красный — выше",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Text(group.joinToString(" · ") { "${it.reps}$unit" }, fontWeight = FontWeight.SemiBold)
+        }
+
+        DetailCard("Пульс", Modifier.appear(5)) {
+            if (d.heartRate.any { it.bpm != null }) {
+                HeartRateChart(
+                    series = d.heartRate,
+                    upperLimit = w.upperLimit,
+                    lowerLimit = w.lowerLimit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    progress = route.value,
+                )
+            } else {
+                Text("Нет данных о пульсе", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+
+        if (d.sets.isNotEmpty()) DetailCard("Площадка", Modifier.appear(6)) { ExerciseSets(d.sets) }
+
+        d.gpsCoverage?.let {
+            Text(
+                "GPS: точные координаты в ${(it * 100).roundToInt()}% времени тренировки",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        OutlinedButton(onClick = onShare, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+            Icon(Icons.Filled.Share, contentDescription = null)
+            Text("  Экспорт в GPX")
+        }
+        Button(
+            onClick = onHome,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(60.dp),
+            shape = RoundedCornerShape(30.dp),
+        ) { Text("На главную", style = MaterialTheme.typography.titleMedium) }
+        Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun DetailCard(title: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(title, style = MaterialTheme.typography.titleLarge)
+            content()
         }
     }
 }
 
 @Composable
-private fun Stat(label: String, value: String, modifier: Modifier = Modifier, large: Boolean = false) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            value,
-            style = if (large) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.SemiBold,
-        )
-        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun ExerciseSets(sets: List<ExerciseSetEntity>) {
+    sets.groupBy { it.exerciseId }.values.forEach { group ->
+        val first = group.first()
+        val target = group.maxOf { it.target }
+        val unit = if (first.timed) " с" else ""
+        val ok = group.all { it.reps >= it.target }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .background(if (ok) ZoneColors.Normal else MaterialTheme.colorScheme.error),
+                contentAlignment = Alignment.Center,
+            ) { Text(if (ok) "✓" else "✗", color = Color.White, fontWeight = FontWeight.Bold) }
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(first.exerciseName, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "цель $target$unit" + if (ok) " · выполнено" else " · не всё получилось",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(group.joinToString(" · ") { "${it.reps}$unit" }, style = numberStyle(22))
+        }
+    }
+}
+
+@Composable
+private fun StatCard(label: String, value: String, modifier: Modifier = Modifier, large: Boolean = false) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
+    ) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+            Text(value, style = numberStyle(if (large) 40 else 28))
+            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }

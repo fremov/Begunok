@@ -9,6 +9,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -42,7 +43,13 @@ fun heartRateSeries(samples: List<SampleEntity>, maxPoints: Int = 600): List<HrP
 }
 
 @Composable
-fun HeartRateChart(series: List<HrPoint>, upperLimit: Int, lowerLimit: Int?, modifier: Modifier = Modifier) {
+fun HeartRateChart(
+    series: List<HrPoint>,
+    upperLimit: Int,
+    lowerLimit: Int?,
+    modifier: Modifier = Modifier,
+    progress: Float = 1f,
+) {
     val measurer = rememberTextMeasurer()
     val lineColor = MaterialTheme.colorScheme.primary
     val gridColor = MaterialTheme.colorScheme.outlineVariant
@@ -91,6 +98,8 @@ fun HeartRateChart(series: List<HrPoint>, upperLimit: Int, lowerLimit: Int?, mod
             if (drawing) path.lineTo(x(p.seconds), y(bpm.toFloat())) else path.moveTo(x(p.seconds), y(bpm.toFloat()))
             drawing = true
         }
-        drawPath(path, lineColor, style = Stroke(width = 2.dp.toPx()))
+        clipRect(right = left + width * progress.coerceIn(0f, 1f)) {
+            drawPath(path, lineColor, style = Stroke(width = 2.dp.toPx()))
+        }
     }
 }
