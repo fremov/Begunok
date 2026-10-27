@@ -1,5 +1,7 @@
 package ru.begunok.ui
 
+import ru.begunok.data.db.WorkoutEntity
+import ru.begunok.workout.DayType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -27,6 +29,12 @@ object Format {
     }
 
     fun heartRate(bpm: Int?): String = bpm?.toString() ?: "—"
+
+    fun workoutTitle(workout: WorkoutEntity): String? = when (workout.dayType) {
+        DayType.Strength.name -> DayType.Strength.label
+        DayType.Run.name -> listOfNotNull(DayType.Run.label, workout.programName).joinToString(" · ")
+        else -> workout.programName
+    }
 
     fun dateTime(millis: Long): String = SimpleDateFormat("d MMMM yyyy, HH:mm", ru).format(Date(millis))
 }

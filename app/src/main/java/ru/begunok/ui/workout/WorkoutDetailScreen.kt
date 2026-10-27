@@ -45,12 +45,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.begunok.data.WorkoutRepository
+import ru.begunok.data.db.ExerciseSetEntity
 import ru.begunok.data.db.WorkoutEntity
 import ru.begunok.ui.Format
 import ru.begunok.workout.GpxWriter
@@ -71,6 +73,7 @@ data class WorkoutDetail(
     val heartRate: List<HrPoint>,
     val timeAbove: Double?,
     val gpsCoverage: Double?,
+    val sets: List<ExerciseSetEntity>,
 )
 
 class WorkoutDetailViewModel(
@@ -80,7 +83,8 @@ class WorkoutDetailViewModel(
 ) : ViewModel() {
     val detail: StateFlow<WorkoutDetail?> = repository.observeWorkout(workoutId)
         .filterNotNull()
-        .map { workout ->
+        .combine(repository.observeSets(workoutId)) { workout, sets -> workout to sets }
+        .map { (workout, sets) ->
             val samples = repository.samples(workout.id)
             WorkoutDetail(
                 workout = workout,
@@ -88,6 +92,7 @@ class WorkoutDetailViewModel(
                 heartRate = heartRateSeries(samples),
                 timeAbove = timeAboveFraction(samples, workout.upperLimit),
                 gpsCoverage = gpsCoverage(samples),
+                sets = sets,
             )
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -95,7 +100,7 @@ class WorkoutDetailViewModel(
     suspend fun exportGpx(): Uri? = withContext(Dispatchers.IO) {
         val workout = detail.value?.workout ?: return@withContext null
         val samples = repository.samples(workoutId)
-        val title = workout.programName ?: "Бег"
+        val title = Format.workoutTitle(workout) ?: "Бег"
         val gpx = GpxWriter.write(workout, samples, "$title ${Format.dateTime(workout.startTime)}")
         val dir = File(appContext.cacheDir, "gpx").apply { mkdirs() }
         dir.listFiles()?.forEach { it.delete() }
@@ -135,7 +140,7 @@ fun WorkoutDetailScreen(viewModel: WorkoutDetailViewModel, onBack: () -> Unit, o
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад") }
             Column(Modifier.weight(1f)) {
-                Text(detail?.workout?.programName ?: "Тренировка", style = MaterialTheme.typography.titleLarge)
+                Text(detail?.workout?.let(Format::workoutTitle) ?: "Тренировка", style = MaterialTheme.typography.titleLarge)
                 detail?.let { Text(Format.dateTime(it.workout.startTime), style = MaterialTheme.typography.bodySmall) }
             }
             if (detail != null) {
@@ -201,6 +206,8 @@ fun WorkoutDetailScreen(viewModel: WorkoutDetailViewModel, onBack: () -> Unit, o
                     Text("Нет данных о пульсе", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
+                if (d.sets.isNotEmpty()) ExerciseSets(d.sets)
+
                 d.gpsCoverage?.let {
                     Text(
                         "GPS: точные координаты в ${(it * 100).roundToInt()}% времени тренировки",
@@ -235,6 +242,27 @@ fun WorkoutDetailScreen(viewModel: WorkoutDetailViewModel, onBack: () -> Unit, o
             },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Отмена") } },
         )
+    }
+}
+
+@Composable
+private fun ExerciseSets(sets: List<ExerciseSetEntity>) {
+    Text("Площадка", style = MaterialTheme.typography.titleMedium)
+    sets.groupBy { it.exerciseId }.values.forEach { group ->
+        val first = group.first()
+        val target = group.maxOf { it.target }
+        val unit = if (first.timed) " с" else ""
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(first.exerciseName, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "цель $target$unit" + if (group.all { it.reps >= it.target }) " · выполнено" else "",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(group.joinToString(" · ") { "${it.reps}$unit" }, fontWeight = FontWeight.SemiBold)
+        }
     }
 }
 

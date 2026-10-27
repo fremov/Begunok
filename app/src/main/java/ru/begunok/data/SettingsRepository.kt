@@ -16,6 +16,10 @@ import org.json.JSONObject
 import ru.begunok.alerts.AlertOptions
 import ru.begunok.alerts.CueId
 import ru.begunok.alerts.VoiceSettings
+import ru.begunok.workout.DayConfig
+import ru.begunok.workout.DayPlan
+import ru.begunok.workout.DayType
+import ru.begunok.workout.Slot
 import ru.begunok.workout.IntervalProgram
 
 private val Context.dataStore by preferencesDataStore("settings")
@@ -34,8 +38,14 @@ data class AppSettings(
     val batteryHintDismissed: Boolean = false,
     val programs: List<IntervalProgram> = IntervalProgram.defaults,
     val selectedProgramId: String? = null,
+    val dayType: DayType? = null,
+    val dayConfigs: Map<DayType, DayConfig> = emptyMap(),
 ) {
     val selectedProgram: IntervalProgram? get() = programs.firstOrNull { it.id == selectedProgramId }
+
+    fun dayConfig(type: DayType): DayConfig = dayConfigs[type] ?: DayConfig.default(type)
+
+    fun dayPlan(type: DayType): DayPlan = DayPlan.of(type, dayConfig(type))
 
     fun alertOptions() = AlertOptions(sound = sound, voiceEnabled = voiceEnabled, vibration = vibration, voice = voice)
 
@@ -62,6 +72,8 @@ class SettingsRepository(private val context: Context) {
         val ttsPitch = floatPreferencesKey("tts_pitch")
         val ttsRate = floatPreferencesKey("tts_rate")
         val usePack = booleanPreferencesKey("use_voice_pack")
+        val dayType = stringPreferencesKey("day_type")
+        fun dayConfig(type: DayType) = stringPreferencesKey("day_config_${type.name}")
         fun clip(id: CueId) = stringPreferencesKey("clip_${id.name}")
     }
 
@@ -88,6 +100,8 @@ class SettingsRepository(private val context: Context) {
         batteryHintDismissed = this[Keys.batteryHintDismissed] ?: false,
         programs = this[Keys.programs]?.let(::decodePrograms) ?: IntervalProgram.defaults,
         selectedProgramId = this[Keys.selectedProgram],
+        dayType = this[Keys.dayType]?.let { name -> DayType.entries.firstOrNull { it.name == name } },
+        dayConfigs = DayType.entries.mapNotNull { type -> this[Keys.dayConfig(type)]?.let(::decodeDayConfig)?.let { type to it } }.toMap(),
     )
 
     suspend fun setSensor(address: String, name: String?) = context.dataStore.edit {
@@ -136,6 +150,46 @@ class SettingsRepository(private val context: Context) {
     suspend fun selectProgram(id: String?) = context.dataStore.edit {
         if (id == null) it.remove(Keys.selectedProgram) else it[Keys.selectedProgram] = id
     }
+
+    suspend fun setDayType(type: DayType?) = context.dataStore.edit {
+        if (type == null) it.remove(Keys.dayType) else it[Keys.dayType] = type.name
+    }
+
+    suspend fun setDayConfig(type: DayType, config: DayConfig?) = context.dataStore.edit {
+        if (config == null) it.remove(Keys.dayConfig(type)) else it[Keys.dayConfig(type)] = encodeDayConfig(config)
+    }
+
+    suspend fun replaceVariation(type: DayType, from: String, to: String) = context.dataStore.edit { prefs ->
+        val config = prefs[Keys.dayConfig(type)]?.let(::decodeDayConfig) ?: DayConfig.default(type)
+        val slots = config.slots.map { if (it.variationId == from) it.copy(variationId = to) else it }
+        prefs[Keys.dayConfig(type)] = encodeDayConfig(config.copy(slots = slots))
+    }
+
+    private fun encodeDayConfig(config: DayConfig): String = JSONObject()
+        .put("sets", config.sets)
+        .put("restSets", config.restBetweenSetsSec)
+        .put("restExercises", config.restBetweenExercisesSec)
+        .put(
+            "slots",
+            JSONArray().apply {
+                config.slots.forEach { put(JSONObject().put("ladder", it.ladderId).put("variation", it.variationId)) }
+            },
+        )
+        .toString()
+
+    private fun decodeDayConfig(json: String): DayConfig? = runCatching {
+        val o = JSONObject(json)
+        val slots = o.getJSONArray("slots")
+        DayConfig(
+            slots = List(slots.length()) { i ->
+                val s = slots.getJSONObject(i)
+                Slot(s.getString("ladder"), s.getString("variation"))
+            },
+            sets = o.getInt("sets"),
+            restBetweenSetsSec = o.getInt("restSets"),
+            restBetweenExercisesSec = o.getInt("restExercises"),
+        )
+    }.getOrNull()
 
     suspend fun saveProgram(program: IntervalProgram) = context.dataStore.edit { prefs ->
         val current = prefs[Keys.programs]?.let(::decodePrograms) ?: IntervalProgram.defaults

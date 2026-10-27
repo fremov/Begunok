@@ -1,6 +1,10 @@
 package ru.begunok.workout
 
-enum class IntervalKind { Run, Walk }
+enum class IntervalKind(val label: String) {
+    Warmup("Разминка"),
+    Run("Бег"),
+    Walk("Шаг"),
+}
 
 data class IntervalProgram(
     val id: String,
@@ -8,10 +12,11 @@ data class IntervalProgram(
     val runSec: Int,
     val walkSec: Int,
     val repeats: Int,
+    val warmupSec: Int = 0,
 ) {
     val isContinuous: Boolean get() = walkSec == 0 && repeats == 1
 
-    val totalSec: Int get() = (runSec + walkSec) * repeats
+    val totalSec: Int get() = warmupSec + (runSec + walkSec) * repeats
 
     val description: String
         get() = if (isContinuous) {
@@ -21,7 +26,10 @@ data class IntervalProgram(
         }
 
     fun positionAt(activeSec: Long): IntervalPosition {
-        var start = 0L
+        if (activeSec < warmupSec) {
+            return IntervalPosition(IntervalKind.Warmup, 1, 1, (warmupSec - activeSec).toInt(), segmentIndex = -1)
+        }
+        var start = warmupSec.toLong()
         for (i in 0 until repeats) {
             val runEnd = start + runSec
             if (activeSec < runEnd) {

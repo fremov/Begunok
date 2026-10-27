@@ -28,7 +28,11 @@ import ru.begunok.ui.workout.WorkoutDetailScreen
 import ru.begunok.ui.workout.WorkoutDetailViewModel
 import ru.begunok.AppContainer
 import ru.begunok.ui.history.HistoryScreen
+import ru.begunok.ui.history.AnalyticsViewModel
 import ru.begunok.ui.history.HistoryViewModel
+import ru.begunok.ui.plan.PlanEditorScreen
+import ru.begunok.ui.plan.PlanEditorViewModel
+import ru.begunok.workout.DayType
 import ru.begunok.ui.home.HomeScreen
 import ru.begunok.ui.home.HomeViewModel
 import ru.begunok.ui.sensor.SensorScreen
@@ -99,6 +103,17 @@ fun BegunokNavigation(
                     onStopRequestHandled = onStopRequestHandled,
                     onOpenSensor = { openTab(Tab.Sensor) },
                     onOpenWorkout = { id -> navController.navigate("workout/$id") },
+                    onEditPlan = { type -> navController.navigate("plan/${type.name}") },
+                )
+            }
+            composable(
+                route = "plan/{type}",
+                arguments = listOf(navArgument("type") { type = NavType.StringType }),
+            ) { entry ->
+                val type = DayType.entries.firstOrNull { it.name == entry.arguments?.getString("type") } ?: DayType.Run
+                PlanEditorScreen(
+                    viewModel = viewModel(key = "plan-${type.name}") { PlanEditorViewModel(type, container.settings) },
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable(
@@ -117,6 +132,7 @@ fun BegunokNavigation(
             composable(Tab.History.route) {
                 HistoryScreen(
                     viewModel = viewModel { HistoryViewModel(container.workouts) },
+                    analytics = viewModel { AnalyticsViewModel(container.workouts) },
                     onOpen = { id -> navController.navigate("workout/$id") },
                 )
             }

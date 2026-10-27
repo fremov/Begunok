@@ -1,5 +1,6 @@
 package ru.begunok.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -17,6 +18,8 @@ data class WorkoutEntity(
     val upperLimit: Int,
     val lowerLimit: Int? = null,
     val programName: String? = null,
+    val dayType: String? = null,
+    @ColumnInfo(defaultValue = "0") val programCompleted: Boolean = false,
 )
 
 @Entity(
@@ -61,3 +64,29 @@ data class RrIntervalEntity(
     val time: Long,
     val rrMs: Int,
 )
+
+@Entity(
+    tableName = "exercise_sets",
+    foreignKeys = [
+        ForeignKey(
+            entity = WorkoutEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["workoutId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("workoutId"), Index("exerciseId")],
+)
+data class ExerciseSetEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val workoutId: Long,
+    val time: Long,
+    val exerciseId: String,
+    val exerciseName: String,
+    val setNumber: Int,
+    val reps: Int,
+    val target: Int,
+    val timed: Boolean,
+)
+
+data class ProgramRun(val programName: String?, val programCompleted: Boolean)

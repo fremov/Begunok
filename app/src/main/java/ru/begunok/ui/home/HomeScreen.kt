@@ -56,7 +56,9 @@ import ru.begunok.ui.common.PermissionGate
 import ru.begunok.ui.common.SensorBadge
 import ru.begunok.ui.map.LiveRouteMap
 import ru.begunok.ui.theme.ZoneColors
+import ru.begunok.workout.DayType
 import ru.begunok.workout.HrZone
+import ru.begunok.workout.Stage
 import ru.begunok.workout.WorkoutPhase
 import ru.begunok.workout.WorkoutState
 import ru.begunok.workout.IntervalKind
@@ -69,12 +71,15 @@ fun HomeScreen(
     onStopRequestHandled: () -> Unit,
     onOpenSensor: () -> Unit,
     onOpenWorkout: (Long) -> Unit,
+    onEditPlan: (DayType) -> Unit,
 ) {
     val sensor by viewModel.sensor.collectAsStateWithLifecycle()
     val workout by viewModel.workout.collectAsStateWithLifecycle()
     val settings by viewModel.appSettings.collectAsStateWithLifecycle()
     val recovery by viewModel.recovery.collectAsStateWithLifecycle()
     val summary by viewModel.summary.collectAsStateWithLifecycle()
+    val preview by viewModel.preview.collectAsStateWithLifecycle()
+    val runProgress by viewModel.runProgress.collectAsStateWithLifecycle()
     var confirmStop by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(summary) {
@@ -99,6 +104,13 @@ fun HomeScreen(
             onPause = viewModel::pause,
             onResume = viewModel::resume,
             onStop = { confirmStop = true },
+            onBreak = viewModel::toBreak,
+            onStrength = viewModel::toStrength,
+            onRunResult = viewModel::setRunResult,
+            onSetDone = viewModel::setDone,
+            onStartTimed = viewModel::startTimed,
+            onSkipRest = viewModel::skipRest,
+            onFinish = viewModel::stop,
         )
     } else {
         val gps by viewModel.gps.collectAsStateWithLifecycle()
@@ -106,6 +118,10 @@ fun HomeScreen(
             sensor = sensor,
             gps = gps,
             settings = settings,
+            preview = preview,
+            runProgress = runProgress,
+            onSelectDayType = viewModel::setDayType,
+            onEditPlan = onEditPlan,
             onStart = viewModel::start,
             onOpenSensor = onOpenSensor,
             onChangeUpperLimit = viewModel::setUpperLimit,
@@ -137,6 +153,10 @@ private fun PreStart(
     sensor: SensorState,
     gps: GpsStatus,
     settings: AppSettings,
+    preview: PlanPreview?,
+    runProgress: RunProgress?,
+    onSelectDayType: (DayType?) -> Unit,
+    onEditPlan: (DayType) -> Unit,
     onStart: () -> Unit,
     onOpenSensor: () -> Unit,
     onChangeUpperLimit: (Int) -> Unit,
@@ -157,7 +177,10 @@ private fun PreStart(
         }
         HeartRateBox(sensor.heartRate, settings, paused = false)
         LimitStepper(settings.upperLimit, onChangeUpperLimit)
-        ProgramPicker(settings, onSelectProgram)
+        DayTypePicker(settings.dayType, onSelectDayType)
+        if (settings.dayType != DayType.Strength) ProgramPicker(settings, onSelectProgram)
+        runProgress?.let { RunProgressCard(it) { next -> onSelectProgram(next.id) } }
+        preview?.let { PlanCard(it, settings.selectedProgram) { onEditPlan(it.plan.type) } }
 
         PermissionGate(
             permissions = Permissions.location,
@@ -221,7 +244,7 @@ private fun GpsLine(gps: GpsStatus) {
 }
 
 @Composable
-private fun HeartRateBox(heartRate: Int?, settings: AppSettings, paused: Boolean) {
+private fun HeartRateBox(heartRate: Int?, settings: AppSettings, paused: Boolean, compact: Boolean = false) {
     val zone = heartRate?.let { hrZone(it, settings.upperLimit, settings.lowerLimit) }
     val background = when (zone) {
         HrZone.Below -> ZoneColors.Below
@@ -243,8 +266,8 @@ private fun HeartRateBox(heartRate: Int?, settings: AppSettings, paused: Boolean
             Text(
                 text = Format.heartRate(heartRate),
                 color = content,
-                fontSize = 112.sp,
-                lineHeight = 116.sp,
+                fontSize = if (compact) 64.sp else 112.sp,
+                lineHeight = if (compact) 68.sp else 116.sp,
                 fontWeight = FontWeight.Bold,
             )
             val limits = buildString {
@@ -265,8 +288,17 @@ private fun ActiveWorkout(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onStop: () -> Unit,
+    onBreak: () -> Unit,
+    onStrength: () -> Unit,
+    onRunResult: (Boolean) -> Unit,
+    onSetDone: (Int) -> Unit,
+    onStartTimed: () -> Unit,
+    onSkipRest: () -> Unit,
+    onFinish: () -> Unit,
 ) {
     val paused = state.phase == WorkoutPhase.Paused
+    var confirmBreak by rememberSaveable { mutableStateOf(false) }
+    if (state.stage != Stage.Run) KeepScreenOn()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -275,30 +307,56 @@ private fun ActiveWorkout(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        IntervalBanner(state)
-        HeartRateBox(sensor.heartRate, settings, paused)
-        Row(Modifier.fillMaxWidth()) {
-            Metric("Время", Format.duration(state.activeMs), Modifier.weight(1f), large = true)
-            Metric("Дистанция, км", Format.distanceKm(state.distanceM), Modifier.weight(1f), large = true)
+        when (state.stage) {
+            Stage.Run -> {
+                IntervalBanner(state)
+                HeartRateBox(sensor.heartRate, settings, paused)
+                Row(Modifier.fillMaxWidth()) {
+                    Metric("Время", Format.duration(state.activeMs), Modifier.weight(1f), large = true)
+                    Metric("Дистанция, км", Format.distanceKm(state.distanceM), Modifier.weight(1f), large = true)
+                }
+                Row(Modifier.fillMaxWidth()) {
+                    Metric("Скорость, км/ч", Format.speedKmh(state.speedMps), Modifier.weight(1f))
+                    Metric("Темп, мин/км", Format.pace(state.currentPaceSecPerKm), Modifier.weight(1f))
+                }
+                Row(Modifier.fillMaxWidth()) {
+                    Metric("Ср. темп", Format.pace(state.avgPaceSecPerKm), Modifier.weight(1f))
+                    Metric("Ср. пульс", Format.heartRate(state.avgHr), Modifier.weight(1f))
+                    Metric("Макс. пульс", Format.heartRate(state.maxHr), Modifier.weight(1f))
+                }
+                LiveRouteMap(
+                    route = state.route,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                )
+                if (state.day != null) {
+                    OutlinedButton(onClick = { confirmBreak = true }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Закончить бег и перейти к площадке")
+                    }
+                }
+            }
+            Stage.Break -> {
+                BreakPanel(state, onStrength, onRunResult)
+                HeartRateBox(sensor.heartRate, settings, paused, compact = true)
+                Row(Modifier.fillMaxWidth()) {
+                    Metric("Время", Format.duration(state.activeMs), Modifier.weight(1f))
+                    Metric("Дистанция, км", Format.distanceKm(state.distanceM), Modifier.weight(1f))
+                }
+            }
+            Stage.Strength -> {
+                state.strength?.let { StrengthPanel(it, state.levelUps, onSetDone, onStartTimed, onSkipRest, onFinish) }
+                HeartRateBox(sensor.heartRate, settings, paused, compact = true)
+                Row(Modifier.fillMaxWidth()) {
+                    Metric("Время", Format.duration(state.activeMs), Modifier.weight(1f))
+                    Metric("Ср. пульс", Format.heartRate(state.avgHr), Modifier.weight(1f))
+                    Metric("Макс. пульс", Format.heartRate(state.maxHr), Modifier.weight(1f))
+                }
+            }
         }
-        Row(Modifier.fillMaxWidth()) {
-            Metric("Скорость, км/ч", Format.speedKmh(state.speedMps), Modifier.weight(1f))
-            Metric("Темп, мин/км", Format.pace(state.currentPaceSecPerKm), Modifier.weight(1f))
-        }
-        Row(Modifier.fillMaxWidth()) {
-            Metric("Ср. темп", Format.pace(state.avgPaceSecPerKm), Modifier.weight(1f))
-            Metric("Ср. пульс", Format.heartRate(state.avgHr), Modifier.weight(1f))
-            Metric("Макс. пульс", Format.heartRate(state.maxHr), Modifier.weight(1f))
-        }
-        LiveRouteMap(
-            route = state.route,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-                .clip(RoundedCornerShape(16.dp)),
-        )
         SensorBadge(sensor)
-        GpsLine(state.gps)
+        if (state.stage == Stage.Run) GpsLine(state.gps)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Button(
                 onClick = if (paused) onResume else onPause,
@@ -314,6 +372,21 @@ private fun ActiveWorkout(
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
             ) { Text("Стоп", fontSize = 20.sp) }
         }
+    }
+
+    if (confirmBreak) {
+        AlertDialog(
+            onDismissRequest = { confirmBreak = false },
+            title = { Text("Закончить бег?") },
+            text = { Text("Начнётся перерыв, а потом тренировка на площадке. Вернуться к бегу будет нельзя.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmBreak = false
+                    onBreak()
+                }) { Text("К площадке") }
+            },
+            dismissButton = { TextButton(onClick = { confirmBreak = false }) { Text("Отмена") } },
+        )
     }
 }
 
@@ -380,6 +453,7 @@ private fun ProgramPicker(settings: AppSettings, onSelect: (String?) -> Unit) {
 private fun IntervalBanner(state: WorkoutState) {
     val position = state.interval ?: return
     val (label, color) = when (position.kind) {
+        IntervalKind.Warmup -> "РАЗМИНКА" to Color(0xFF1E88E5)
         IntervalKind.Run -> "БЕГ" to Color(0xFFFC4C02)
         IntervalKind.Walk -> "ШАГ" to Color(0xFF1E88E5)
         null -> "ПРОГРАММА ЗАВЕРШЕНА" to ZoneColors.Normal

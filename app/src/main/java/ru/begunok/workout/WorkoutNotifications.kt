@@ -30,9 +30,14 @@ class WorkoutNotifications(private val context: Context) {
     fun build(state: WorkoutState): Notification {
         val paused = state.phase == WorkoutPhase.Paused
         val interval = state.interval?.takeIf { !it.finished }?.let {
-            "${if (it.kind == IntervalKind.Run) "Бег" else "Шаг"} ${Format.duration(it.remainingSec * 1000L)} (${it.repeat}/${it.repeats}) · "
+            "${it.kind?.label} ${Format.duration(it.remainingSec * 1000L)} (${it.repeat}/${it.repeats}) · "
         }.orEmpty()
-        val title = (if (paused) "Пауза · " else "") + interval + Format.duration(state.activeMs)
+        val stage = when (state.stage) {
+            Stage.Run -> interval
+            Stage.Break -> "Перерыв · "
+            Stage.Strength -> state.strength?.let(::strengthLine).orEmpty()
+        }
+        val title = (if (paused) "Пауза · " else "") + stage + Format.duration(state.activeMs)
         val text = "♥ ${Format.heartRate(state.heartRate)} · ${Format.distanceKm(state.distanceM)} км"
         val toggle = if (paused) {
             NotificationCompat.Action(0, "Продолжить", servicePendingIntent(WorkoutService.ACTION_RESUME))
@@ -66,6 +71,12 @@ class WorkoutNotifications(private val context: Context) {
             .addAction(toggle)
             .addAction(NotificationCompat.Action(0, "Стоп", stop))
             .build()
+    }
+
+    private fun strengthLine(s: StrengthView): String {
+        val exercise = s.exercise ?: return "Готово · "
+        val remaining = s.remainingSec?.let { " ${Format.duration(it * 1000L)}" }.orEmpty()
+        return if (s.resting) "Отдых$remaining · " else "${exercise.name} ${s.set}/${s.sets}$remaining · "
     }
 
     @SuppressLint("MissingPermission")

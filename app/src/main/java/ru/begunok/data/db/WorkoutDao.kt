@@ -40,4 +40,31 @@ interface WorkoutDao {
 
     @Query("SELECT * FROM rr_intervals WHERE workoutId = :workoutId ORDER BY time")
     suspend fun rrIntervals(workoutId: Long): List<RrIntervalEntity>
+
+    @Query("UPDATE workouts SET programCompleted = :completed WHERE id = :id")
+    suspend fun setProgramCompleted(id: Long, completed: Boolean)
+
+    @Query(
+        "SELECT s.* FROM exercise_sets s INNER JOIN workouts w ON w.id = s.workoutId " +
+            "WHERE w.endTime IS NOT NULL ORDER BY s.time"
+    )
+    fun observeAllSets(): Flow<List<ExerciseSetEntity>>
+
+    @Query(
+        "SELECT programName, programCompleted FROM workouts WHERE endTime IS NOT NULL AND programName IS NOT NULL " +
+            "AND (dayType IS NULL OR dayType != 'Strength') ORDER BY startTime DESC LIMIT :limit"
+    )
+    fun observeRecentPrograms(limit: Int): Flow<List<ProgramRun>>
+
+    @Insert
+    suspend fun insertSet(set: ExerciseSetEntity)
+
+    @Query("SELECT * FROM exercise_sets WHERE workoutId = :workoutId ORDER BY time")
+    fun observeSets(workoutId: Long): Flow<List<ExerciseSetEntity>>
+
+    @Query(
+        "SELECT s.* FROM exercise_sets s INNER JOIN workouts w ON w.id = s.workoutId " +
+            "WHERE w.endTime IS NOT NULL AND s.reps > 0 AND s.exerciseId IN (:ids) ORDER BY s.time DESC LIMIT 500"
+    )
+    fun observeRecentSets(ids: List<String>): Flow<List<ExerciseSetEntity>>
 }

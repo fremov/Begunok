@@ -12,9 +12,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -35,10 +40,22 @@ class HistoryViewModel(repository: WorkoutRepository) : ViewModel() {
 }
 
 @Composable
-fun HistoryScreen(viewModel: HistoryViewModel, onOpen: (Long) -> Unit) {
-    val workouts by viewModel.workouts.collectAsStateWithLifecycle()
+fun HistoryScreen(viewModel: HistoryViewModel, analytics: AnalyticsViewModel, onOpen: (Long) -> Unit) {
+    var tab by rememberSaveable { mutableIntStateOf(0) }
     Column(Modifier.fillMaxSize()) {
         Text("История", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(16.dp))
+        PrimaryTabRow(selectedTabIndex = tab) {
+            Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text("Тренировки") })
+            Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text("Аналитика") })
+        }
+        if (tab == 0) WorkoutList(viewModel, onOpen) else AnalyticsScreen(analytics)
+    }
+}
+
+@Composable
+private fun WorkoutList(viewModel: HistoryViewModel, onOpen: (Long) -> Unit) {
+    val workouts by viewModel.workouts.collectAsStateWithLifecycle()
+    Column(Modifier.fillMaxSize()) {
         val list = workouts ?: return@Column
         if (list.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(32.dp), contentAlignment = Alignment.Center) {
@@ -71,7 +88,7 @@ private fun WorkoutRow(workout: WorkoutEntity, onClick: () -> Unit) {
         Column(Modifier.weight(1f)) {
             Text(Format.dateTime(workout.startTime), style = MaterialTheme.typography.titleMedium)
             Text(
-                listOfNotNull(workout.programName, Format.duration(workout.durationMs)).joinToString(" · "),
+                listOfNotNull(Format.workoutTitle(workout), Format.duration(workout.durationMs)).joinToString(" · "),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

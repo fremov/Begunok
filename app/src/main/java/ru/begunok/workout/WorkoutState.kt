@@ -4,6 +4,8 @@ import ru.begunok.location.GpsStatus
 
 enum class WorkoutPhase { Idle, Running, Paused }
 
+enum class Stage { Run, Break, Strength }
+
 data class WorkoutState(
     val phase: WorkoutPhase = WorkoutPhase.Idle,
     val workoutId: Long? = null,
@@ -19,6 +21,12 @@ data class WorkoutState(
     val route: List<LatLon> = emptyList(),
     val programName: String? = null,
     val interval: IntervalPosition? = null,
+    val day: DayType? = null,
+    val stage: Stage = Stage.Run,
+    val stageStartMs: Long = 0,
+    val strength: StrengthView? = null,
+    val runCompleted: Boolean? = null,
+    val levelUps: List<LevelUp> = emptyList(),
     val lastFinished: WorkoutSummary? = null,
 ) {
     val isActive: Boolean get() = phase != WorkoutPhase.Idle

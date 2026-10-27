@@ -1,5 +1,8 @@
 package ru.begunok.alerts
 
+import ru.begunok.workout.DayPlan
+import ru.begunok.workout.DayType
+import ru.begunok.workout.Exercise
 import ru.begunok.workout.HrAlert
 import ru.begunok.workout.IntervalKind
 import ru.begunok.workout.IntervalPosition
@@ -32,6 +35,38 @@ object Cues {
         text = "Программа завершена. Отличная работа!",
     )
 
+    val runFinished = Cue(
+        packKey = "break",
+        beeps = listOf(Beep(660, 150), Beep(880, 150), Beep(1100, 400)),
+        vibration = longArrayOf(0, 300, 150, 300, 150, 600),
+        text = "Бег завершён. Перерыв, затем начинай тренировку на площадке",
+    )
+
+    fun exercise(exercise: Exercise, target: Int, set: Int, sets: Int, circuit: Boolean, firstInRound: Boolean): Cue {
+        val amount = when {
+            exercise.timed -> spokenSpan(target)
+            exercise.perSide -> "$target ${plural(target, "раз", "раза", "раз")} на каждую сторону"
+            else -> "$target ${plural(target, "повтор", "повтора", "повторов")}"
+        }
+        val text = when {
+            circuit && firstInRound -> "Круг $set из $sets. ${exercise.name}, $amount"
+            circuit -> "${exercise.name}, $amount"
+            else -> "${exercise.name}, $amount. Подход $set из $sets"
+        }
+        return Cue(
+            beeps = listOf(Beep(880, 180), Beep(1320, 350)),
+            vibration = longArrayOf(0, 250, 120, 250),
+            text = text,
+        )
+    }
+
+    fun rest(sec: Int, next: Exercise, sameExercise: Boolean): Cue = Cue(
+        packKey = if (sameExercise) "rest_$sec" else null,
+        beeps = listOf(Beep(1100, 180), Beep(660, 450)),
+        vibration = longArrayOf(0, 700),
+        text = if (sameExercise) "Отдых ${spokenSpan(sec)}" else "Отдых ${spokenSpan(sec)}. Далее ${next.name.lowercase()}",
+    )
+
     fun sample(id: CueId): Cue = when (id) {
         CueId.HighHr -> highHeartRate
         CueId.LowHr -> lowHeartRate
@@ -46,6 +81,12 @@ object Cues {
     }
 
     fun interval(position: IntervalPosition, segmentSec: Int, continuous: Boolean): Cue = when (position.kind) {
+        IntervalKind.Warmup -> Cue(
+            packKey = "warmup_$segmentSec",
+            beeps = listOf(Beep(1100, 180), Beep(660, 450)),
+            vibration = longArrayOf(0, 700),
+            text = "Разминка, ${spokenSpan(segmentSec)}. Быстрый шаг",
+        )
         IntervalKind.Run -> Cue(
             id = CueId.Run,
             packKey = if (continuous) "run_$segmentSec" else "run_${segmentSec}_${position.repeat}_of_${position.repeats}",
@@ -72,6 +113,15 @@ object Cues {
             add(highHeartRate)
             add(lowHeartRate)
             add(programFinished)
+            add(runFinished)
+            DayType.entries.map { DayPlan.of(it) }.forEach { plan ->
+                if (plan.warmupSec > 0) {
+                    add(interval(IntervalPosition(IntervalKind.Warmup, 1, 1, plan.warmupSec, -1), plan.warmupSec, false))
+                }
+                plan.jog?.let { add(interval(IntervalPosition(IntervalKind.Run, 1, 1, it.runSec, 0), it.runSec, true)) }
+                val first = plan.strength.exercises.first()
+                if (plan.strength.restBetweenSetsSec > 0) add(rest(plan.strength.restBetweenSetsSec, first, true))
+            }
             for (p in programs) {
                 for (i in 1..p.repeats) {
                     add(interval(IntervalPosition(IntervalKind.Run, i, p.repeats, p.runSec, 0), p.runSec, p.isContinuous))
