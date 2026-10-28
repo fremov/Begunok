@@ -47,6 +47,7 @@ class WorkoutService : LifecycleService() {
     private val hrAlarm = HrAlarm()
     private var settings = AppSettings()
     private var program: IntervalProgram? = null
+    private var programOffsetSec = 0L
     private var lastSegment = Int.MIN_VALUE
     private var lastCountdown = -1
     private var plan: DayPlan? = null
@@ -75,6 +76,8 @@ class WorkoutService : LifecycleService() {
             ACTION_SET_DONE -> setDone(intent.getIntExtra(EXTRA_REPS, 0))
             ACTION_START_TIMED -> strengthAction { s, now -> s.startTimed(now); emptyList() }
             ACTION_SKIP_REST -> strengthAction { s, now -> s.skipRest(now) }
+            ACTION_SKIP_EXERCISE -> strengthAction { s, now -> s.skipExercise(now) }
+            ACTION_SKIP_WARMUP -> skipWarmup()
             ACTION_RUN_RESULT -> setRunResult(intent.getBooleanExtra(EXTRA_COMPLETED, false))
             else -> if (tracker == null) stopSelf()
         }
@@ -96,6 +99,7 @@ class WorkoutService : LifecycleService() {
         pendingRr.clear()
         hrAlarm.reset()
         program = null
+        programOffsetSec = 0
         plan = null
         targets = emptyMap()
         stage = Stage.Run
@@ -159,6 +163,19 @@ class WorkoutService : LifecycleService() {
         t.resume(SystemClock.elapsedRealtime())
         publish(t, container.heartRateMonitor.state.value.heartRate)
     }
+
+    private fun skipWarmup() {
+        val t = tracker ?: return
+        val p = program ?: return
+        if (stage != Stage.Run) return
+        val position = p.positionAt(programSec(t))
+        if (position.kind != IntervalKind.Warmup) return
+        programOffsetSec += position.remainingSec
+        handleAlerts(t, container.heartRateMonitor.state.value.heartRate, SystemClock.elapsedRealtime())
+        publish(t, container.heartRateMonitor.state.value.heartRate)
+    }
+
+    private fun programSec(t: WorkoutTracker): Long = t.activeMs / 1000 + programOffsetSec
 
     private fun toBreak(auto: Boolean) {
         val t = tracker ?: return
@@ -312,7 +329,7 @@ class WorkoutService : LifecycleService() {
         }
         val options = settings.alertOptions()
         val p = program
-        val position = p?.positionAt(t.activeMs / 1000)
+        val position = p?.positionAt(programSec(t))
         if (p != null && position != null) {
             if (position.segmentIndex != lastSegment) {
                 lastSegment = position.segmentIndex
@@ -394,7 +411,7 @@ class WorkoutService : LifecycleService() {
             maxHr = t.maxHr,
             gps = GpsStatus.of(this, fixQuality),
             programName = program?.name,
-            interval = program?.takeIf { stage == Stage.Run }?.positionAt(t.activeMs / 1000),
+            interval = program?.takeIf { stage == Stage.Run }?.positionAt(programSec(t)),
             day = plan?.type,
             stage = stage,
             stageStartMs = stageStartMs,
@@ -443,6 +460,8 @@ class WorkoutService : LifecycleService() {
         const val ACTION_SET_DONE = "ru.begunok.workout.SET_DONE"
         const val ACTION_START_TIMED = "ru.begunok.workout.START_TIMED"
         const val ACTION_SKIP_REST = "ru.begunok.workout.SKIP_REST"
+        const val ACTION_SKIP_EXERCISE = "ru.begunok.workout.SKIP_EXERCISE"
+        const val ACTION_SKIP_WARMUP = "ru.begunok.workout.SKIP_WARMUP"
         private const val ACTION_RUN_RESULT = "ru.begunok.workout.RUN_RESULT"
         private const val EXTRA_REPS = "reps"
         private const val EXTRA_COMPLETED = "completed"

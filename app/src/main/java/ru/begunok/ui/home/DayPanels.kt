@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -305,6 +306,7 @@ internal fun StrengthPanel(
     onDone: (Int) -> Unit,
     onStartTimed: () -> Unit,
     onSkipRest: () -> Unit,
+    onSkipExercise: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val haptics = LocalHapticFeedback.current
@@ -323,7 +325,7 @@ internal fun StrengthPanel(
                 contentKey = { it.stepIndex to it.finished },
                 transitionSpec = { (fadeIn(tween(350)) + scaleIn(initialScale = 0.92f)) togetherWith fadeOut(tween(200)) },
                 label = "step",
-            ) { step -> StepContent(step, levelUps, done, onStartTimed, onSkipRest, onFinish) }
+            ) { step -> StepContent(step, levelUps, done, onStartTimed, onSkipRest, onSkipExercise, onFinish) }
             DoneList(view)
         }
         SuccessFlash(flash)
@@ -337,6 +339,7 @@ private fun StepContent(
     onDone: (Int, Boolean) -> Unit,
     onStartTimed: () -> Unit,
     onSkipRest: () -> Unit,
+    onSkipExercise: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val exercise = view.exercise
@@ -398,6 +401,7 @@ private fun StepContent(
                 }
             }
             WorkButtons(view, exercise, onDone, onStartTimed)
+            SkipExerciseButton(exercise, onSkipExercise)
         }
     }
 }
@@ -465,6 +469,29 @@ private fun WorkButtons(view: StrengthView, exercise: Exercise, onDone: (Int, Bo
 }
 
 @Composable
+private fun SkipExerciseButton(exercise: Exercise, onSkip: () -> Unit) {
+    var confirm by rememberSaveable { mutableStateOf(false) }
+    TextButton(onClick = { confirm = true }, modifier = Modifier.fillMaxWidth()) {
+        Icon(Icons.Filled.SkipNext, contentDescription = null, modifier = Modifier.size(18.dp))
+        Text("  Пропустить упражнение")
+    }
+    if (confirm) {
+        AlertDialog(
+            onDismissRequest = { confirm = false },
+            title = { Text("Пропустить «${exercise.name}»?") },
+            text = { Text("Оставшиеся подходы этого упражнения не будут выполнены. Цель на следующую тренировку не изменится.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirm = false
+                    onSkip()
+                }) { Text("Пропустить") }
+            },
+            dismissButton = { TextButton(onClick = { confirm = false }) { Text("Отмена") } },
+        )
+    }
+}
+
+@Composable
 private fun SuccessFlash(key: Int) {
     if (key == 0) return
     val progress = remember(key) { Animatable(0f) }
@@ -501,26 +528,40 @@ private fun AmountStepper(exercise: Exercise, value: Int, onChange: (Int) -> Uni
 
 @Composable
 private fun DoneList(view: StrengthView) {
-    if (view.done.isEmpty()) return
-    val exercises = view.exercises.associateBy { it.id }
+    if (view.done.isEmpty() && view.skipped.isEmpty()) return
+    val sets = view.done.groupBy { it.exerciseId }
     PanelCard {
         Text("Сделано", style = MaterialTheme.typography.titleMedium)
-        view.done.groupBy { it.exerciseId }.forEach { (id, sets) ->
-            val exercise = exercises[id] ?: return@forEach
-            val ok = sets.all { it.reps >= it.target }
+        view.exercises.filter { it.id in sets || it.id in view.skipped }.forEach { exercise ->
+            val done = sets[exercise.id].orEmpty()
+            val skipped = exercise.id in view.skipped
+            val ok = !skipped && done.all { it.reps >= it.target }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     Modifier
                         .size(22.dp)
                         .clip(CircleShape)
-                        .background(if (ok) ZoneColors.Normal else MaterialTheme.colorScheme.error),
+                        .background(
+                            when {
+                                ok -> ZoneColors.Normal
+                                skipped -> MaterialTheme.colorScheme.outline
+                                else -> MaterialTheme.colorScheme.error
+                            },
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(if (ok) "✓" else "✗", color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    Text(if (ok) "✓" else if (skipped) "–" else "✗", color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.width(10.dp))
                 Text(exercise.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                Text(sets.joinToString(" · ") { exercise.amount(it.reps) }, style = numberStyle(20))
+                Text(done.joinToString(" · ") { exercise.amount(it.reps) }, style = numberStyle(20))
+                if (skipped) {
+                    Text(
+                        if (done.isEmpty()) "пропущено" else " · пропущено",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
     }

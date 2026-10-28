@@ -199,12 +199,12 @@ data class DoneSet(val exerciseId: String, val reps: Int, val target: Int)
 data class LevelUp(val from: Exercise, val to: Exercise)
 
 object Progression {
-    fun nextTarget(exercise: Exercise, lastSession: List<DoneSet>): Int {
+    fun nextTarget(exercise: Exercise, lastSession: List<DoneSet>, plannedSets: Int = 0): Int {
         if (lastSession.isEmpty()) return exercise.startTarget
         val target = lastSession.maxOf { it.target }
         val minDone = lastSession.minOf { it.reps }
         val maxDone = lastSession.maxOf { it.reps }
-        return if (minDone >= target) {
+        return if (minDone >= target && lastSession.size >= plannedSets) {
             maxOf(target + exercise.step, minDone)
         } else {
             maxOf(exercise.step, minOf(target, maxDone))
@@ -212,11 +212,11 @@ object Progression {
     }
 
     fun targets(block: StrengthBlock, lastSessions: Map<String, List<DoneSet>>): Map<String, Int> =
-        block.exercises.associate { it.id to nextTarget(it, lastSessions[it.id].orEmpty()) }
+        block.exercises.associate { it.id to nextTarget(it, lastSessions[it.id].orEmpty(), block.sets) }
 
     fun levelUps(block: StrengthBlock, done: List<DoneSet>): List<LevelUp> = block.exercises.mapNotNull { exercise ->
         val sets = done.filter { it.exerciseId == exercise.id }
-        if (sets.isEmpty() || nextTarget(exercise, sets) <= exercise.maxTarget) return@mapNotNull null
+        if (sets.isEmpty() || nextTarget(exercise, sets, block.sets) <= exercise.maxTarget) return@mapNotNull null
         ExerciseCatalog.next(exercise.variationId)?.let { LevelUp(exercise, it) }
     }
 

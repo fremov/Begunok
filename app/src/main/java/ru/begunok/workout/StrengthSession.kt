@@ -23,6 +23,7 @@ data class StrengthView(
     val nextExercise: Exercise?,
     val done: List<DoneSet>,
     val exercises: List<Exercise>,
+    val skipped: Set<String>,
 ) {
     val finished: Boolean get() = exercise == null
 }
@@ -35,8 +36,10 @@ sealed interface StrengthEvent {
 }
 
 class StrengthSession(val block: StrengthBlock, private val targets: Map<String, Int>) {
-    val steps: List<StrengthStep> = buildSteps(block)
+    var steps: List<StrengthStep> = buildSteps(block)
+        private set
     private val done = mutableListOf<DoneSet>()
+    private val skipped = mutableSetOf<String>()
     private var index = 0
     private var stepStartSec = 0L
     private var timedStartSec: Long? = null
@@ -69,6 +72,19 @@ class StrengthSession(val block: StrengthBlock, private val targets: Map<String,
 
     fun skipRest(nowSec: Long): List<StrengthEvent> =
         if (current?.rest == true) advance(nowSec) else emptyList()
+
+    fun skipExercise(nowSec: Long): List<StrengthEvent> {
+        val step = current?.takeIf { !it.rest } ?: return emptyList()
+        val exerciseIndex = step.exerciseIndex
+        skipped += block.exercises[exerciseIndex].id
+        val remaining = steps.drop(index + 1).filter { !it.rest && it.exerciseIndex != exerciseIndex }
+        val previous = steps.take(index).lastOrNull { !it.rest && it.exerciseIndex != exerciseIndex }
+        val rested = steps.getOrNull(index - 1)?.rest == true
+        val tail = withRests(block, listOfNotNull(previous.takeIf { !rested }) + remaining)
+        steps = steps.take(index + 1) + if (previous != null && !rested) tail.drop(1) else tail
+        timedStartSec = null
+        return advance(nowSec)
+    }
 
     fun tick(nowSec: Long): List<StrengthEvent> {
         val step = current ?: return emptyList()
@@ -111,6 +127,7 @@ class StrengthSession(val block: StrengthBlock, private val targets: Map<String,
             nextExercise = if (step?.rest == true) exercise else next,
             done = done.toList(),
             exercises = block.exercises,
+            skipped = skipped.toSet(),
         )
     }
 
@@ -127,7 +144,8 @@ class StrengthSession(val block: StrengthBlock, private val targets: Map<String,
     private fun workEvent(): StrengthEvent.Work? {
         val step = current?.takeIf { !it.rest } ?: return null
         val exercise = block.exercises[step.exerciseIndex]
-        return StrengthEvent.Work(exercise, target(exercise), step.set, block.sets, block.circuit, step.exerciseIndex == 0)
+        val previous = steps.take(index).lastOrNull { !it.rest }
+        return StrengthEvent.Work(exercise, target(exercise), step.set, block.sets, block.circuit, previous?.set != step.set)
     }
 
     companion object {
@@ -137,7 +155,11 @@ class StrengthSession(val block: StrengthBlock, private val targets: Map<String,
             } else {
                 block.exercises.indices.flatMap { e -> (1..block.sets).map { StrengthStep(false, e, it) } }
             }
-            return buildList {
+            return withRests(block, works)
+        }
+
+        private fun withRests(block: StrengthBlock, works: List<StrengthStep>): List<StrengthStep> =
+            buildList {
                 works.forEachIndexed { i, work ->
                     if (i > 0) {
                         val previous = works[i - 1]
@@ -148,6 +170,5 @@ class StrengthSession(val block: StrengthBlock, private val targets: Map<String,
                     add(work)
                 }
             }
-        }
     }
 }

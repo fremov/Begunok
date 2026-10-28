@@ -134,6 +134,10 @@ class HomeViewModel(
 
     fun skipRest() = WorkoutService.send(appContext, WorkoutService.ACTION_SKIP_REST)
 
+    fun skipExercise() = WorkoutService.send(appContext, WorkoutService.ACTION_SKIP_EXERCISE)
+
+    fun skipWarmup() = WorkoutService.send(appContext, WorkoutService.ACTION_SKIP_WARMUP)
+
     fun setRunResult(completed: Boolean) = WorkoutService.setRunResult(appContext, completed)
 
     fun setDayType(type: DayType?) {

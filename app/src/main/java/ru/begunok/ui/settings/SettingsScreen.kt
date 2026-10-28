@@ -14,11 +14,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
@@ -76,7 +78,10 @@ import ru.begunok.alerts.VoiceOption
 import ru.begunok.alerts.VoicePack
 import ru.begunok.data.AppSettings
 import ru.begunok.data.SettingsRepository
+import ru.begunok.sensor.SensorState
+import ru.begunok.sensor.SensorStatus
 import ru.begunok.ui.common.BatteryOptimizationCard
+import ru.begunok.ui.common.SensorBadge
 import ru.begunok.workout.IntervalKind
 import ru.begunok.workout.IntervalPosition
 import ru.begunok.workout.IntervalProgram
@@ -88,6 +93,7 @@ class SettingsViewModel(
     private val appContext: Context,
     private val repository: SettingsRepository,
     private val voicePack: VoicePack,
+    val sensor: StateFlow<SensorState>,
 ) : ViewModel() {
     val settings: StateFlow<AppSettings> =
         repository.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings())
@@ -223,8 +229,9 @@ class SettingsViewModel(
 }
 
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel) {
+fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val sensor by viewModel.sensor.collectAsStateWithLifecycle()
     val engines by viewModel.engines.collectAsStateWithLifecycle()
     val voices by viewModel.voices.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf<IntervalProgram?>(null) }
@@ -237,6 +244,14 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text("Настройки", style = MaterialTheme.typography.headlineSmall)
+
+        Section("Датчик пульса") {
+            SensorBadge(sensor)
+            OutlinedButton(onClick = onOpenSensor) {
+                Icon(Icons.Filled.Bluetooth, contentDescription = null, modifier = Modifier.size(18.dp))
+                Text(if (sensor.status == SensorStatus.NotSelected) "  Выбрать датчик" else "  Подключение и поиск")
+            }
+        }
 
         Section("Граница пульса") {
             StepperRow("Верхняя граница", settings.upperLimit, viewModel::setUpperLimit)

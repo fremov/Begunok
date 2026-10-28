@@ -25,6 +25,16 @@ class ProgressionTest {
     }
 
     @Test
+    fun fewerSetsThanPlannedKeepTarget() {
+        assertEquals(6, Progression.nextTarget(pullups, sets(6, 6, 6), plannedSets = 3))
+        assertEquals(7, Progression.nextTarget(pullups, sets(6, 6, 6, 6), plannedSets = 3))
+        val block = StrengthBlock("t", listOf(pullups), 3, false, 90, 120)
+        assertEquals(mapOf("p" to 6), Progression.targets(block, mapOf("p" to sets(6, 6, 6))))
+        assertTrue(Progression.levelUps(block, sets(12, 12, 12, 12)).isNotEmpty())
+        assertTrue(Progression.levelUps(block, sets(12, 12, 12)).isEmpty())
+    }
+
+    @Test
     fun doingMoreJumpsToAchieved() {
         assertEquals(9, Progression.nextTarget(pullups, sets(6, 9, 10, 9)))
     }

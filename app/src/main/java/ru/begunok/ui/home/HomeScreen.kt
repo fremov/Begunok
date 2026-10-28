@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -162,6 +163,8 @@ fun HomeScreen(
                         onSetDone = viewModel::setDone,
                         onStartTimed = viewModel::startTimed,
                         onSkipRest = viewModel::skipRest,
+                        onSkipExercise = viewModel::skipExercise,
+                        onSkipWarmup = viewModel::skipWarmup,
                         onFinish = viewModel::stop,
                     )
                 } else {
@@ -423,6 +426,8 @@ private fun ActiveWorkout(
     onSetDone: (Int) -> Unit,
     onStartTimed: () -> Unit,
     onSkipRest: () -> Unit,
+    onSkipExercise: () -> Unit,
+    onSkipWarmup: () -> Unit,
     onFinish: () -> Unit,
 ) {
     val paused = state.phase == WorkoutPhase.Paused
@@ -452,6 +457,12 @@ private fun ActiveWorkout(
                     when (stage) {
                         Stage.Run -> {
                             StageHero(state, settings)
+                            if (state.interval?.kind == IntervalKind.Warmup) {
+                                OutlinedButton(onClick = onSkipWarmup, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                                    Icon(Icons.Filled.SkipNext, contentDescription = null)
+                                    Text("  Пропустить разминку")
+                                }
+                            }
                             HeartHero(sensor.heartRate, settings, paused, compact = true)
                             MetricGrid(
                                 listOf(
@@ -487,7 +498,7 @@ private fun ActiveWorkout(
                             )
                         }
                         Stage.Strength -> {
-                            state.strength?.let { StrengthPanel(it, state.levelUps, onSetDone, onStartTimed, onSkipRest, onFinish) }
+                            state.strength?.let { StrengthPanel(it, state.levelUps, onSetDone, onStartTimed, onSkipRest, onSkipExercise, onFinish) }
                             HeartHero(sensor.heartRate, settings, paused, compact = true)
                             MetricGrid(
                                 listOf(

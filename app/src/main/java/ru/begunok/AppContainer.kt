@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import ru.begunok.alerts.VoicePack
 import ru.begunok.data.SettingsRepository
+import ru.begunok.data.ShowerRepository
 import ru.begunok.data.WorkoutRepository
 import ru.begunok.data.db.AppDatabase
 import ru.begunok.location.LocationClient
@@ -21,5 +22,6 @@ class AppContainer(context: Context) {
     val locationClient = LocationClient(appContext)
     private val database = AppDatabase.create(appContext)
     val workouts = WorkoutRepository(database.workoutDao())
+    val showers = ShowerRepository(database.showerDao())
     val voicePack = VoicePack(appContext)
 }

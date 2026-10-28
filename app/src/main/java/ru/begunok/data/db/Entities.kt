@@ -90,3 +90,12 @@ data class ExerciseSetEntity(
 )
 
 data class ProgramRun(val programName: String?, val programCompleted: Boolean)
+
+@Entity(tableName = "cold_showers")
+data class ColdShowerEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val time: Long,
+    val durationSec: Int,
+    val targetSec: Int,
+    val completed: Boolean,
+)

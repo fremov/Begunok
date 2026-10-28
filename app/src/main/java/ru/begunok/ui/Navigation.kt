@@ -14,10 +14,10 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
-import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Shower
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -57,6 +57,8 @@ import ru.begunok.ui.sensor.SensorScreen
 import ru.begunok.ui.sensor.SensorViewModel
 import ru.begunok.ui.settings.SettingsScreen
 import ru.begunok.ui.settings.SettingsViewModel
+import ru.begunok.ui.shower.ShowerScreen
+import ru.begunok.ui.shower.ShowerViewModel
 import ru.begunok.ui.workout.WorkoutDetailScreen
 import ru.begunok.ui.workout.WorkoutDetailViewModel
 import ru.begunok.workout.DayType
@@ -65,11 +67,12 @@ private enum class Tab(val label: String, val icon: ImageVector) {
     Home("Тренировка", Icons.AutoMirrored.Filled.DirectionsRun),
     History("История", Icons.Filled.History),
     Analytics("Аналитика", Icons.Filled.Insights),
-    Sensor("Датчик", Icons.Filled.Bluetooth),
+    Shower("Душ", Icons.Filled.Shower),
     Settings("Настройки", Icons.Filled.Settings),
 }
 
 private const val TABS = "tabs"
+private const val SENSOR = "sensor"
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -149,7 +152,7 @@ private fun AppNavHost(
                         },
                         stopRequested = stopRequested,
                         onStopRequestHandled = onStopRequestHandled,
-                        onOpenSensor = { openTab(Tab.Sensor) },
+                        onOpenSensor = { navController.navigate(SENSOR) },
                         onOpenWorkout = { id -> navController.navigate("workout/$id?celebrate=true") },
                         onEditPlan = { type -> navController.navigate("plan/${type.name}") },
                     )
@@ -158,14 +161,23 @@ private fun AppNavHost(
                         onOpen = { id -> navController.navigate("workout/$id") },
                     )
                     Tab.Analytics -> AnalyticsScreen(viewModel { AnalyticsViewModel(container.workouts) })
-                    Tab.Sensor -> SensorScreen(
-                        viewModel { SensorViewModel(container.heartRateMonitor, container.bleScanner, container.settings) },
+                    Tab.Shower -> ShowerScreen(
+                        viewModel { ShowerViewModel(container.appContext, container.showers, container.settings, container.voicePack) },
                     )
                     Tab.Settings -> SettingsScreen(
-                        viewModel { SettingsViewModel(container.appContext, container.settings, container.voicePack) },
+                        viewModel {
+                            SettingsViewModel(container.appContext, container.settings, container.voicePack, container.heartRateMonitor.state)
+                        },
+                        onOpenSensor = { navController.navigate(SENSOR) },
                     )
                 }
             }
+        }
+        screen(SENSOR) {
+            SensorScreen(
+                viewModel = viewModel { SensorViewModel(container.heartRateMonitor, container.bleScanner, container.settings) },
+                onBack = { navController.popBackStack() },
+            )
         }
         screen(
             route = "plan/{type}",

@@ -13,10 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -113,7 +117,7 @@ class SensorViewModel(
 }
 
 @Composable
-fun SensorScreen(viewModel: SensorViewModel) {
+fun SensorScreen(viewModel: SensorViewModel, onBack: () -> Unit) {
     val sensor by viewModel.sensor.collectAsStateWithLifecycle()
     val devices by viewModel.devices.collectAsStateWithLifecycle()
     val scanning by viewModel.scanning.collectAsStateWithLifecycle()
@@ -121,13 +125,29 @@ fun SensorScreen(viewModel: SensorViewModel) {
 
     DisposableEffect(Unit) { onDispose { viewModel.stopScan() } }
 
+    Column(Modifier.fillMaxSize()) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(4.dp)) {
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад") }
+            Text("Датчик пульса", style = MaterialTheme.typography.titleLarge)
+        }
+        SensorContent(sensor, devices, scanning, error, viewModel)
+    }
+}
+
+@Composable
+private fun SensorContent(
+    sensor: SensorState,
+    devices: List<FoundDevice>,
+    scanning: Boolean,
+    error: String?,
+    viewModel: SensorViewModel,
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("Датчик", style = MaterialTheme.typography.headlineSmall)
         CurrentSensorCard(sensor, onForget = viewModel::forget)
 
         PermissionGate(

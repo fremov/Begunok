@@ -42,6 +42,23 @@ object Cues {
         text = "Бег завершён. Перерыв, затем начинай тренировку на площадке",
     )
 
+    fun showerStart(sec: Int) = Cue(
+        beeps = listOf(Beep(880, 180), Beep(1320, 350)),
+        vibration = longArrayOf(0, 250, 120, 250),
+        text = "Холодная вода, ${spokenSpan(sec)}. Дыши ровно",
+    )
+
+    val showerHalfMinute = Cue(
+        beeps = listOf(Beep(1100, 150)),
+        text = "Осталось 30 секунд",
+    )
+
+    val showerDone = Cue(
+        beeps = listOf(Beep(660, 150), Beep(880, 150), Beep(1100, 400)),
+        vibration = longArrayOf(0, 300, 150, 300, 150, 600),
+        text = "Готово! Можно выключать холодную воду",
+    )
+
     fun exercise(exercise: Exercise, target: Int, set: Int, sets: Int, circuit: Boolean, firstInRound: Boolean): Cue {
         val amount = when {
             exercise.timed -> spokenSpan(target)

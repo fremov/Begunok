@@ -9,17 +9,19 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import ru.begunok.workout.IntervalProgram
 
 @Database(
-    entities = [WorkoutEntity::class, SampleEntity::class, RrIntervalEntity::class, ExerciseSetEntity::class],
-    version = 4,
+    entities = [WorkoutEntity::class, SampleEntity::class, RrIntervalEntity::class, ExerciseSetEntity::class, ColdShowerEntity::class],
+    version = 5,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun workoutDao(): WorkoutDao
 
+    abstract fun showerDao(): ShowerDao
+
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "begunok.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -52,6 +54,16 @@ abstract class AppDatabase : RoomDatabase() {
                         arrayOf<Any>(p.name, p.totalSec * 1000L),
                     )
                 }
+            }
+        }
+
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `cold_showers` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`time` INTEGER NOT NULL, `durationSec` INTEGER NOT NULL, `targetSec` INTEGER NOT NULL, " +
+                        "`completed` INTEGER NOT NULL)"
+                )
             }
         }
     }
