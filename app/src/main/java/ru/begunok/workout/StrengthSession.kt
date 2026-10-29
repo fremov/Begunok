@@ -78,7 +78,7 @@ class StrengthSession(val block: StrengthBlock, private val targets: Map<String,
         val exerciseIndex = step.exerciseIndex
         skipped += block.exercises[exerciseIndex].id
         val remaining = steps.drop(index + 1).filter { !it.rest && it.exerciseIndex != exerciseIndex }
-        val previous = steps.take(index).lastOrNull { !it.rest && it.exerciseIndex != exerciseIndex }
+        val previous = steps.take(index).lastOrNull { !it.rest && block.exercises[it.exerciseIndex].id !in skipped }
         val rested = steps.getOrNull(index - 1)?.rest == true
         val tail = withRests(block, listOfNotNull(previous.takeIf { !rested }) + remaining)
         steps = steps.take(index + 1) + if (previous != null && !rested) tail.drop(1) else tail

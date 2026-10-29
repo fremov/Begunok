@@ -80,14 +80,12 @@ fun ShowerScreen(viewModel: ShowerViewModel) {
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Column(Modifier.appear(0)) {
-                Text("Холодный душ", style = MaterialTheme.typography.displaySmall)
-                Text(
-                    "в конце обычного душа",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            Text(
+                "Холодная вода в конце обычного душа",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.appear(0),
+            )
             val target = timer?.targetSec ?: overview?.status?.targetSec ?: ShowerProgression.START_SEC
             Box(Modifier.appear(1)) { TimerHero(target, timer) }
             Box(Modifier.appear(2)) {

@@ -19,6 +19,10 @@ data class Exercise(
 
     fun amount(value: Int): String = if (timed) "$value с" else if (perSide) "$value на сторону" else "$value"
 
+    fun short(value: Int): String = if (timed) "$value с" else "$value"
+
+    val sideNote: String? get() = if (perSide) "на каждую сторону" else null
+
     companion object {
         const val TIMED_STEP_SEC = 5
     }

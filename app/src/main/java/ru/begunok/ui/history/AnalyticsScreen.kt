@@ -102,7 +102,6 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text("Аналитика", style = MaterialTheme.typography.displaySmall)
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             Period.entries.forEachIndexed { i, p ->
                 SegmentedButton(

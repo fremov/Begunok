@@ -99,3 +99,34 @@ data class ColdShowerEntity(
     val targetSec: Int,
     val completed: Boolean,
 )
+
+@Entity(tableName = "books")
+data class BookEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val title: String,
+    val author: String? = null,
+    val totalPages: Int,
+    val currentPage: Int = 0,
+    val createdAt: Long,
+    val finishedAt: Long? = null,
+)
+
+@Entity(
+    tableName = "reading_entries",
+    foreignKeys = [
+        ForeignKey(
+            entity = BookEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["bookId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index("bookId")],
+)
+data class ReadingEntryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val bookId: Long,
+    val time: Long,
+    val fromPage: Int,
+    val toPage: Int,
+)

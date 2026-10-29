@@ -82,7 +82,10 @@ import ru.begunok.workout.buildRouteSegments
 import ru.begunok.workout.gpsCoverage
 import ru.begunok.workout.paceSecPerKm
 import ru.begunok.workout.timeAboveFraction
+import ru.begunok.health.HealthRepository
+import ru.begunok.health.HealthTotals
 import java.io.File
+import java.time.Instant
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -95,12 +98,14 @@ data class WorkoutDetail(
     val timeAbove: Double?,
     val gpsCoverage: Double?,
     val sets: List<ExerciseSetEntity>,
+    val band: HealthTotals? = null,
 )
 
 class WorkoutDetailViewModel(
     private val workoutId: Long,
     private val repository: WorkoutRepository,
     private val appContext: Context,
+    private val health: HealthRepository,
 ) : ViewModel() {
     val detail: StateFlow<WorkoutDetail?> = repository.observeWorkout(workoutId)
         .filterNotNull()
@@ -114,9 +119,17 @@ class WorkoutDetailViewModel(
                 timeAbove = timeAboveFraction(samples, workout.upperLimit),
                 gpsCoverage = gpsCoverage(samples),
                 sets = sets,
+                band = bandTotals(workout),
             )
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    private suspend fun bandTotals(workout: WorkoutEntity): HealthTotals? {
+        val end = workout.endTime ?: return null
+        val granted = health.granted().takeIf { it.isNotEmpty() } ?: return null
+        return health.totals(Instant.ofEpochMilli(workout.startTime), Instant.ofEpochMilli(end), granted)
+            .takeIf { !it.isEmpty }
+    }
 
     suspend fun exportGpx(): Uri? = withContext(Dispatchers.IO) {
         val workout = detail.value?.workout ?: return@withContext null
@@ -302,6 +315,8 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
 
         if (d.sets.isNotEmpty()) DetailCard("Площадка", Modifier.appear(6)) { ExerciseSets(d.sets) }
 
+        d.band?.let { band -> DetailCard("Браслет · Health Connect", Modifier.appear(7)) { BandStats(band, d.workout) } }
+
         d.gpsCoverage?.let {
             Text(
                 "GPS: точные координаты в ${(it * 100).roundToInt()}% времени тренировки",
@@ -321,6 +336,30 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
             shape = RoundedCornerShape(30.dp),
         ) { Text("На главную", style = MaterialTheme.typography.titleMedium) }
         Spacer(Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun BandStats(band: HealthTotals, workout: WorkoutEntity) {
+    val cadence = if (workout.dayType == null) HealthRepository.cadence(band.steps, workout.durationMs) else null
+    val items = listOfNotNull(
+        band.steps?.let { "Шаги" to it.toString() },
+        cadence?.let { "Каденс, шаг/мин" to it.toString() },
+        band.activeKcal?.let { "Активные ккал" to it.roundToInt().toString() },
+        band.avgHr?.let { "Пульс ср. / макс." to "$it / ${band.maxHr ?: "—"}" },
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        items.chunked(2).forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                row.forEach { (label, value) -> StatCard(label, value, Modifier.weight(1f)) }
+                if (row.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
+        Text(
+            "За время тренировки по данным, которые браслет передал в Health Connect.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

@@ -1,7 +1,6 @@
 package ru.begunok.shower
 
-import java.time.Instant
-import java.time.LocalDate
+import ru.begunok.habit.Streaks
 import java.time.ZoneId
 
 data class ShowerSession(val time: Long, val durationSec: Int, val targetSec: Int, val completed: Boolean)
@@ -30,17 +29,8 @@ object ShowerProgression {
     fun weekSec(recent: List<ShowerSession>, nowMs: Long): Int =
         recent.filter { nowMs - it.time < WEEK_MS }.sumOf { it.durationSec }
 
-    fun dayStreak(recent: List<ShowerSession>, nowMs: Long, zone: ZoneId = ZoneId.systemDefault()): Int {
-        val days = recent.map { Instant.ofEpochMilli(it.time).atZone(zone).toLocalDate() }.toSet()
-        val today = Instant.ofEpochMilli(nowMs).atZone(zone).toLocalDate()
-        var day: LocalDate = if (today in days) today else today.minusDays(1)
-        var count = 0
-        while (day in days) {
-            count++
-            day = day.minusDays(1)
-        }
-        return count
-    }
+    fun dayStreak(recent: List<ShowerSession>, nowMs: Long, zone: ZoneId = ZoneId.systemDefault()): Int =
+        Streaks.consecutiveDays(recent.map { Streaks.dayOf(it.time, zone) }.toSet(), Streaks.dayOf(nowMs, zone))
 
     private const val WEEK_MS = 7 * 24 * 60 * 60_000L
 }

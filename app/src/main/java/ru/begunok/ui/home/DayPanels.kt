@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -173,9 +174,15 @@ private fun ExerciseLine(exercise: Exercise, target: Int, sets: Int?) {
             .padding(horizontal = 14.dp, vertical = 10.dp),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(exercise.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+            Column(Modifier.weight(1f)) {
+                Text(exercise.name, style = MaterialTheme.typography.titleMedium)
+                exercise.sideNote?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Spacer(Modifier.width(8.dp))
             Text(
-                if (sets == null) exercise.amount(target) else "$sets × ${exercise.amount(target)}",
+                if (sets == null) exercise.short(target) else "$sets × ${exercise.short(target)}",
                 style = numberStyle(22),
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -192,7 +199,7 @@ private fun ExerciseLine(exercise: Exercise, target: Int, sets: Int?) {
                 modifier = Modifier.weight(1f),
             )
             Text(
-                "до ${exercise.amount(exercise.maxTarget)}",
+                "до ${exercise.short(exercise.maxTarget)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -388,7 +395,12 @@ private fun StepContent(
         } else {
             Hero(StageColors.Work) {
                 HeroTitle(exercise.name.uppercase(), progress)
-                Text(exercise.hint, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.85f))
+                Text(
+                    exercise.hint,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.85f),
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 if (exercise.timed && view.timedRunning) {
                     RingTimer(
                         progress = (view.remainingSec ?: 0).toFloat() / view.target.coerceAtLeast(1),
@@ -397,7 +409,10 @@ private fun StepContent(
                         modifier = Modifier.size(200.dp),
                     ) { Text(Format.duration((view.remainingSec ?: 0) * 1000L), style = numberStyle(56), color = Color.White) }
                 } else {
-                    Text(exercise.amount(view.target), style = numberStyle(88), color = Color.White)
+                    Text(exercise.short(view.target), style = numberStyle(88), color = Color.White)
+                    exercise.sideNote?.let {
+                        Text(it, style = MaterialTheme.typography.titleMedium, color = Color.White.copy(alpha = 0.9f))
+                    }
                 }
             }
             WorkButtons(view, exercise, onDone, onStartTimed)
@@ -553,13 +568,20 @@ private fun DoneList(view: StrengthView) {
                     Text(if (ok) "✓" else if (skipped) "–" else "✗", color = Color.White, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.width(10.dp))
-                Text(exercise.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                Text(done.joinToString(" · ") { exercise.amount(it.reps) }, style = numberStyle(20))
-                if (skipped) {
+                Column(Modifier.weight(1f)) {
+                    Text(exercise.name, style = MaterialTheme.typography.bodyLarge)
+                    val note = listOfNotNull(exercise.sideNote, "пропущено".takeIf { skipped }).joinToString(" · ")
+                    if (note.isNotEmpty()) {
+                        Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                if (done.isNotEmpty()) {
+                    Spacer(Modifier.width(8.dp))
                     Text(
-                        if (done.isEmpty()) "пропущено" else " · пропущено",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        done.joinToString(" · ") { exercise.short(it.reps) },
+                        style = numberStyle(20),
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.widthIn(max = 168.dp),
                     )
                 }
             }

@@ -9,8 +9,11 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import ru.begunok.workout.IntervalProgram
 
 @Database(
-    entities = [WorkoutEntity::class, SampleEntity::class, RrIntervalEntity::class, ExerciseSetEntity::class, ColdShowerEntity::class],
-    version = 5,
+    entities = [
+        WorkoutEntity::class, SampleEntity::class, RrIntervalEntity::class, ExerciseSetEntity::class, ColdShowerEntity::class,
+        BookEntity::class, ReadingEntryEntity::class,
+    ],
+    version = 6,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -18,10 +21,12 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun showerDao(): ShowerDao
 
+    abstract fun readingDao(): ReadingDao
+
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "begunok.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -64,6 +69,23 @@ abstract class AppDatabase : RoomDatabase() {
                         "`time` INTEGER NOT NULL, `durationSec` INTEGER NOT NULL, `targetSec` INTEGER NOT NULL, " +
                         "`completed` INTEGER NOT NULL)"
                 )
+            }
+        }
+
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `books` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`title` TEXT NOT NULL, `author` TEXT, `totalPages` INTEGER NOT NULL, " +
+                        "`currentPage` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `finishedAt` INTEGER)"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `reading_entries` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`bookId` INTEGER NOT NULL, `time` INTEGER NOT NULL, `fromPage` INTEGER NOT NULL, " +
+                        "`toPage` INTEGER NOT NULL, " +
+                        "FOREIGN KEY(`bookId`) REFERENCES `books`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_reading_entries_bookId` ON `reading_entries` (`bookId`)")
             }
         }
     }

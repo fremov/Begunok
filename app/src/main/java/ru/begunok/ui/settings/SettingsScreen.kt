@@ -243,8 +243,6 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text("Настройки", style = MaterialTheme.typography.headlineSmall)
-
         Section("Датчик пульса") {
             SensorBadge(sensor)
             OutlinedButton(onClick = onOpenSensor) {

@@ -121,6 +121,16 @@ class StrengthSessionTest {
     }
 
     @Test
+    fun skippingTwoExercisesInARowDoesNotAddRest() {
+        val block = StrengthBlock("t", listOf(a, b, c), sets = 2, circuit = false, restBetweenSetsSec = 60, restBetweenExercisesSec = 90)
+        val session = StrengthSession(block, emptyMap())
+        session.begin(0)
+        assertEquals(StrengthEvent.Work(b, 5, 1, 2, false, false), session.skipExercise(0).single())
+        assertEquals(StrengthEvent.Work(c, 5, 1, 2, false, false), session.skipExercise(0).single())
+        assertEquals(setOf("a", "b"), session.view(0).skipped)
+    }
+
+    @Test
     fun skippingEverythingFinishes() {
         val block = StrengthBlock("t", listOf(a), sets = 3, circuit = false, restBetweenSetsSec = 60, restBetweenExercisesSec = 90)
         val session = StrengthSession(block, emptyMap())

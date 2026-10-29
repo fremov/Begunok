@@ -16,6 +16,7 @@ import org.json.JSONObject
 import ru.begunok.alerts.AlertOptions
 import ru.begunok.alerts.CueId
 import ru.begunok.alerts.VoiceSettings
+import ru.begunok.reading.ReadingStats
 import ru.begunok.workout.DayConfig
 import ru.begunok.workout.DayPlan
 import ru.begunok.workout.DayType
@@ -40,6 +41,7 @@ data class AppSettings(
     val selectedProgramId: String? = null,
     val dayType: DayType? = null,
     val dayConfigs: Map<DayType, DayConfig> = emptyMap(),
+    val readingGoal: Int = ReadingStats.DEFAULT_GOAL,
 ) {
     val selectedProgram: IntervalProgram? get() = programs.firstOrNull { it.id == selectedProgramId }
 
@@ -73,6 +75,7 @@ class SettingsRepository(private val context: Context) {
         val ttsRate = floatPreferencesKey("tts_rate")
         val usePack = booleanPreferencesKey("use_voice_pack")
         val dayType = stringPreferencesKey("day_type")
+        val readingGoal = intPreferencesKey("reading_goal")
         fun dayConfig(type: DayType) = stringPreferencesKey("day_config_${type.name}")
         fun clip(id: CueId) = stringPreferencesKey("clip_${id.name}")
     }
@@ -101,6 +104,7 @@ class SettingsRepository(private val context: Context) {
         programs = this[Keys.programs]?.let(::decodePrograms) ?: IntervalProgram.defaults,
         selectedProgramId = this[Keys.selectedProgram],
         dayType = this[Keys.dayType]?.let { name -> DayType.entries.firstOrNull { it.name == name } },
+        readingGoal = this[Keys.readingGoal] ?: ReadingStats.DEFAULT_GOAL,
         dayConfigs = DayType.entries.mapNotNull { type -> this[Keys.dayConfig(type)]?.let(::decodeDayConfig)?.let { type to it } }.toMap(),
     )
 
@@ -150,6 +154,8 @@ class SettingsRepository(private val context: Context) {
     suspend fun selectProgram(id: String?) = context.dataStore.edit {
         if (id == null) it.remove(Keys.selectedProgram) else it[Keys.selectedProgram] = id
     }
+
+    suspend fun setReadingGoal(pages: Int) = context.dataStore.edit { it[Keys.readingGoal] = pages }
 
     suspend fun setDayType(type: DayType?) = context.dataStore.edit {
         if (type == null) it.remove(Keys.dayType) else it[Keys.dayType] = type.name

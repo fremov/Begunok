@@ -82,7 +82,6 @@ fun HistoryScreen(viewModel: HistoryViewModel, onOpen: (Long) -> Unit) {
     ) {
         item(key = "title") {
             Column(Modifier.padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("История", style = MaterialTheme.typography.displaySmall)
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     Grouping.entries.forEachIndexed { i, g ->
                         SegmentedButton(
