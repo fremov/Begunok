@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonitorHeart
+import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Shower
 import androidx.compose.material3.DrawerState
@@ -85,6 +86,8 @@ import ru.begunok.ui.settings.SettingsScreen
 import ru.begunok.ui.settings.SettingsViewModel
 import ru.begunok.ui.shower.ShowerScreen
 import ru.begunok.ui.shower.ShowerViewModel
+import ru.begunok.ui.weight.WeightScreen
+import ru.begunok.ui.weight.WeightViewModel
 import ru.begunok.ui.workout.WorkoutDetailScreen
 import ru.begunok.ui.workout.WorkoutDetailViewModel
 import ru.begunok.workout.DayType
@@ -104,6 +107,7 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
     Shower("Холодный душ", Icons.Filled.Shower, Group.Habits),
     Reading("Чтение", Icons.AutoMirrored.Filled.MenuBook, Group.Habits),
     Health("Браслет и показатели", Icons.Filled.MonitorHeart, Group.Health),
+    Weight("Вес", Icons.Filled.MonitorWeight, Group.Health),
     Settings("Настройки", Icons.Filled.Settings, Group.App),
 }
 
@@ -177,7 +181,7 @@ private fun DrawerContent(current: Section, onSelect: (Section) -> Unit) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 12.dp, vertical = 16.dp),
         ) {
-            Text("Бегунок", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(horizontal = 16.dp))
+            Text("MyLife", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(horizontal = 16.dp))
             Text(
                 "бег, тренировки и привычки",
                 style = MaterialTheme.typography.bodyMedium,
@@ -317,6 +321,7 @@ private fun SectionContent(
         )
         Section.Reading -> ReadingScreen(viewModel { ReadingViewModel(container.reading, container.settings) })
         Section.Health -> HealthScreen(viewModel { HealthViewModel(container.health) })
+        Section.Weight -> WeightScreen(viewModel { WeightViewModel(container.weight, container.settings) })
         Section.Settings -> SettingsScreen(
             viewModel {
                 SettingsViewModel(container.appContext, container.settings, container.voicePack, container.heartRateMonitor.state)

@@ -8,6 +8,7 @@ import ru.begunok.alerts.VoicePack
 import ru.begunok.data.ReadingRepository
 import ru.begunok.data.SettingsRepository
 import ru.begunok.data.ShowerRepository
+import ru.begunok.data.WeightRepository
 import ru.begunok.data.WorkoutRepository
 import ru.begunok.data.db.AppDatabase
 import ru.begunok.health.HealthRepository
@@ -26,6 +27,7 @@ class AppContainer(context: Context) {
     val workouts = WorkoutRepository(database.workoutDao())
     val showers = ShowerRepository(database.showerDao())
     val reading = ReadingRepository(database.readingDao())
+    val weight = WeightRepository(database.weightDao())
     val health = HealthRepository(appContext)
     val voicePack = VoicePack(appContext)
 }

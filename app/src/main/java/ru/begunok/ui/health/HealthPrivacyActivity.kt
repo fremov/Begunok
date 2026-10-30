@@ -35,14 +35,14 @@ class HealthPrivacyActivity : ComponentActivity() {
                     ) {
                         Text("Данные о здоровье", style = MaterialTheme.typography.headlineMedium)
                         Text(
-                            "Бегунок читает из Health Connect шаги, пульс, насыщение крови кислородом, сон, " +
+                            "MyLife читает из Health Connect шаги, пульс, насыщение крови кислородом, сон, " +
                                 "сожжённые калории и тренировки, которые туда записывают другие приложения, " +
                                 "например Mi Fitness с браслета.",
                             style = MaterialTheme.typography.bodyLarge,
                         )
                         Text(
                             "Данные используются только для показа на экранах приложения: сводка за день " +
-                                "и шаги, каденс и калории для ваших тренировок. Бегунок ничего не записывает " +
+                                "и шаги, каденс и калории для ваших тренировок. MyLife ничего не записывает " +
                                 "в Health Connect, не отправляет данные в интернет и не передаёт их третьим лицам.",
                             style = MaterialTheme.typography.bodyLarge,
                         )

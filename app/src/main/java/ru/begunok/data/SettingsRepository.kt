@@ -3,9 +3,11 @@ package ru.begunok.data
 import android.content.Context
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
@@ -17,11 +19,13 @@ import ru.begunok.alerts.AlertOptions
 import ru.begunok.alerts.CueId
 import ru.begunok.alerts.VoiceSettings
 import ru.begunok.reading.ReadingStats
+import ru.begunok.weight.WeightGoal
 import ru.begunok.workout.DayConfig
 import ru.begunok.workout.DayPlan
 import ru.begunok.workout.DayType
 import ru.begunok.workout.Slot
 import ru.begunok.workout.IntervalProgram
+import java.time.LocalDate
 
 private val Context.dataStore by preferencesDataStore("settings")
 
@@ -42,6 +46,7 @@ data class AppSettings(
     val dayType: DayType? = null,
     val dayConfigs: Map<DayType, DayConfig> = emptyMap(),
     val readingGoal: Int = ReadingStats.DEFAULT_GOAL,
+    val weightGoal: WeightGoal? = null,
 ) {
     val selectedProgram: IntervalProgram? get() = programs.firstOrNull { it.id == selectedProgramId }
 
@@ -76,6 +81,9 @@ class SettingsRepository(private val context: Context) {
         val usePack = booleanPreferencesKey("use_voice_pack")
         val dayType = stringPreferencesKey("day_type")
         val readingGoal = intPreferencesKey("reading_goal")
+        val weightTarget = doublePreferencesKey("weight_target")
+        val weightStart = doublePreferencesKey("weight_start")
+        val weightDeadline = longPreferencesKey("weight_deadline")
         fun dayConfig(type: DayType) = stringPreferencesKey("day_config_${type.name}")
         fun clip(id: CueId) = stringPreferencesKey("clip_${id.name}")
     }
@@ -105,6 +113,9 @@ class SettingsRepository(private val context: Context) {
         selectedProgramId = this[Keys.selectedProgram],
         dayType = this[Keys.dayType]?.let { name -> DayType.entries.firstOrNull { it.name == name } },
         readingGoal = this[Keys.readingGoal] ?: ReadingStats.DEFAULT_GOAL,
+        weightGoal = this[Keys.weightTarget]?.let { target ->
+            WeightGoal(target, this[Keys.weightStart] ?: target, this[Keys.weightDeadline]?.let(LocalDate::ofEpochDay))
+        },
         dayConfigs = DayType.entries.mapNotNull { type -> this[Keys.dayConfig(type)]?.let(::decodeDayConfig)?.let { type to it } }.toMap(),
     )
 
@@ -156,6 +167,18 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setReadingGoal(pages: Int) = context.dataStore.edit { it[Keys.readingGoal] = pages }
+
+    suspend fun setWeightGoal(goal: WeightGoal?) = context.dataStore.edit {
+        if (goal == null) {
+            it.remove(Keys.weightTarget)
+            it.remove(Keys.weightStart)
+            it.remove(Keys.weightDeadline)
+        } else {
+            it[Keys.weightTarget] = goal.targetKg
+            it[Keys.weightStart] = goal.startKg
+            if (goal.deadline == null) it.remove(Keys.weightDeadline) else it[Keys.weightDeadline] = goal.deadline.toEpochDay()
+        }
+    }
 
     suspend fun setDayType(type: DayType?) = context.dataStore.edit {
         if (type == null) it.remove(Keys.dayType) else it[Keys.dayType] = type.name

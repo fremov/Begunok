@@ -11,9 +11,9 @@ import ru.begunok.workout.IntervalProgram
 @Database(
     entities = [
         WorkoutEntity::class, SampleEntity::class, RrIntervalEntity::class, ExerciseSetEntity::class, ColdShowerEntity::class,
-        BookEntity::class, ReadingEntryEntity::class,
+        BookEntity::class, ReadingEntryEntity::class, WeightEntryEntity::class,
     ],
-    version = 6,
+    version = 7,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -23,10 +23,12 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun readingDao(): ReadingDao
 
+    abstract fun weightDao(): WeightDao
+
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "begunok.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                 .build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -86,6 +88,16 @@ abstract class AppDatabase : RoomDatabase() {
                         "FOREIGN KEY(`bookId`) REFERENCES `books`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_reading_entries_bookId` ON `reading_entries` (`bookId`)")
+            }
+        }
+
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `weight_entries` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`day` INTEGER NOT NULL, `time` INTEGER NOT NULL, `kg` REAL NOT NULL)"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_weight_entries_day` ON `weight_entries` (`day`)")
             }
         }
     }

@@ -130,3 +130,11 @@ data class ReadingEntryEntity(
     val fromPage: Int,
     val toPage: Int,
 )
+
+@Entity(tableName = "weight_entries", indices = [Index("day", unique = true)])
+data class WeightEntryEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val day: Long,
+    val time: Long,
+    val kg: Double,
+)

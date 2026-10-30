@@ -137,7 +137,7 @@ private fun StatusCard(ui: HealthUi, total: Int, onRequest: () -> Unit, onInstal
             ui.granted.isEmpty() -> {
                 Text(
                     "Разрешите Бегунку читать шаги, пульс, SpO2, сон, калории и тренировки. " +
-                        "Бегунок только читает данные и ничего не записывает.",
+                        "MyLife только читает данные и ничего не записывает.",
                     color = white,
                 )
                 Button(onClick = onRequest) { Text("Разрешить доступ") }
