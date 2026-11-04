@@ -12,6 +12,14 @@ import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import ru.begunok.BegunokApp
 import ru.begunok.ui.theme.BegunokTheme
+import ru.begunok.ui.theme.isDark
+import android.graphics.Color
+import androidx.activity.SystemBarStyle
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     private var stopRequested by mutableStateOf(false)
@@ -27,11 +35,22 @@ class MainActivity : ComponentActivity() {
                 .start()
         }
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         handleIntent(intent)
         val container = (application as BegunokApp).container
+        // Тема читается до первого кадра, иначе при светлой теме на мгновение мелькнёт тёмная.
+        val initial = runBlocking { container.settings.settings.first() }
         setContent {
-            BegunokTheme {
+            val settings by container.settings.settings.collectAsState(initial = initial)
+            val dark = isDark(settings.themeMode)
+            DisposableEffect(dark) {
+                // Значки строки состояния и навигации — под выбранную тему, а не под системную.
+                enableEdgeToEdge(
+                    statusBarStyle = if (dark) SystemBarStyle.dark(Color.TRANSPARENT) else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+                    navigationBarStyle = if (dark) SystemBarStyle.dark(Color.TRANSPARENT) else SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
+                )
+                onDispose {}
+            }
+            BegunokTheme(settings.themeMode) {
                 BegunokNavigation(
                     container = container,
                     stopRequested = stopRequested,

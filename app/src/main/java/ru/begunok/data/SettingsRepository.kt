@@ -29,6 +29,13 @@ import java.time.LocalDate
 
 private val Context.dataStore by preferencesDataStore("settings")
 
+/** Тема оформления: как в системе, всегда светлая или всегда тёмная. */
+enum class ThemeMode(val label: String) {
+    System("Системная"),
+    Light("Светлая"),
+    Dark("Тёмная"),
+}
+
 data class SavedSensor(val address: String, val name: String?)
 
 data class AppSettings(
@@ -47,6 +54,7 @@ data class AppSettings(
     val dayConfigs: Map<DayType, DayConfig> = emptyMap(),
     val readingGoal: Int = ReadingStats.DEFAULT_GOAL,
     val weightGoal: WeightGoal? = null,
+    val themeMode: ThemeMode = ThemeMode.System,
 ) {
     val selectedProgram: IntervalProgram? get() = programs.firstOrNull { it.id == selectedProgramId }
 
@@ -84,6 +92,7 @@ class SettingsRepository(private val context: Context) {
         val weightTarget = doublePreferencesKey("weight_target")
         val weightStart = doublePreferencesKey("weight_start")
         val weightDeadline = longPreferencesKey("weight_deadline")
+        val themeMode = stringPreferencesKey("theme_mode")
         fun dayConfig(type: DayType) = stringPreferencesKey("day_config_${type.name}")
         fun clip(id: CueId) = stringPreferencesKey("clip_${id.name}")
     }
@@ -113,6 +122,7 @@ class SettingsRepository(private val context: Context) {
         selectedProgramId = this[Keys.selectedProgram],
         dayType = this[Keys.dayType]?.let { name -> DayType.entries.firstOrNull { it.name == name } },
         readingGoal = this[Keys.readingGoal] ?: ReadingStats.DEFAULT_GOAL,
+        themeMode = this[Keys.themeMode]?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } } ?: ThemeMode.System,
         weightGoal = this[Keys.weightTarget]?.let { target ->
             WeightGoal(target, this[Keys.weightStart] ?: target, this[Keys.weightDeadline]?.let(LocalDate::ofEpochDay))
         },
@@ -165,6 +175,8 @@ class SettingsRepository(private val context: Context) {
     suspend fun selectProgram(id: String?) = context.dataStore.edit {
         if (id == null) it.remove(Keys.selectedProgram) else it[Keys.selectedProgram] = id
     }
+
+    suspend fun setThemeMode(mode: ThemeMode) = context.dataStore.edit { it[Keys.themeMode] = mode.name }
 
     suspend fun setReadingGoal(pages: Int) = context.dataStore.edit { it[Keys.readingGoal] = pages }
 

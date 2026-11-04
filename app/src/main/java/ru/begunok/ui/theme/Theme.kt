@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.begunok.R
+import ru.begunok.data.ThemeMode
 
 object ZoneColors {
     val Below = Color(0xFF3D8BFF)
@@ -139,11 +140,18 @@ private val shapes = Shapes(
     extraLarge = RoundedCornerShape(36.dp),
 )
 
+@Composable
+fun isDark(mode: ThemeMode): Boolean = when (mode) {
+    ThemeMode.System -> isSystemInDarkTheme()
+    ThemeMode.Light -> false
+    ThemeMode.Dark -> true
+}
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun BegunokTheme(content: @Composable () -> Unit) {
+fun BegunokTheme(mode: ThemeMode = ThemeMode.System, content: @Composable () -> Unit) {
     MaterialExpressiveTheme(
-        colorScheme = if (isSystemInDarkTheme()) darkColors else lightColors,
+        colorScheme = if (isDark(mode)) darkColors else lightColors,
         motionScheme = MotionScheme.expressive(),
         typography = typography,
         shapes = shapes,

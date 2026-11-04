@@ -77,6 +77,10 @@ import ru.begunok.alerts.Cues
 import ru.begunok.alerts.VoiceOption
 import ru.begunok.alerts.VoicePack
 import ru.begunok.data.AppSettings
+import ru.begunok.data.ThemeMode
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import ru.begunok.data.SettingsRepository
 import ru.begunok.sensor.SensorState
 import ru.begunok.sensor.SensorStatus
@@ -148,6 +152,8 @@ class SettingsViewModel(
     fun setVibration(value: Boolean) = launch { repository.setVibration(value) }
     fun setVoice(value: Boolean) = launch { repository.setVoice(value) }
     fun setSound(value: Boolean) = launch { repository.setSound(value) }
+
+    fun setThemeMode(value: ThemeMode) = launch { repository.setThemeMode(value) }
     fun saveProgram(program: IntervalProgram) = launch { repository.saveProgram(program) }
     fun deleteProgram(id: String) = launch { repository.deleteProgram(id) }
     fun resetPrograms() = launch { repository.resetPrograms() }
@@ -243,6 +249,19 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        Section("Тема") {
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                ThemeMode.entries.forEachIndexed { i, mode ->
+                    SegmentedButton(
+                        selected = settings.themeMode == mode,
+                        onClick = { viewModel.setThemeMode(mode) },
+                        shape = SegmentedButtonDefaults.itemShape(i, ThemeMode.entries.size),
+                        icon = {},
+                    ) { Text(mode.label) }
+                }
+            }
+        }
+
         Section("Датчик пульса") {
             SensorBadge(sensor)
             OutlinedButton(onClick = onOpenSensor) {
