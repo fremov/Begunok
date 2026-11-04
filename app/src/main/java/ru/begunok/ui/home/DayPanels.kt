@@ -30,7 +30,10 @@ import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -314,6 +317,7 @@ internal fun StrengthPanel(
     onStartTimed: () -> Unit,
     onSkipRest: () -> Unit,
     onSkipExercise: () -> Unit,
+    onReplaceExercise: (String) -> Unit,
     onFinish: () -> Unit,
 ) {
     val haptics = LocalHapticFeedback.current
@@ -332,7 +336,7 @@ internal fun StrengthPanel(
                 contentKey = { it.stepIndex to it.finished },
                 transitionSpec = { (fadeIn(tween(350)) + scaleIn(initialScale = 0.92f)) togetherWith fadeOut(tween(200)) },
                 label = "step",
-            ) { step -> StepContent(step, levelUps, done, onStartTimed, onSkipRest, onSkipExercise, onFinish) }
+            ) { step -> StepContent(step, levelUps, done, onStartTimed, onSkipRest, onSkipExercise, onReplaceExercise, onFinish) }
             DoneList(view)
         }
         SuccessFlash(flash)
@@ -347,6 +351,7 @@ private fun StepContent(
     onStartTimed: () -> Unit,
     onSkipRest: () -> Unit,
     onSkipExercise: () -> Unit,
+    onReplaceExercise: (String) -> Unit,
     onFinish: () -> Unit,
 ) {
     val exercise = view.exercise
@@ -416,6 +421,7 @@ private fun StepContent(
                 }
             }
             WorkButtons(view, exercise, onDone, onStartTimed)
+            ReplaceExerciseButton(view, exercise, onReplaceExercise)
             SkipExerciseButton(exercise, onSkipExercise)
         }
     }
@@ -480,6 +486,57 @@ private fun WorkButtons(view: StrengthView, exercise: Exercise, onDone: (Int, Bo
                 }
             }
         }
+    }
+}
+
+/** Замена на другую ступень той же лесенки — на сегодня, прогресс по заменённому не меняется. */
+@Composable
+private fun ReplaceExerciseButton(view: StrengthView, exercise: Exercise, onReplace: (String) -> Unit) {
+    var open by rememberSaveable { mutableStateOf(false) }
+    val ladder = ExerciseCatalog.ladderOf(exercise.variationId) ?: return
+    val taken = view.exercises.map { it.variationId }.toSet()
+    val options = ladder.variations.filter { it.id == exercise.variationId || it.id !in taken }
+    if (options.size < 2) return
+    TextButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth()) {
+        Icon(Icons.Filled.SwapHoriz, contentDescription = null, modifier = Modifier.size(18.dp))
+        Text("  Заменить упражнение")
+    }
+    if (open) {
+        val currentIndex = ladder.variations.indexOfFirst { it.id == exercise.variationId }
+        AlertDialog(
+            onDismissRequest = { open = false },
+            title = { Text("Заменить «${exercise.name}»") },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        "Лесенка «${ladder.name}». Замена только на эту тренировку: цель берётся из вашего прогресса по выбранной ступени.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    options.forEach { option ->
+                        val index = ladder.variations.indexOf(option)
+                        val mark = when {
+                            option.id == exercise.variationId -> "сейчас"
+                            index < currentIndex -> "легче"
+                            else -> "сложнее"
+                        }
+                        TextButton(
+                            onClick = {
+                                open = false
+                                onReplace(option.id)
+                            },
+                            enabled = option.id != exercise.variationId,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(Modifier.fillMaxWidth()) {
+                                Text("${option.name} · $mark")
+                                Text(option.hint, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { open = false }) { Text("Отмена") } },
+        )
     }
 }
 

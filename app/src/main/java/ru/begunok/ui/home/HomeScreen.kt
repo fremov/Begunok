@@ -164,6 +164,7 @@ fun HomeScreen(
                         onStartTimed = viewModel::startTimed,
                         onSkipRest = viewModel::skipRest,
                         onSkipExercise = viewModel::skipExercise,
+                        onReplaceExercise = viewModel::replaceExercise,
                         onSkipWarmup = viewModel::skipWarmup,
                         onFinish = viewModel::stop,
                     )
@@ -427,6 +428,7 @@ private fun ActiveWorkout(
     onStartTimed: () -> Unit,
     onSkipRest: () -> Unit,
     onSkipExercise: () -> Unit,
+    onReplaceExercise: (String) -> Unit,
     onSkipWarmup: () -> Unit,
     onFinish: () -> Unit,
 ) {
@@ -498,7 +500,7 @@ private fun ActiveWorkout(
                             )
                         }
                         Stage.Strength -> {
-                            state.strength?.let { StrengthPanel(it, state.levelUps, onSetDone, onStartTimed, onSkipRest, onSkipExercise, onFinish) }
+                            state.strength?.let { StrengthPanel(it, state.levelUps, onSetDone, onStartTimed, onSkipRest, onSkipExercise, onReplaceExercise, onFinish) }
                             HeartHero(sensor.heartRate, settings, paused, compact = true)
                             MetricGrid(
                                 listOf(

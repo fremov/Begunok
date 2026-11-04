@@ -78,6 +78,7 @@ class WorkoutService : LifecycleService() {
             ACTION_SKIP_REST -> strengthAction { s, now -> s.skipRest(now) }
             ACTION_SKIP_EXERCISE -> strengthAction { s, now -> s.skipExercise(now) }
             ACTION_SKIP_WARMUP -> skipWarmup()
+            ACTION_REPLACE_EXERCISE -> replaceExercise(intent.getStringExtra(EXTRA_VARIATION))
             ACTION_RUN_RESULT -> setRunResult(intent.getBooleanExtra(EXTRA_COMPLETED, false))
             else -> if (tracker == null) stopSelf()
         }
@@ -204,6 +205,20 @@ class WorkoutService : LifecycleService() {
 
     private fun setDone(reps: Int) = strengthAction { s, now ->
         s.completeSet(s.timedElapsed(now) ?: reps, now)
+    }
+
+    /** Замена текущего упражнения другой ступенью лесенки (только на эту тренировку). */
+    private fun replaceExercise(variationId: String?) {
+        val p = plan ?: return
+        val base = variationId?.let(ExerciseCatalog::variation) ?: return
+        val newId = DayPlan.key(p.type, base.id)
+        val exercise = base.copy(id = newId, variationId = base.id)
+        lifecycleScope.launch {
+            // Цель — из прошлых тренировок по этой ступени, как при обычном старте.
+            val last = container.workouts.observeLastSessions(listOf(newId)).first()
+            val target = Progression.nextTarget(exercise, last[newId].orEmpty(), p.strength.sets)
+            strengthAction { s, now -> s.replaceExercise(base, target, now) }
+        }
     }
 
     private fun strengthAction(action: (StrengthSession, Long) -> List<StrengthEvent>) {
@@ -462,6 +477,8 @@ class WorkoutService : LifecycleService() {
         const val ACTION_SKIP_REST = "ru.begunok.workout.SKIP_REST"
         const val ACTION_SKIP_EXERCISE = "ru.begunok.workout.SKIP_EXERCISE"
         const val ACTION_SKIP_WARMUP = "ru.begunok.workout.SKIP_WARMUP"
+        private const val ACTION_REPLACE_EXERCISE = "ru.begunok.workout.REPLACE_EXERCISE"
+        private const val EXTRA_VARIATION = "variation"
         private const val ACTION_RUN_RESULT = "ru.begunok.workout.RUN_RESULT"
         private const val EXTRA_REPS = "reps"
         private const val EXTRA_COMPLETED = "completed"
@@ -483,6 +500,10 @@ class WorkoutService : LifecycleService() {
 
         fun setRunResult(context: Context, completed: Boolean) {
             context.startService(intent(context, ACTION_RUN_RESULT).putExtra(EXTRA_COMPLETED, completed))
+        }
+
+        fun replaceExercise(context: Context, variationId: String) {
+            context.startService(intent(context, ACTION_REPLACE_EXERCISE).putExtra(EXTRA_VARIATION, variationId))
         }
 
         fun setDone(context: Context, reps: Int) {

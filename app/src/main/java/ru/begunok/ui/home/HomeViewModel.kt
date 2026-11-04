@@ -136,6 +136,8 @@ class HomeViewModel(
 
     fun skipExercise() = WorkoutService.send(appContext, WorkoutService.ACTION_SKIP_EXERCISE)
 
+    fun replaceExercise(variationId: String) = WorkoutService.replaceExercise(appContext, variationId)
+
     fun skipWarmup() = WorkoutService.send(appContext, WorkoutService.ACTION_SKIP_WARMUP)
 
     fun setRunResult(completed: Boolean) = WorkoutService.setRunResult(appContext, completed)

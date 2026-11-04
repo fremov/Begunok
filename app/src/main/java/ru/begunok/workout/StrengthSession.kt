@@ -35,7 +35,11 @@ sealed interface StrengthEvent {
     data object Finished : StrengthEvent
 }
 
-class StrengthSession(val block: StrengthBlock, private val targets: Map<String, Int>) {
+class StrengthSession(block: StrengthBlock, targets: Map<String, Int>) {
+    var block: StrengthBlock = block
+        private set
+    private val targets: MutableMap<String, Int> = targets.toMutableMap()
+
     var steps: List<StrengthStep> = buildSteps(block)
         private set
     private val done = mutableListOf<DoneSet>()
@@ -84,6 +88,23 @@ class StrengthSession(val block: StrengthBlock, private val targets: Map<String,
         steps = steps.take(index + 1) + if (previous != null && !rested) tail.drop(1) else tail
         timedStartSec = null
         return advance(nowSec)
+    }
+
+    /**
+     * Заменяет текущее упражнение другой ступенью той же лесенки на сегодня: остальные подходы
+     * (в круге — остальные круги) идут по новому упражнению. Уже сделанные подходы остаются за прежним.
+     */
+    fun replaceExercise(variation: Exercise, target: Int, nowSec: Long): List<StrengthEvent> {
+        val step = current?.takeIf { !it.rest } ?: return emptyList()
+        val old = block.exercises[step.exerciseIndex]
+        val newId = if (':' in old.id) old.id.substringBefore(':') + ":" + variation.id else variation.id
+        if (variation.id == old.variationId || block.exercises.any { it.id == newId }) return emptyList()
+        val replacement = variation.copy(id = newId, variationId = variation.id)
+        block = block.copy(exercises = block.exercises.toMutableList().also { it[step.exerciseIndex] = replacement })
+        targets[newId] = target
+        timedStartSec = null
+        stepStartSec = nowSec
+        return listOfNotNull(workEvent())
     }
 
     fun tick(nowSec: Long): List<StrengthEvent> {
