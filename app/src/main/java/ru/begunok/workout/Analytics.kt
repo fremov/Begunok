@@ -15,6 +15,30 @@ enum class Period(val label: String, val weeks: Int?) {
     All("Всё время", null),
 }
 
+/** Какие тренировки показывать: все, беговые (и просто бег) или силовые. */
+enum class WorkoutKind(val label: String) {
+    All("Все"),
+    Run("Бег"),
+    Strength("Силовой"),
+    ;
+
+    /** План на неделю: 3 беговых и 2 силовых, всего 5. */
+    val weekPlan: Int get() = when (this) {
+        All -> Analytics.WEEK_PLAN
+        Run -> Analytics.RUN_PLAN
+        Strength -> Analytics.STRENGTH_PLAN
+    }
+
+    fun includes(w: WorkoutEntity): Boolean = when (this) {
+        All -> true
+        Run -> w.dayType != DayType.Strength.name
+        Strength -> w.dayType == DayType.Strength.name
+    }
+}
+
+/** Километры считаются только в беге: в силовой день GPS пишет шаги между снарядами. */
+fun WorkoutEntity.countsDistance(): Boolean = dayType != DayType.Strength.name
+
 data class WeekStat(val start: LocalDate, val workouts: Int, val distanceM: Double)
 
 data class RunPoint(
@@ -65,7 +89,9 @@ data class Analytics(
     val exercises: List<ExerciseStat>,
 ) {
     companion object {
-        const val WEEK_PLAN = 5
+        const val RUN_PLAN = 3
+        const val STRENGTH_PLAN = 2
+        const val WEEK_PLAN = RUN_PLAN + STRENGTH_PLAN
         const val MAX_WEEKS = 26
         const val MIN_WEEKS = 4
         const val MIN_RUN_M = 500.0
@@ -77,28 +103,30 @@ data class Analytics(
             today: LocalDate,
             zone: ZoneId = ZoneId.systemDefault(),
             period: Period = Period.All,
+            kind: WorkoutKind = WorkoutKind.All,
         ): Analytics {
             fun dateOf(millis: Long) = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
             val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val firstDate = workouts.minOfOrNull { dateOf(it.startTime) }
+            val scoped = workouts.filter { kind.includes(it) }
+            val firstDate = scoped.minOfOrNull { dateOf(it.startTime) }
             val weeksCount = period.weeks ?: firstDate
                 ?.let { (ChronoUnit.WEEKS.between(it.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)), weekStart) + 1).toInt() }
                 ?.coerceIn(MIN_WEEKS, MAX_WEEKS)
                 ?: MIN_WEEKS
             val from = weekStart.minusWeeks((weeksCount - 1).toLong())
-            val inPeriod = workouts.filter { !dateOf(it.startTime).isBefore(from) }
+            val inPeriod = scoped.filter { !dateOf(it.startTime).isBefore(from) }
             val periodIds = inPeriod.map { it.id }.toSet()
 
-            fun inWeek(start: LocalDate) = workouts.filter { w ->
+            fun inWeek(start: LocalDate) = scoped.filter { w ->
                 dateOf(w.startTime).let { !it.isBefore(start) && it.isBefore(start.plusWeeks(1)) }
             }
             val weeks = (weeksCount - 1 downTo 0).map { i ->
                 val start = weekStart.minusWeeks(i.toLong())
                 val list = inWeek(start)
-                WeekStat(start, list.size, list.sumOf { it.distanceM })
+                WeekStat(start, list.size, list.filter { it.countsDistance() }.sumOf { it.distanceM })
             }
             val allRuns = workouts
-                .filter { it.distanceM >= MIN_RUN_M }
+                .filter { it.distanceM >= MIN_RUN_M && it.countsDistance() }
                 .sortedBy { it.startTime }
                 .map {
                     RunPoint(
@@ -111,10 +139,10 @@ data class Analytics(
             return Analytics(
                 total = inPeriod.size,
                 thisWeek = weeks.last().workouts,
-                weekPlan = WEEK_PLAN,
-                totalDistanceM = inPeriod.sumOf { it.distanceM },
+                weekPlan = kind.weekPlan,
+                totalDistanceM = inPeriod.filter { it.countsDistance() }.sumOf { it.distanceM },
                 totalTimeMs = inPeriod.sumOf { it.durationMs },
-                daysSinceLast = workouts.maxOfOrNull { it.startTime }?.let { ChronoUnit.DAYS.between(dateOf(it), today).toInt() },
+                daysSinceLast = scoped.maxOfOrNull { it.startTime }?.let { ChronoUnit.DAYS.between(dateOf(it), today).toInt() },
                 weeks = weeks,
                 runs = runs,
                 currentWeek = summary(allRuns.filter { r -> dateOf(r.time).let { !it.isBefore(weekStart) } }),

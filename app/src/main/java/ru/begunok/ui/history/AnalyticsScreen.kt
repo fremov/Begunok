@@ -55,6 +55,7 @@ import ru.begunok.workout.Analytics
 import ru.begunok.workout.ExerciseCatalog
 import ru.begunok.workout.ExerciseStat
 import ru.begunok.workout.Period
+import ru.begunok.workout.WorkoutKind
 import ru.begunok.workout.RunPoint
 import ru.begunok.workout.WeekSummary
 import java.text.SimpleDateFormat
@@ -70,15 +71,22 @@ class AnalyticsViewModel(repository: WorkoutRepository) : ViewModel() {
     private val _period = MutableStateFlow(Period.Month)
     val period: StateFlow<Period> = _period.asStateFlow()
 
+    private val _kind = MutableStateFlow(WorkoutKind.All)
+    val kind: StateFlow<WorkoutKind> = _kind.asStateFlow()
+
     val analytics: StateFlow<Analytics?> =
-        combine(repository.observeFinished(), repository.observeAllSets(), _period) { workouts, sets, period ->
-            Analytics.build(workouts, sets, LocalDate.now(), period = period)
+        combine(repository.observeFinished(), repository.observeAllSets(), _period, _kind) { workouts, sets, period, kind ->
+            Analytics.build(workouts, sets, LocalDate.now(), period = period, kind = kind)
         }
             .flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     fun setPeriod(value: Period) {
         _period.value = value
+    }
+
+    fun setKind(value: WorkoutKind) {
+        _kind.value = value
     }
 }
 
@@ -94,6 +102,7 @@ private fun km(meters: Double) = String.format(ru, "%.1f", meters / 1000)
 fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
     val analytics by viewModel.analytics.collectAsStateWithLifecycle()
     val period by viewModel.period.collectAsStateWithLifecycle()
+    val kind by viewModel.kind.collectAsStateWithLifecycle()
     val a = analytics ?: return
     Column(
         Modifier
@@ -112,6 +121,16 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
                 ) { Text(p.label) }
             }
         }
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            WorkoutKind.entries.forEachIndexed { i, k ->
+                SegmentedButton(
+                    selected = k == kind,
+                    onClick = { viewModel.setKind(k) },
+                    shape = SegmentedButtonDefaults.itemShape(i, WorkoutKind.entries.size),
+                    icon = {},
+                ) { Text(k.label) }
+            }
+        }
         if (a.total == 0 && a.daysSinceLast == null) {
             Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
                 Text("Аналитика появится после первой тренировки", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -123,7 +142,11 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
             Tile("${a.total}", "тренировок", Modifier.weight(1f))
         }
         Row(Modifier.fillMaxWidth().appear(1), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Tile(km(a.totalDistanceM), "км за период", Modifier.weight(1f), StageColors.Run)
+            if (kind == WorkoutKind.Strength) {
+                Tile("${a.exercises.size}", "упражнений", Modifier.weight(1f), StageColors.Work)
+            } else {
+                Tile(km(a.totalDistanceM), "км за период", Modifier.weight(1f), StageColors.Run)
+            }
             Tile(Format.duration(a.totalTimeMs), "время", Modifier.weight(1f))
         }
         a.daysSinceLast?.let { days ->
@@ -139,7 +162,7 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
             )
         }
 
-        WeekCompare(a.currentWeek, a.previousWeek, Modifier.appear(2))
+        if (kind != WorkoutKind.Strength) WeekCompare(a.currentWeek, a.previousWeek, Modifier.appear(2))
 
         Section("Тренировки по неделям", "столбец — неделя с понедельника, пунктир — план ${a.weekPlan} в неделю", Modifier.appear(3)) {
             BarChart(
@@ -151,7 +174,7 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
                 goal = ChartRule(a.weekPlan.toFloat(), "план", StageColors.Done),
             )
         }
-        Section("Километры по неделям", "сумма дистанции всех тренировок за неделю", Modifier.appear(4)) {
+        if (kind != WorkoutKind.Strength) Section("Километры по неделям", "бег и беговые дни; силовые километры не считаются", Modifier.appear(4)) {
             BarChart(
                 values = a.weeks.map { (it.distanceM / 1000).toFloat() },
                 labels = a.weeks.map { it.start.format(dayMonth) },
