@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Shower
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
@@ -76,6 +77,8 @@ import ru.begunok.ui.history.HistoryScreen
 import ru.begunok.ui.history.HistoryViewModel
 import ru.begunok.ui.home.HomeScreen
 import ru.begunok.ui.home.HomeViewModel
+import ru.begunok.ui.lol.LolScreen
+import ru.begunok.ui.lol.LolViewModel
 import ru.begunok.ui.plan.PlanEditorScreen
 import ru.begunok.ui.plan.PlanEditorViewModel
 import ru.begunok.ui.reading.ReadingScreen
@@ -97,6 +100,7 @@ private enum class Group(val label: String?) {
     Training("Тренировки"),
     Habits("Привычки"),
     Health("Здоровье"),
+    Games("Игры"),
     App(null),
 }
 
@@ -108,6 +112,7 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
     Reading("Чтение", Icons.AutoMirrored.Filled.MenuBook, Group.Habits),
     Health("Браслет и показатели", Icons.Filled.MonitorHeart, Group.Health),
     Weight("Вес", Icons.Filled.MonitorWeight, Group.Health),
+    Lol("League of Legends", Icons.Filled.SportsEsports, Group.Games),
     Settings("Настройки", Icons.Filled.Settings, Group.App),
 }
 
@@ -322,6 +327,7 @@ private fun SectionContent(
         Section.Reading -> ReadingScreen(viewModel { ReadingViewModel(container.reading, container.settings) })
         Section.Health -> HealthScreen(viewModel { HealthViewModel(container.health) })
         Section.Weight -> WeightScreen(viewModel { WeightViewModel(container.weight, container.settings) })
+        Section.Lol -> LolScreen(viewModel { LolViewModel(container.lolSettings) })
         Section.Settings -> SettingsScreen(
             viewModel {
                 SettingsViewModel(container.appContext, container.settings, container.voicePack, container.heartRateMonitor.state)

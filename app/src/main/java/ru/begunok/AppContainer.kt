@@ -13,6 +13,7 @@ import ru.begunok.data.WorkoutRepository
 import ru.begunok.data.db.AppDatabase
 import ru.begunok.health.HealthRepository
 import ru.begunok.location.LocationClient
+import ru.begunok.lol.LolSettings
 import ru.begunok.sensor.BleScanner
 import ru.begunok.sensor.HeartRateMonitor
 
@@ -30,4 +31,5 @@ class AppContainer(context: Context) {
     val weight = WeightRepository(database.weightDao())
     val health = HealthRepository(appContext)
     val voicePack = VoicePack(appContext)
+    val lolSettings = LolSettings(appContext)
 }

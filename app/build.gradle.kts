@@ -10,6 +10,10 @@ val signingProps = Properties().apply {
     rootProject.file("keystore.properties").takeIf { it.isFile }?.inputStream()?.use { load(it) }
 }
 
+val localProps = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.isFile }?.reader(Charsets.UTF_8)?.use { load(it) }
+}
+
 fun signingValue(name: String): String? = System.getenv(name) ?: signingProps.getProperty(name)
 
 android {
@@ -22,6 +26,14 @@ android {
         targetSdk = 35
         versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
         versionName = System.getenv("VERSION_NAME")?.removePrefix("v") ?: "0.1"
+        // Подключение к серверу Sintence по умолчанию — из local.properties (в git не попадает):
+        //   lol.server=https://адрес   lol.me=Имя#TAG
+        fun quoted(key: String): String {
+            val raw = signingProps.getProperty(key) ?: localProps.getProperty(key) ?: ""
+            return "\"" + raw.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+        }
+        buildConfigField("String", "LOL_SERVER_DEFAULT", quoted("lol.server"))
+        buildConfigField("String", "LOL_ME_DEFAULT", quoted("lol.me"))
     }
 
     signingConfigs {
@@ -53,6 +65,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -81,6 +94,10 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.osmdroid)
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network)
     implementation(libs.health.connect)
     testImplementation(libs.junit)
+    // В юнит-тестах JVM org.json из Android — заглушка; настоящая нужна для разбора ответов Riot.
+    testImplementation("org.json:json:20240303")
 }
