@@ -35,21 +35,32 @@ class LolSettings(private val context: Context) {
     private val demoKey = booleanPreferencesKey("demo")
 
     val prefs: Flow<LolPrefs> = context.lolStore.data.map { p ->
+        val storedServer = p[serverKey]
+        val server = effectiveServer(storedServer)
         LolPrefs(
-            serverUrl = p[serverKey] ?: BuildConfig.LOL_SERVER_DEFAULT,
-            token = p[tokenKey].orEmpty(),
+            serverUrl = server,
+            token = if (needsMigration(storedServer)) "" else p[tokenKey].orEmpty(),
             myRiotId = p[meKey] ?: BuildConfig.LOL_ME_DEFAULT,
             favorites = decodeFavorites(p[favKey].orEmpty()),
             demo = p[demoKey] ?: false,
         )
     }
 
-    suspend fun current(): LolPrefs = prefs.first()
+    suspend fun current(): LolPrefs {
+        // На уже установленной версии адрес сохранён в DataStore и не берётся
+        // повторно из BuildConfig. Переносим старый IP перед первым запросом.
+        context.lolStore.edit {
+            if (needsMigration(it[serverKey])) {
+                it[serverKey] = BuildConfig.LOL_SERVER_DEFAULT
+                it[tokenKey] = ""
+            }
+        }
+        return prefs.first()
+    }
 
     suspend fun setServer(url: String) = context.lolStore.edit {
         val clean = url.trim().trimEnd('/')
-        // Новый адрес — новый сервер, прежний токен ему не подойдёт.
-        if (clean != (it[serverKey] ?: BuildConfig.LOL_SERVER_DEFAULT)) it[tokenKey] = ""
+        if (needsMigration(it[serverKey]) || clean != effectiveServer(it[serverKey])) it[tokenKey] = ""
         it[serverKey] = clean
     }
 
@@ -66,7 +77,18 @@ class LolSettings(private val context: Context) {
         it[favKey] = encodeFavorites(decodeFavorites(it[favKey].orEmpty()).filterNot { f -> f.riotId.equals(riotId, true) })
     }
 
+    private fun effectiveServer(stored: String?): String =
+        if (needsMigration(stored)) BuildConfig.LOL_SERVER_DEFAULT else stored.orEmpty()
+
+    private fun needsMigration(server: String?): Boolean =
+        server.isNullOrBlank() || isLegacyServer(server)
+
+    private fun isLegacyServer(server: String?): Boolean =
+        server?.trim()?.trimEnd('/') == LEGACY_SERVER
+
     companion object {
+        private const val LEGACY_SERVER = "https://159.194.254.149"
+
         fun encodeFavorites(list: List<Favorite>): String =
             JSONArray(list.map { JSONObject().put("riotId", it.riotId).put("puuid", it.puuid) }).toString()
 
@@ -76,3 +98,4 @@ class LolSettings(private val context: Context) {
         }.getOrDefault(emptyList())
     }
 }
+
