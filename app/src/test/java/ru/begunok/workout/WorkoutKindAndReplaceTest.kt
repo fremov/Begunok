@@ -87,6 +87,18 @@ class WorkoutKindAndReplaceTest {
     }
 
     @Test
+    fun replaceWithExerciseFromAnotherLadder() {
+        // Дождь: отжимания от пола заменяем приседаниями из другой лесенки.
+        val s = session()
+        s.begin(0)
+        s.replaceExercise(ExerciseCatalog.variation("squats")!!, 15, 5)
+        val v = s.view(5)
+        assertEquals("Strength:squats", v.exercise!!.id)
+        assertEquals(15, v.target)
+        assertEquals("Strength:dips", v.exercises[1].id)
+    }
+
+    @Test
     fun replaceRejectsSameOrPresentVariation() {
         val s = session()
         s.begin(0)

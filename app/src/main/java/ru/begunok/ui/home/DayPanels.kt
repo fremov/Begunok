@@ -489,47 +489,60 @@ private fun WorkButtons(view: StrengthView, exercise: Exercise, onDone: (Int, Bo
     }
 }
 
-/** Замена на другую ступень той же лесенки — на сегодня, прогресс по заменённому не меняется. */
+/**
+ * Замена текущего упражнения любым другим из каталога — на сегодня (например, в дождь вместо
+ * отжиманий от пола). Прогресс по заменённому не меняется, по новому считается отдельно.
+ */
 @Composable
 private fun ReplaceExerciseButton(view: StrengthView, exercise: Exercise, onReplace: (String) -> Unit) {
     var open by rememberSaveable { mutableStateOf(false) }
-    val ladder = ExerciseCatalog.ladderOf(exercise.variationId) ?: return
+    val own = ExerciseCatalog.ladderOf(exercise.variationId)
     val taken = view.exercises.map { it.variationId }.toSet()
-    val options = ladder.variations.filter { it.id == exercise.variationId || it.id !in taken }
-    if (options.size < 2) return
+    // Своя лесенка первой, остальные следом; упражнения, которые уже есть в тренировке, не предлагаем.
+    val ladders = ExerciseCatalog.ladders.sortedByDescending { it.id == own?.id }
+        .map { ladder -> ladder to ladder.variations.filter { it.id !in taken } }
+        .filter { it.second.isNotEmpty() }
+    if (ladders.isEmpty()) return
     TextButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth()) {
         Icon(Icons.Filled.SwapHoriz, contentDescription = null, modifier = Modifier.size(18.dp))
         Text("  Заменить упражнение")
     }
     if (open) {
-        val currentIndex = ladder.variations.indexOfFirst { it.id == exercise.variationId }
+        val currentIndex = own?.variations?.indexOfFirst { it.id == exercise.variationId } ?: -1
         AlertDialog(
             onDismissRequest = { open = false },
             title = { Text("Заменить «${exercise.name}»") },
             text = {
-                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        "Лесенка «${ladder.name}». Замена только на эту тренировку: цель берётся из вашего прогресса по выбранной ступени.",
+                        "Замена только на эту тренировку. Цель берётся из вашего прогресса по выбранному упражнению, " +
+                            "а прогресс по заменённому не меняется.",
                         style = MaterialTheme.typography.bodySmall,
                     )
-                    options.forEach { option ->
-                        val index = ladder.variations.indexOf(option)
-                        val mark = when {
-                            option.id == exercise.variationId -> "сейчас"
-                            index < currentIndex -> "легче"
-                            else -> "сложнее"
-                        }
-                        TextButton(
-                            onClick = {
-                                open = false
-                                onReplace(option.id)
-                            },
-                            enabled = option.id != exercise.variationId,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Column(Modifier.fillMaxWidth()) {
-                                Text("${option.name} · $mark")
-                                Text(option.hint, style = MaterialTheme.typography.bodySmall)
+                    ladders.forEach { (ladder, variations) ->
+                        Text(
+                            ladder.name + if (ladder.id == own?.id) " · та же лесенка" else "",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(top = 10.dp),
+                        )
+                        variations.forEach { option ->
+                            val mark = if (ladder.id == own?.id) {
+                                if (ladder.variations.indexOf(option) < currentIndex) " · легче" else " · сложнее"
+                            } else {
+                                ""
+                            }
+                            TextButton(
+                                onClick = {
+                                    open = false
+                                    onReplace(option.id)
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Column(Modifier.fillMaxWidth()) {
+                                    Text(option.name + mark)
+                                    Text(option.hint, style = MaterialTheme.typography.bodySmall)
+                                }
                             }
                         }
                     }
