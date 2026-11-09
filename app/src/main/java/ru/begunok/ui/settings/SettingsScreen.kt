@@ -152,6 +152,8 @@ class SettingsViewModel(
     fun setVibration(value: Boolean) = launch { repository.setVibration(value) }
     fun setVoice(value: Boolean) = launch { repository.setVoice(value) }
     fun setSound(value: Boolean) = launch { repository.setSound(value) }
+    fun setWeightReminderEnabled(value: Boolean) = launch { repository.setWeightReminderEnabled(value) }
+    fun setMovementReminderEnabled(value: Boolean) = launch { repository.setMovementReminderEnabled(value) }
 
     fun setThemeMode(value: ThemeMode) = launch { repository.setThemeMode(value) }
     fun saveProgram(program: IntervalProgram) = launch { repository.saveProgram(program) }
@@ -304,6 +306,21 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit) {
                     viewModel.test(Cues.interval(IntervalPosition(IntervalKind.Walk, 1, 8, 120, 1), 120, false))
                 }) { Text("Шаг") }
             }
+        }
+
+        Section("Напоминания") {
+            SwitchRow(
+                title = "Взвешивание утром",
+                subtitle = "Каждый день в 07:15",
+                checked = settings.weightReminderEnabled,
+                onCheckedChange = viewModel::setWeightReminderEnabled,
+            )
+            SwitchRow(
+                title = "Разминка после сидения",
+                subtitle = "По будням каждые 30 минут с 10:30 до 18:30",
+                checked = settings.movementReminderEnabled,
+                onCheckedChange = viewModel::setMovementReminderEnabled,
+            )
         }
 
         VoiceSection(settings, engines, voices, viewModel)

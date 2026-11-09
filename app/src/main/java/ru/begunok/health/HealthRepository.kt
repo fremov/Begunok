@@ -17,6 +17,8 @@ import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlin.reflect.KClass
 
 enum class HealthAvailability { Available, NeedsUpdate, Unavailable }
@@ -35,6 +37,8 @@ data class HealthTotals(
 ) {
     val isEmpty: Boolean get() = steps == null && activeKcal == null && avgHr == null
 }
+
+data class DailySteps(val day: LocalDate, val count: Long)
 
 data class HealthDay(
     val totals: HealthTotals,
@@ -67,6 +71,29 @@ class HealthRepository(private val context: Context) {
         } else {
             emptySet()
         }
+
+    suspend fun steps(start: Instant, end: Instant): Long? {
+        val granted = granted()
+        return if (read(StepsRecord::class) in granted) totals(start, end, granted).steps else null
+    }
+
+    suspend fun dailySteps(start: Instant, end: Instant, zone: ZoneId = ZoneId.systemDefault()): List<DailySteps> {
+        val granted = granted()
+        if (read(StepsRecord::class) !in granted || !end.isAfter(start)) return emptyList()
+        val result = mutableListOf<DailySteps>()
+        var day = start.atZone(zone).toLocalDate()
+        val last = end.minusMillis(1).atZone(zone).toLocalDate()
+        while (!day.isAfter(last)) {
+            val rawStart = day.atStartOfDay(zone).toInstant()
+            val rawEnd = day.plusDays(1).atStartOfDay(zone).toInstant()
+            val dayStart = if (start.isAfter(rawStart)) start else rawStart
+            val dayEnd = if (end.isBefore(rawEnd)) end else rawEnd
+            val count = totals(dayStart, dayEnd, granted).steps ?: 0L
+            if (count > 0) result += DailySteps(day, count)
+            day = day.plusDays(1)
+        }
+        return result
+    }
 
     suspend fun totals(start: Instant, end: Instant, granted: Set<String>): HealthTotals {
         val metrics = buildSet<AggregateMetric<*>> {

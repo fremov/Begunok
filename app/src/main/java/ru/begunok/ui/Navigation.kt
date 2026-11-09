@@ -320,7 +320,7 @@ private fun SectionContent(
             viewModel = viewModel { HistoryViewModel(container.workouts) },
             onOpen = { id -> navController.navigate("workout/$id") },
         )
-        Section.Analytics -> AnalyticsScreen(viewModel { AnalyticsViewModel(container.workouts) })
+        Section.Analytics -> AnalyticsScreen(viewModel { AnalyticsViewModel(container.workouts, container.showers, container.health) })
         Section.Shower -> ShowerScreen(
             viewModel { ShowerViewModel(container.appContext, container.showers, container.settings, container.voicePack) },
         )

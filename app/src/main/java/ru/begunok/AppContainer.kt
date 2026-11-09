@@ -4,6 +4,8 @@ import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import ru.begunok.alerts.VoicePack
 import ru.begunok.data.ReadingRepository
 import ru.begunok.data.SettingsRepository
@@ -14,6 +16,7 @@ import ru.begunok.data.db.AppDatabase
 import ru.begunok.health.HealthRepository
 import ru.begunok.location.LocationClient
 import ru.begunok.lol.LolSettings
+import ru.begunok.reminders.ReminderScheduler
 import ru.begunok.sensor.BleScanner
 import ru.begunok.sensor.HeartRateMonitor
 
@@ -21,6 +24,7 @@ class AppContainer(context: Context) {
     val appContext: Context = context.applicationContext
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val settings = SettingsRepository(appContext)
+    private val reminderScheduler = ReminderScheduler(appContext)
     val bleScanner = BleScanner(appContext)
     val heartRateMonitor = HeartRateMonitor(appContext, settings, bleScanner, appScope)
     val locationClient = LocationClient(appContext)
@@ -32,4 +36,10 @@ class AppContainer(context: Context) {
     val health = HealthRepository(appContext)
     val voicePack = VoicePack(appContext)
     val lolSettings = LolSettings(appContext)
+
+    init {
+        appScope.launch {
+            settings.settings.collect { reminderScheduler.schedule(it) }
+        }
+    }
 }

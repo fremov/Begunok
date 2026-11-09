@@ -1,5 +1,6 @@
 package ru.begunok.workout
 
+import ru.begunok.data.db.ColdShowerEntity
 import ru.begunok.data.db.ExerciseSetEntity
 import ru.begunok.data.db.WorkoutEntity
 import java.time.DayOfWeek
@@ -40,6 +41,7 @@ enum class WorkoutKind(val label: String) {
 fun WorkoutEntity.countsDistance(): Boolean = dayType != DayType.Strength.name
 
 data class WeekStat(val start: LocalDate, val workouts: Int, val distanceM: Double)
+data class AnalyticsPoint(val time: Long, val value: Float)
 
 data class RunPoint(
     val id: Long,
@@ -87,6 +89,10 @@ data class Analytics(
     val programRuns: Int,
     val programCompleted: Int,
     val exercises: List<ExerciseStat>,
+    val coldShowers: Int,
+    val steps: Long?,
+    val showerSeries: List<AnalyticsPoint>,
+    val stepSeries: List<AnalyticsPoint>,
 ) {
     companion object {
         const val RUN_PLAN = 3
@@ -97,6 +103,12 @@ data class Analytics(
         const val MIN_RUN_M = 500.0
         const val MIN_RECORD_PACE_M = 1_000.0
 
+        fun periodStart(today: LocalDate, period: Period): LocalDate {
+            val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val weeks = period.weeks ?: MAX_WEEKS
+            return weekStart.minusWeeks((weeks - 1).toLong())
+        }
+
         fun build(
             workouts: List<WorkoutEntity>,
             sets: List<ExerciseSetEntity>,
@@ -104,6 +116,9 @@ data class Analytics(
             zone: ZoneId = ZoneId.systemDefault(),
             period: Period = Period.All,
             kind: WorkoutKind = WorkoutKind.All,
+            showers: List<ColdShowerEntity> = emptyList(),
+            steps: Long? = null,
+            stepSeries: List<AnalyticsPoint> = emptyList(),
         ): Analytics {
             fun dateOf(millis: Long) = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
             val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -136,6 +151,12 @@ data class Analytics(
                 }
             val runs = allRuns.filter { it.id in periodIds }
             val programs = inPeriod.filter { it.programName != null && it.dayType != DayType.Strength.name }
+            val coldShowersInPeriod = showers.filter { !dateOf(it.time).isBefore(from) }
+            val coldShowers = coldShowersInPeriod.size
+            val showerSeries = coldShowersInPeriod
+                .groupBy { dateOf(it.time) }
+                .toSortedMap()
+                .map { (day, sessions) -> AnalyticsPoint(day.atStartOfDay(zone).toInstant().toEpochMilli(), sessions.size.toFloat()) }
             return Analytics(
                 total = inPeriod.size,
                 thisWeek = weeks.last().workouts,
@@ -158,6 +179,10 @@ data class Analytics(
                 programRuns = programs.size,
                 programCompleted = programs.count { it.programCompleted },
                 exercises = exerciseStats(sets.filter { it.workoutId in periodIds }),
+                coldShowers = coldShowers,
+                steps = steps,
+                showerSeries = showerSeries,
+                stepSeries = stepSeries,
             )
         }
 

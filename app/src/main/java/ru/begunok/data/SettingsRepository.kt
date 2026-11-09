@@ -54,6 +54,8 @@ data class AppSettings(
     val dayConfigs: Map<DayType, DayConfig> = emptyMap(),
     val readingGoal: Int = ReadingStats.DEFAULT_GOAL,
     val weightGoal: WeightGoal? = null,
+    val weightReminderEnabled: Boolean = true,
+    val movementReminderEnabled: Boolean = true,
     val themeMode: ThemeMode = ThemeMode.System,
 ) {
     val selectedProgram: IntervalProgram? get() = programs.firstOrNull { it.id == selectedProgramId }
@@ -92,6 +94,8 @@ class SettingsRepository(private val context: Context) {
         val weightTarget = doublePreferencesKey("weight_target")
         val weightStart = doublePreferencesKey("weight_start")
         val weightDeadline = longPreferencesKey("weight_deadline")
+        val weightReminderEnabled = booleanPreferencesKey("weight_reminder_enabled")
+        val movementReminderEnabled = booleanPreferencesKey("walk_reminder_enabled")
         val themeMode = stringPreferencesKey("theme_mode")
         fun dayConfig(type: DayType) = stringPreferencesKey("day_config_${type.name}")
         fun clip(id: CueId) = stringPreferencesKey("clip_${id.name}")
@@ -126,6 +130,8 @@ class SettingsRepository(private val context: Context) {
         weightGoal = this[Keys.weightTarget]?.let { target ->
             WeightGoal(target, this[Keys.weightStart] ?: target, this[Keys.weightDeadline]?.let(LocalDate::ofEpochDay))
         },
+        weightReminderEnabled = this[Keys.weightReminderEnabled] ?: true,
+        movementReminderEnabled = this[Keys.movementReminderEnabled] ?: true,
         dayConfigs = DayType.entries.mapNotNull { type -> this[Keys.dayConfig(type)]?.let(::decodeDayConfig)?.let { type to it } }.toMap(),
     )
 
@@ -191,6 +197,9 @@ class SettingsRepository(private val context: Context) {
             if (goal.deadline == null) it.remove(Keys.weightDeadline) else it[Keys.weightDeadline] = goal.deadline.toEpochDay()
         }
     }
+    suspend fun setWeightReminderEnabled(value: Boolean) = context.dataStore.edit { it[Keys.weightReminderEnabled] = value }
+
+    suspend fun setMovementReminderEnabled(value: Boolean) = context.dataStore.edit { it[Keys.movementReminderEnabled] = value }
 
     suspend fun setDayType(type: DayType?) = context.dataStore.edit {
         if (type == null) it.remove(Keys.dayType) else it[Keys.dayType] = type.name

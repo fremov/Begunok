@@ -13,6 +13,9 @@ interface ShowerDao {
     @Query("SELECT * FROM cold_showers ORDER BY time DESC LIMIT :limit")
     fun observeRecent(limit: Int): Flow<List<ColdShowerEntity>>
 
+    @Query("SELECT * FROM cold_showers ORDER BY time")
+    fun observeAll(): Flow<List<ColdShowerEntity>>
+
     @Query("DELETE FROM cold_showers WHERE id = :id")
     suspend fun delete(id: Long)
 }

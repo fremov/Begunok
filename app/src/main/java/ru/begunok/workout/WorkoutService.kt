@@ -22,6 +22,8 @@ import ru.begunok.AppContainer
 import ru.begunok.BegunokApp
 import ru.begunok.alerts.AlertOptions
 import ru.begunok.alerts.AlertPlayer
+import ru.begunok.alerts.Beep
+import ru.begunok.alerts.Cue
 import ru.begunok.alerts.Cues
 import ru.begunok.data.AppSettings
 import ru.begunok.data.db.ExerciseSetEntity
@@ -146,6 +148,8 @@ class WorkoutService : LifecycleService() {
                 t.tick(now, hr)
                 handleAlerts(t, hr, now)
                 handleStrengthTick(t)
+                handleCooldown(t)
+                if (tracker == null) break
                 persist(id, t, now, hr)
                 publish(t, hr)
                 delay(TICK_MS - (SystemClock.elapsedRealtime() - origin) % TICK_MS)
@@ -298,11 +302,43 @@ class WorkoutService : LifecycleService() {
     }
 
     private fun stop() {
-        val t = tracker
-        if (t == null) {
+        if (tracker == null) {
             stopSelf()
+        } else if (stage == Stage.Cooldown) {
+            // The cooldown is mandatory; it finishes automatically after three active minutes.
             return
+        } else {
+            beginCooldown()
         }
+    }
+
+    private fun beginCooldown() {
+        val t = tracker ?: return
+        if (t.paused) t.resume(SystemClock.elapsedRealtime())
+        stage = Stage.Cooldown
+        stageStartMs = t.activeMs
+        locationJob?.cancel()
+        locationJob = null
+        hrAlarm.reset()
+        alerts?.play(
+            Cue(
+                beeps = listOf(Beep(660, 150), Beep(880, 300)),
+                vibration = longArrayOf(0, 250),
+                text = "Тренировка завершена. Заминка три минуты",
+            ),
+            settings.alertOptions(),
+        )
+        publish(t, container.heartRateMonitor.state.value.heartRate)
+    }
+
+    private fun handleCooldown(t: WorkoutTracker) {
+        if (stage == Stage.Cooldown && !t.paused && t.activeMs - stageStartMs >= COOLDOWN_MS) {
+            finishWorkout()
+        }
+    }
+
+    private fun finishWorkout() {
+        val t = tracker ?: return
         session?.cancel()
         session = null
         t.tick(SystemClock.elapsedRealtime(), null)
@@ -484,6 +520,7 @@ class WorkoutService : LifecycleService() {
         private const val EXTRA_COMPLETED = "completed"
 
         private const val TICK_MS = 1_000L
+        private const val COOLDOWN_MS = 3 * 60_000L
         private const val FIX_FOR_SAMPLE_MS = 3_000L
         private const val WAKE_LOCK_TIMEOUT_MS = 6 * 60 * 60_000L
 

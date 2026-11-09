@@ -298,6 +298,31 @@ internal fun BreakPanel(state: WorkoutState, onStart: () -> Unit, onRunResult: (
 }
 
 @Composable
+internal fun CooldownPanel(state: WorkoutState) {
+    val elapsed = (state.activeMs - state.stageStartMs).coerceAtLeast(0)
+    val remainingMs = (COOLDOWN_MS - elapsed).coerceAtLeast(0)
+    Hero(StageColors.Rest) {
+        HeroTitle("ЗАМИНКА", "спокойная ходьба после тренировки")
+        RingTimer(
+            progress = remainingMs.toFloat() / COOLDOWN_MS,
+            color = Color.White,
+            trackColor = Color.White.copy(alpha = 0.25f),
+            modifier = Modifier.size(220.dp),
+        ) {
+            Text(Format.duration(remainingMs), style = numberStyle(56), color = Color.White)
+        }
+        Text(
+            "Тренировка сохранится автоматически через 3 минуты.",
+            style = MaterialTheme.typography.titleMedium,
+            color = Color.White.copy(alpha = 0.9f),
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+private const val COOLDOWN_MS = 3 * 60_000L
+
+@Composable
 private fun ChoiceButton(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     if (selected) {
         Button(onClick = onClick, modifier = modifier) {

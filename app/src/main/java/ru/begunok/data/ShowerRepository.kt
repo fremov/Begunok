@@ -6,6 +6,7 @@ import ru.begunok.data.db.ShowerDao
 
 class ShowerRepository(private val dao: ShowerDao) {
     fun observeRecent(limit: Int = 200): Flow<List<ColdShowerEntity>> = dao.observeRecent(limit)
+    fun observeAll(): Flow<List<ColdShowerEntity>> = dao.observeAll()
 
     suspend fun add(time: Long, durationSec: Int, targetSec: Int, completed: Boolean) =
         dao.insert(ColdShowerEntity(time = time, durationSec = durationSec, targetSec = targetSec, completed = completed))

@@ -36,6 +36,7 @@ class WorkoutNotifications(private val context: Context) {
             Stage.Run -> interval
             Stage.Break -> "Перерыв · "
             Stage.Strength -> state.strength?.let(::strengthLine).orEmpty()
+            Stage.Cooldown -> "Заминка · "
         }
         val title = (if (paused) "Пауза · " else "") + stage + Format.duration(state.activeMs)
         val text = "♥ ${Format.heartRate(state.heartRate)} · ${Format.distanceKm(state.distanceM)} км"

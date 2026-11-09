@@ -65,6 +65,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -510,12 +511,22 @@ private fun ActiveWorkout(
                                 ),
                             )
                         }
+                        Stage.Cooldown -> {
+                            CooldownPanel(state)
+                            HeartHero(sensor.heartRate, settings, paused, compact = true)
+                            MetricGrid(
+                                listOf(
+                                    "Время" to Format.duration(state.activeMs),
+                                    "Дистанция, км" to Format.distanceKm(state.distanceM),
+                                ),
+                            )
+                        }
                     }
                 }
             }
             SensorBadge(sensor)
             if (state.stage == Stage.Run) GpsLine(state.gps)
-            Controls(paused, onPause, onResume, onStop)
+            Controls(paused, onPause, onResume, onStop, allowStop = state.stage != Stage.Cooldown)
         }
         if (state.stage == Stage.Strength && state.strength?.finished == true) {
             Confetti(trigger = state.workoutId, modifier = Modifier.fillMaxSize())
@@ -539,8 +550,18 @@ private fun ActiveWorkout(
 }
 
 @Composable
-private fun Controls(paused: Boolean, onPause: () -> Unit, onResume: () -> Unit, onStop: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+private fun Controls(
+    paused: Boolean,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onStop: () -> Unit,
+    allowStop: Boolean,
+) {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         val pauseInteraction = remember { MutableInteractionSource() }
         Button(
             onClick = if (paused) onResume else onPause,
@@ -555,20 +576,29 @@ private fun Controls(paused: Boolean, onPause: () -> Unit, onResume: () -> Unit,
             Spacer(Modifier.width(8.dp))
             Text(if (paused) "Продолжить" else "Пауза", fontSize = 20.sp)
         }
-        val stopInteraction = remember { MutableInteractionSource() }
-        OutlinedButton(
-            onClick = onStop,
-            interactionSource = stopInteraction,
-            modifier = Modifier
-                .weight(1f)
-                .height(68.dp)
-                .pressScale(stopInteraction),
-            shape = RoundedCornerShape(34.dp),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
-        ) {
-            Icon(Icons.Filled.Stop, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
-            Text("Стоп", fontSize = 20.sp)
+        if (allowStop) {
+            val stopInteraction = remember { MutableInteractionSource() }
+            OutlinedButton(
+                onClick = onStop,
+                interactionSource = stopInteraction,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(68.dp)
+                    .pressScale(stopInteraction),
+                shape = RoundedCornerShape(34.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+            ) {
+                Icon(Icons.Filled.Stop, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Стоп", fontSize = 20.sp)
+            }
+        } else {
+            Text(
+                "Заминка обязательна",
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

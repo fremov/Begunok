@@ -2,6 +2,7 @@ package ru.begunok.workout
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import ru.begunok.data.db.ColdShowerEntity
 import ru.begunok.data.db.ExerciseSetEntity
 import ru.begunok.data.db.WorkoutEntity
 import java.time.LocalDate
@@ -24,16 +25,28 @@ class AnalyticsTest {
             ExerciseSetEntity(0, 1, 20, "Run:pullups", "Подтягивания", 1, 6, 6, false),
             ExerciseSetEntity(0, 1, 21, "Run:pullups", "Подтягивания", 2, 5, 6, false),
         )
-        val a = Analytics.build(workouts, sets, today, zone)
+        val a = Analytics.build(
+            workouts,
+            sets,
+            today,
+            zone,
+            showers = listOf(
+                ColdShowerEntity(1, millis(LocalDate.of(2026, 10, 27)), 90, 90, true),
+                ColdShowerEntity(2, millis(LocalDate.of(2026, 9, 1)), 60, 60, true),
+            ),
+            steps = 12_345,
+        )
         assertEquals(2, a.thisWeek)
         assertEquals(1, a.weeks[a.weeks.size - 2].workouts)
         assertEquals(1, a.daysSinceLast)
         assertEquals(listOf(1_800.0, 2_000.0), a.runs.map { it.distanceM })
         assertEquals(2, a.programRuns)
         assertEquals(1, a.programCompleted)
+        assertEquals(1, a.coldShowers)
+        assertEquals(12_345L, a.steps)
         val pull = a.exercises.single()
         assertEquals(DayType.Run, pull.day)
         assertEquals(listOf(5, 6), pull.sessions.map { it.best })
         assertEquals(false, pull.last.success)
-    }
+}
 }
