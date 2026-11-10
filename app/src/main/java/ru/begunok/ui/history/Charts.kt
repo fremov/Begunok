@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,6 +94,8 @@ fun MetricChart(
     rules: List<ChartRule> = emptyList(),
     selected: Int? = null,
     onSelect: (Int) -> Unit = {},
+    chronologicalX: Boolean = false,
+    valueRange: ClosedFloatingPointRange<Float>? = null,
 ) {
     val count = times.size
     if (count == 0) return
@@ -112,18 +115,31 @@ fun MetricChart(
         minV -= 1f
         maxV += 1f
     }
-    val step = niceStep(maxV - minV)
-    val lo = floor(minV / step) * step
-    val hi = ceil(maxV / step) * step
+    val step = niceStep(valueRange?.let { it.endInclusive - it.start } ?: (maxV - minV))
+    val lo = valueRange?.start ?: (floor(minV / step) * step)
+    val hi = valueRange?.endInclusive ?: (ceil(maxV / step) * step)
+    val timeStart = times.first().toDouble()
+    val timeSpan = times.last().toDouble() - timeStart
+    fun fraction(i: Int): Float = if (chronologicalX && timeSpan > 0) {
+        ((times[i].toDouble() - timeStart) / timeSpan).toFloat()
+    } else if (chronologicalX) 0.5f else (i + 0.5f) / count
+    fun selectedIndex(px: Float, left: Float, width: Float): Int {
+        if (!chronologicalX) return indexAt(px, left, width, count)
+        val inset = 8f * left / LEFT_AXIS
+        val plotWidth = (width - left - inset * 2).coerceAtLeast(1f)
+        val target = (px - left - inset) / plotWidth
+        return times.indices.minByOrNull { kotlin.math.abs(fraction(it) - target) } ?: 0
+    }
+    val currentOnSelect = rememberUpdatedState(onSelect)
 
     Canvas(
         modifier
-            .pointerInput(count) {
-                detectTapGestures { offset -> onSelect(indexAt(offset.x, LEFT_AXIS.dp.toPx(), size.width.toFloat(), count)) }
+            .pointerInput(times, chronologicalX) {
+                detectTapGestures { offset -> currentOnSelect.value(selectedIndex(offset.x, LEFT_AXIS.dp.toPx(), size.width.toFloat())) }
             }
-            .pointerInput(count) {
+            .pointerInput(times, chronologicalX) {
                 detectHorizontalDragGestures { change, _ ->
-                    onSelect(indexAt(change.position.x, LEFT_AXIS.dp.toPx(), size.width.toFloat(), count))
+                    currentOnSelect.value(selectedIndex(change.position.x, LEFT_AXIS.dp.toPx(), size.width.toFloat()))
                 }
             },
     ) {
@@ -132,18 +148,27 @@ fun MetricChart(
         val bottom = size.height - BOTTOM_AXIS.dp.toPx()
         val width = size.width - left
         val slot = width / count
-        fun x(i: Int) = left + slot * i + slot / 2
+        fun x(i: Int): Float = if (chronologicalX) {
+            val inset = 8.dp.toPx()
+            left + inset + fraction(i) * (width - inset * 2).coerceAtLeast(1f)
+        } else left + slot * i + slot / 2
         fun y(v: Float): Float {
             val f = (v - lo) / (hi - lo)
             return if (invertY) top + f * (bottom - top) else bottom - f * (bottom - top)
         }
 
-        var tick = lo
-        while (tick <= hi + step / 2) {
+        val ticks = buildList {
+            var tick = lo
+            while (tick <= hi + step / 100) {
+                if (valueRange == null || tick == lo || hi - tick >= step / 2) add(tick.coerceAtMost(hi))
+                tick += step
+            }
+            if (valueRange != null && lastOrNull() != hi) add(hi)
+        }
+        ticks.forEach { tick ->
             drawLine(gridColor, Offset(left, y(tick)), Offset(size.width, y(tick)), strokeWidth = 1f)
             val label = measurer.measure(formatY(tick), labelStyle)
             drawText(label, topLeft = Offset(left - label.size.width - 6.dp.toPx(), y(tick) - label.size.height / 2))
-            tick += step
         }
 
         val labelIndexes = if (count <= 4) (0 until count).toList() else listOf(0, count / 3, count * 2 / 3, count - 1).distinct()

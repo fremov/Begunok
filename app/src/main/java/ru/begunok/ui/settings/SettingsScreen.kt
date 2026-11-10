@@ -56,6 +56,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
@@ -154,6 +156,9 @@ class SettingsViewModel(
     fun setSound(value: Boolean) = launch { repository.setSound(value) }
     fun setWeightReminderEnabled(value: Boolean) = launch { repository.setWeightReminderEnabled(value) }
     fun setMovementReminderEnabled(value: Boolean) = launch { repository.setMovementReminderEnabled(value) }
+    fun setMentalReminderEnabled(value: Boolean) = launch { repository.setMentalReminderEnabled(value) }
+    fun setCheckInReminderEnabled(value: Boolean) = launch { repository.setCheckInReminderEnabled(value) }
+    fun setCheckInReminderTime(morning: Boolean, minute: Int) = launch { repository.setCheckInReminderTime(morning, minute) }
 
     fun setThemeMode(value: ThemeMode) = launch { repository.setThemeMode(value) }
     fun saveProgram(program: IntervalProgram) = launch { repository.saveProgram(program) }
@@ -321,6 +326,22 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit) {
                 checked = settings.movementReminderEnabled,
                 onCheckedChange = viewModel::setMovementReminderEnabled,
             )
+            SwitchRow(
+                title = "Повторные психологические тесты",
+                subtitle = "После прохождения: через 14 дней, PSS-10 — через 30 дней",
+                checked = settings.mentalReminderEnabled,
+                onCheckedChange = viewModel::setMentalReminderEnabled,
+            )
+            SwitchRow(
+                title = "Быстрые отметки состояния",
+                subtitle = "Два напоминания в день — настроение, напряжение и энергия",
+                checked = settings.checkInReminderEnabled,
+                onCheckedChange = viewModel::setCheckInReminderEnabled,
+            )
+            if (settings.checkInReminderEnabled) {
+                CheckInReminderTimes(settings.checkInMorningMinute, settings.checkInEveningMinute, viewModel::setCheckInReminderTime)
+            }
+            MentalReminderPermissionNotice(settings.mentalReminderEnabled, settings.checkInReminderEnabled)
         }
 
         VoiceSection(settings, engines, voices, viewModel)
@@ -590,7 +611,7 @@ fun SwitchRow(title: String, subtitle: String?, checked: Boolean, onCheckedChang
             Text(title, style = MaterialTheme.typography.titleMedium)
             subtitle?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        Switch(checked = checked, onCheckedChange = onCheckedChange, modifier = Modifier.semantics { contentDescription = title })
     }
 }
 

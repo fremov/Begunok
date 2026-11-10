@@ -19,10 +19,13 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import kotlinx.coroutines.flow.first
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
     private var stopRequested by mutableStateOf(false)
+    private var mentalRequested by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().setOnExitAnimationListener { splash ->
@@ -55,8 +58,21 @@ class MainActivity : ComponentActivity() {
                     container = container,
                     stopRequested = stopRequested,
                     onStopRequestHandled = { stopRequested = false },
+                    mentalRequested = mentalRequested,
+                    onMentalRequestHandled = { mentalRequested = false },
                 )
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            val container = (application as BegunokApp).container
+            container.mentalReminderScheduler.schedule(
+                container.mental.observeResults().first(),
+                container.settings.settings.first().mentalReminderEnabled,
+            )
         }
     }
 
@@ -70,10 +86,15 @@ class MainActivity : ComponentActivity() {
             stopRequested = true
             intent.removeExtra(EXTRA_CONFIRM_STOP)
         }
+        if (intent?.getBooleanExtra(EXTRA_OPEN_MENTAL, false) == true) {
+            mentalRequested = true
+            intent.removeExtra(EXTRA_OPEN_MENTAL)
+        }
     }
 
     companion object {
         private const val EXTRA_CONFIRM_STOP = "confirm_stop"
+        const val EXTRA_OPEN_MENTAL = "open_mental"
         private const val SPLASH_EXIT_MS = 300L
 
         fun intent(context: Context, confirmStop: Boolean): Intent =

@@ -42,4 +42,23 @@ class ReminderScheduleTest {
             ReminderSchedule.nextMovement(8, beforeWork),
         )
     }
+
+    @Test
+    fun checkInUsesSelectedTimeAndMovesPastSlotsToTomorrow() {
+        val now = LocalDateTime.of(2026, 11, 10, 10, 0)
+        assertEquals(LocalDateTime.of(2026, 11, 11, 9, 0), ReminderSchedule.nextCheckIn(now, 9 * 60))
+        assertEquals(LocalDateTime.of(2026, 11, 10, 21, 30), ReminderSchedule.nextCheckIn(now, 21 * 60 + 30))
+    }
+
+    @Test
+    fun checkInDoesNotRepeatTheCurrentMinuteAndIncludesWeekends() {
+        val saturday = LocalDateTime.of(2026, 11, 14, 0, 0)
+        assertEquals(LocalDateTime.of(2026, 11, 15, 0, 0), ReminderSchedule.nextCheckIn(saturday, 0))
+        assertEquals(LocalDateTime.of(2026, 11, 14, 23, 59), ReminderSchedule.nextCheckIn(saturday, 1439))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun checkInRejectsTimeOutsideDay() {
+        ReminderSchedule.nextCheckIn(LocalDateTime.of(2026, 11, 10, 10, 0), 1440)
+    }
 }

@@ -12,8 +12,10 @@ import ru.begunok.workout.IntervalProgram
     entities = [
         WorkoutEntity::class, SampleEntity::class, RrIntervalEntity::class, ExerciseSetEntity::class, ColdShowerEntity::class,
         BookEntity::class, ReadingEntryEntity::class, WeightEntryEntity::class,
+        MentalResultEntity::class, QuickCheckInEntity::class,
+        FinanceTransactionEntity::class, FinanceRuleEntity::class,
     ],
-    version = 7,
+    version = 10,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -25,10 +27,14 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun weightDao(): WeightDao
 
+    abstract fun mentalDao(): MentalDao
+
+    abstract fun financeDao(): FinanceDao
+
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "begunok.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                 .build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -98,6 +104,49 @@ abstract class AppDatabase : RoomDatabase() {
                         "`day` INTEGER NOT NULL, `time` INTEGER NOT NULL, `kg` REAL NOT NULL)"
                 )
                 db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_weight_entries_day` ON `weight_entries` (`day`)")
+            }
+        }
+
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `mental_results` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`test` TEXT NOT NULL, `completedAt` INTEGER NOT NULL, `answers` TEXT NOT NULL)"
+                )
+            }
+        }
+
+        private val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `mental_check_ins` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`completedAt` INTEGER NOT NULL, `mood` INTEGER NOT NULL, `tension` INTEGER NOT NULL, " +
+                        "`energy` INTEGER NOT NULL, `context` TEXT)"
+                )
+            }
+        }
+
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `finance_transactions` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `occurredAt` TEXT NOT NULL, " +
+                        "`amountMinor` INTEGER NOT NULL, `currency` TEXT NOT NULL, `account` TEXT NOT NULL, " +
+                        "`card` TEXT NOT NULL, `category` TEXT NOT NULL, `description` TEXT NOT NULL, " +
+                        "`note` TEXT NOT NULL, `status` TEXT NOT NULL, `bankIncluded` INTEGER NOT NULL, " +
+                        "`source` TEXT NOT NULL, `importKey` TEXT, `inclusion` TEXT NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS `index_finance_transactions_importKey` " +
+                        "ON `finance_transactions` (`importKey`)"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `finance_rules` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, " +
+                        "`enabled` INTEGER NOT NULL, `action` TEXT NOT NULL, `direction` TEXT NOT NULL, " +
+                        "`account` TEXT, `category` TEXT, `descriptionContains` TEXT NOT NULL, " +
+                        "`minAmountMinor` INTEGER, `maxAmountMinor` INTEGER, `currency` TEXT)"
+                )
             }
         }
     }

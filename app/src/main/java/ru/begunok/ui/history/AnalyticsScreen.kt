@@ -2,6 +2,7 @@ package ru.begunok.ui.history
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -49,10 +51,13 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import ru.begunok.data.ShowerRepository
+import ru.begunok.data.MentalRepository
 import ru.begunok.data.WorkoutRepository
 import ru.begunok.health.HealthRepository
+import ru.begunok.mental.MentalAnalytics
 import ru.begunok.ui.Format
 import ru.begunok.ui.common.appear
 import ru.begunok.ui.theme.StageColors
@@ -82,6 +87,7 @@ class AnalyticsViewModel(
     repository: WorkoutRepository,
     showers: ShowerRepository,
     private val health: HealthRepository,
+    mental: MentalRepository,
 ) : ViewModel() {
     private val _period = MutableStateFlow(Period.Month)
     val period: StateFlow<Period> = _period.asStateFlow()
@@ -114,6 +120,19 @@ class AnalyticsViewModel(
             .flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    private val mentalReload = MutableStateFlow(0)
+    val mentalAnalytics: StateFlow<MentalAnalyticsState> = mentalReload.flatMapLatest {
+        combine(mental.observeCheckIns(), mental.observeResults(), _period) { entries, results, selected ->
+            MentalAnalyticsState(data = MentalAnalytics.build(entries, results, LocalDate.now(), selected))
+        }.onStart { emit(MentalAnalyticsState()) }
+            .catch { emit(MentalAnalyticsState(failed = true)) }
+    }.flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MentalAnalyticsState())
+
+    fun retryMentalAnalytics() {
+        mentalReload.value += 1
+    }
+
 
     fun setPeriod(value: Period) {
         _period.value = value
@@ -137,7 +156,8 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
     val analytics by viewModel.analytics.collectAsStateWithLifecycle()
     val period by viewModel.period.collectAsStateWithLifecycle()
     val kind by viewModel.kind.collectAsStateWithLifecycle()
-    val a = analytics ?: return
+    val mental by viewModel.mentalAnalytics.collectAsStateWithLifecycle()
+    var mentalScope by rememberSaveable { mutableStateOf(false) }
     Column(
         Modifier
             .fillMaxSize()
@@ -145,6 +165,18 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
+        Row(
+            Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            listOf("Тренировки", "Психологическое состояние").forEachIndexed { i, label ->
+                FilterChip(
+                    selected = mentalScope == (i == 1),
+                    onClick = { mentalScope = i == 1 },
+                    label = { Text(label, maxLines = 1, softWrap = false) },
+                )
+            }
+        }
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             Period.entries.forEachIndexed { i, p ->
                 SegmentedButton(
@@ -154,6 +186,15 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
                     icon = {},
                 ) { Text(p.label) }
             }
+        }
+        if (mentalScope) {
+            MentalAnalyticsContent(mental, viewModel::retryMentalAnalytics)
+            return@Column
+        }
+        val a = analytics
+        if (a == null) {
+            Text("Загружаем тренировки…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            return@Column
         }
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             WorkoutKind.entries.forEachIndexed { i, k ->
@@ -540,7 +581,7 @@ private fun ExerciseCard(stat: ExerciseStat) {
 }
 
 @Composable
-private fun Section(title: String, subtitle: String?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun Section(title: String, subtitle: String?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),

@@ -56,6 +56,10 @@ data class AppSettings(
     val weightGoal: WeightGoal? = null,
     val weightReminderEnabled: Boolean = true,
     val movementReminderEnabled: Boolean = true,
+    val mentalReminderEnabled: Boolean = true,
+    val checkInReminderEnabled: Boolean = true,
+    val checkInMorningMinute: Int = 9 * 60,
+    val checkInEveningMinute: Int = 21 * 60,
     val themeMode: ThemeMode = ThemeMode.System,
 ) {
     val selectedProgram: IntervalProgram? get() = programs.firstOrNull { it.id == selectedProgramId }
@@ -96,6 +100,10 @@ class SettingsRepository(private val context: Context) {
         val weightDeadline = longPreferencesKey("weight_deadline")
         val weightReminderEnabled = booleanPreferencesKey("weight_reminder_enabled")
         val movementReminderEnabled = booleanPreferencesKey("walk_reminder_enabled")
+        val mentalReminderEnabled = booleanPreferencesKey("mental_reminder_enabled")
+        val checkInReminderEnabled = booleanPreferencesKey("check_in_reminder_enabled")
+        val checkInMorningMinute = intPreferencesKey("check_in_morning_minute")
+        val checkInEveningMinute = intPreferencesKey("check_in_evening_minute")
         val themeMode = stringPreferencesKey("theme_mode")
         fun dayConfig(type: DayType) = stringPreferencesKey("day_config_${type.name}")
         fun clip(id: CueId) = stringPreferencesKey("clip_${id.name}")
@@ -132,6 +140,10 @@ class SettingsRepository(private val context: Context) {
         },
         weightReminderEnabled = this[Keys.weightReminderEnabled] ?: true,
         movementReminderEnabled = this[Keys.movementReminderEnabled] ?: true,
+        mentalReminderEnabled = this[Keys.mentalReminderEnabled] ?: true,
+        checkInReminderEnabled = this[Keys.checkInReminderEnabled] ?: true,
+        checkInMorningMinute = this[Keys.checkInMorningMinute] ?: 9 * 60,
+        checkInEveningMinute = this[Keys.checkInEveningMinute] ?: 21 * 60,
         dayConfigs = DayType.entries.mapNotNull { type -> this[Keys.dayConfig(type)]?.let(::decodeDayConfig)?.let { type to it } }.toMap(),
     )
 
@@ -200,6 +212,17 @@ class SettingsRepository(private val context: Context) {
     suspend fun setWeightReminderEnabled(value: Boolean) = context.dataStore.edit { it[Keys.weightReminderEnabled] = value }
 
     suspend fun setMovementReminderEnabled(value: Boolean) = context.dataStore.edit { it[Keys.movementReminderEnabled] = value }
+
+    suspend fun setMentalReminderEnabled(value: Boolean) = context.dataStore.edit { it[Keys.mentalReminderEnabled] = value }
+
+    suspend fun setCheckInReminderEnabled(value: Boolean) = context.dataStore.edit { it[Keys.checkInReminderEnabled] = value }
+
+    suspend fun setCheckInReminderTime(morning: Boolean, minute: Int) {
+        require(minute in 0 until 24 * 60)
+        context.dataStore.edit {
+            it[if (morning) Keys.checkInMorningMinute else Keys.checkInEveningMinute] = minute
+        }
+    }
 
     suspend fun setDayType(type: DayType?) = context.dataStore.edit {
         if (type == null) it.remove(Keys.dayType) else it[Keys.dayType] = type.name

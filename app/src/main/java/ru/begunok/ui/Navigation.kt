@@ -20,9 +20,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonitorHeart
+import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SportsEsports
@@ -75,10 +77,14 @@ import ru.begunok.ui.history.AnalyticsScreen
 import ru.begunok.ui.history.AnalyticsViewModel
 import ru.begunok.ui.history.HistoryScreen
 import ru.begunok.ui.history.HistoryViewModel
+import ru.begunok.ui.finance.FinanceScreen
+import ru.begunok.ui.finance.FinanceViewModel
 import ru.begunok.ui.home.HomeScreen
 import ru.begunok.ui.home.HomeViewModel
 import ru.begunok.ui.lol.LolScreen
 import ru.begunok.ui.lol.LolViewModel
+import ru.begunok.ui.mental.MentalScreen
+import ru.begunok.ui.mental.MentalViewModel
 import ru.begunok.ui.plan.PlanEditorScreen
 import ru.begunok.ui.plan.PlanEditorViewModel
 import ru.begunok.ui.reading.ReadingScreen
@@ -101,6 +107,7 @@ private enum class Group(val label: String?) {
     Habits("Привычки"),
     Health("Здоровье"),
     Games("Игры"),
+    Money("Личное"),
     App(null),
 }
 
@@ -112,6 +119,8 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
     Reading("Чтение", Icons.AutoMirrored.Filled.MenuBook, Group.Habits),
     Health("Браслет и показатели", Icons.Filled.MonitorHeart, Group.Health),
     Weight("Вес", Icons.Filled.MonitorWeight, Group.Health),
+    Mental("Психологическое состояние", Icons.Filled.Psychology, Group.Health),
+    Finance("Финансы", Icons.Filled.AccountBalanceWallet, Group.Money),
     Lol("League of Legends", Icons.Filled.SportsEsports, Group.Games),
     Settings("Настройки", Icons.Filled.Settings, Group.App),
 }
@@ -125,6 +134,8 @@ fun BegunokNavigation(
     container: AppContainer,
     stopRequested: Boolean,
     onStopRequestHandled: () -> Unit,
+    mentalRequested: Boolean,
+    onMentalRequestHandled: () -> Unit,
 ) {
     val navController = rememberNavController()
     val drawer = rememberDrawerState(DrawerValue.Closed)
@@ -141,6 +152,13 @@ fun BegunokNavigation(
 
     LaunchedEffect(stopRequested) {
         if (stopRequested) open(Section.Workout)
+    }
+
+    LaunchedEffect(mentalRequested) {
+        if (mentalRequested) {
+            open(Section.Mental)
+            onMentalRequestHandled()
+        }
     }
 
     BackHandler(enabled = onTabs && section != Section.Workout) { open(Section.Workout) }
@@ -320,13 +338,15 @@ private fun SectionContent(
             viewModel = viewModel { HistoryViewModel(container.workouts) },
             onOpen = { id -> navController.navigate("workout/$id") },
         )
-        Section.Analytics -> AnalyticsScreen(viewModel { AnalyticsViewModel(container.workouts, container.showers, container.health) })
+        Section.Analytics -> AnalyticsScreen(viewModel { AnalyticsViewModel(container.workouts, container.showers, container.health, container.mental) })
         Section.Shower -> ShowerScreen(
             viewModel { ShowerViewModel(container.appContext, container.showers, container.settings, container.voicePack) },
         )
         Section.Reading -> ReadingScreen(viewModel { ReadingViewModel(container.reading, container.settings) })
         Section.Health -> HealthScreen(viewModel { HealthViewModel(container.health) })
         Section.Weight -> WeightScreen(viewModel { WeightViewModel(container.weight, container.settings) })
+        Section.Mental -> MentalScreen(viewModel { MentalViewModel(container.mental) })
+        Section.Finance -> FinanceScreen(viewModel { FinanceViewModel(container.finance, container.appContext) })
         Section.Lol -> LolScreen(viewModel { LolViewModel(container.lolSettings) })
         Section.Settings -> SettingsScreen(
             viewModel {
