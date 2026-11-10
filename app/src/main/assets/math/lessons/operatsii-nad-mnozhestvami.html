@@ -1,0 +1,501 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>54. Операции над множествами</title><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../lesson.css"><script src="../lesson.js" defer></script></head><body><main><h1>54. Операции над множествами</h1><div class="entry-content">
+<nav id="before-themes"><b>Предварительные навыки</b>
+<ul class="before-themes_item">
+<li><a data-lesson-id="otricatelnie_chisla" href="otricatelnie_chisla.html" rel="noopener noreferrer">Отрицательные числа</a></li>
+<li><a data-lesson-id="chto_takoe_mnojestvo" href="chto_takoe_mnojestvo.html" rel="noopener noreferrer">Что такое множество?</a></li>
+<li><a data-lesson-id="obshhie-svedeniya-o-neravenstvah" href="obshhie-svedeniya-o-neravenstvah.html" rel="noopener noreferrer">Общие сведения о неравенствах</a></li>
+<li><a data-lesson-id="sistemy-linejnyh-neravenstv-s-odnoj-peremennoj" href="sistemy-linejnyh-neravenstv-s-odnoj-peremennoj.html" rel="noopener noreferrer">Системы линейных неравенств с одной переменной</a></li>
+</ul>
+</nav>
+<nav id="menu"><b>Содержание урока</b>
+<ul class="navless">
+<li><a href="#yak1">Пересечение множеств</a></li>
+<li><a href="#yak2">Объединение множеств</a></li>
+<li><a href="#yak3">Решение неравенств, содержащих знак ≠</a></li>
+<li><a href="#yak4">Решение совокупностей неравенств</a></li>
+<li><a href="#yak5">Задания для самостоятельного решения</a></li>
+</ul>
+</nav>
+<h2 id="yak1" style="text-align: center;">Пересечение множеств</h2>
+<p>Рассмотрим два множества: множество друзей Джона и множество друзей Майкла.</p>
+<table style="border: none;">
+<tbody>
+<tr>
+<td style="border: none; padding: 0 7px; text-align: right;"><span style="color: #000000;"><em>Друзья Джона = {</em></span></td>
+<td style="border: none; padding: 0;"><span style="color: #000000;"><em>Том,</em></span><br/>
+<span style="color: #000000;"><em>Фред,</em></span><br/>
+<span style="color: #000000;"><em>Макс,</em></span><br/>
+<span style="color: #000000;"><em>Джорж }</em></span></td>
+</tr>
+</tbody>
+</table>
+<table style="border: none;">
+<tbody>
+<tr>
+<td style="border: none; padding: 0 7px; text-align: right;"><span style="color: #000000;"><em>Друзья Майкла = {</em></span></td>
+<td style="border: none; padding: 0;"><span style="color: #000000;"><em>Лео,</em></span><br/>
+<span style="color: #000000;"><em>Том,</em></span><br/>
+<span style="color: #000000;"><em>Фред,</em></span><br/>
+<span style="color: #000000;"><em>Эван }</em></span></td>
+</tr>
+</tbody>
+</table>
+<p>Видим, что <span style="color: #000000;"><em>Том</em></span> и <span style="color: #000000;"><em>Фред</em></span> одновременно являются друзьями Джона и Майкла.</p>
+<p>Говоря на языке множеств, элементы <span style="color: #000000;"><em>Том</em> </span>и <span style="color: #000000;"><em>Фред</em> </span>принадлежат как множеству друзей Джона, так и множеству друзей Майкла.</p>
+<p>Зададим новое множество с названием <em><span style="color: #000000;">«Общие друзья Джона и Майкла» </span></em>и в качестве элементов добавим в него <span style="color: #000000;"><em>Тома</em> </span>и <span style="color: #000000;"><em>Фреда</em></span>:</p>
+<table style="border: none;">
+<tbody>
+<tr>
+<td style="border: none; padding: 0 7px; text-align: right;"><span style="color: #000000;"><em>Общие друзья Джона и Майкла</em></span></td>
+<td style="border: none; padding: 0; vertical-align: middle;"><span style="color: #000000;"><em>= { Том, Фред }</em></span></td>
+</tr>
+</tbody>
+</table>
+<p>В данном случае множество <span style="color: #000000;"><em>«Общие друзья Джона и Майкла»</em></span> является <strong>пересечением множеств</strong> друзей Джона и Майкла.</p>
+<p><span style="color: #333399;"><strong>Пересечением двух (или нескольких) исходных множеств называется множество, которое состоит из элементов, принадлежащих каждому из исходных множеств.</strong></span></p>
+<p>В нашем случае элементы <span style="color: #000000;"><em>Том</em> </span>и <em><span style="color: #000000;">Фред</span> </em>принадлежат каждому из исходных множеств, а именно: множеству друзей Джона и множеству друзей Майкла.</p>
+<p>Обозначим множество друзей Джона через букву <span style="color: #000000;"><em>A</em></span>, множество друзей Майкла — через букву <span style="color: #000000;"><em>B</em></span>, а множество общих друзей Джона и Майкла обозначим через букву <span style="color: #000000;"><em>C</em></span>:</p>
+<p style="text-align: left;"><em><span style="color: #000000;">A = { Том, Фред, Макс, Джордж }</span></em></p>
+<p style="text-align: left;"><em><span style="color: #000000;">B = { Лео, Том, Фред, Эван }</span></em></p>
+<p style="text-align: left;"><em><span style="color: #000000;">C = { Том, Фред }</span></em></p>
+<p>Тогда пересечением множеств <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span> будет множество <span style="color: #000000;"><em>C</em></span> и записываться следующим образом:</p>
+<p style="text-align: center;"><em><span style="color: #000000;">A </span></em><span style="color: #000000;">∩</span><em><span style="color: #000000;"> B = C</span></em></p>
+<p>Символ <span style="color: #000000;"><strong>∩</strong></span> означает пересечение.</p>
+<p>Говоря о множестве, обычно подразумевают элементы, принадлежащие этому множеству. Символ пересечения <span style="color: #000000;">∩</span> читается, как союз <strong>И</strong>. Тогда выражение <span style="color: #000000;"><em>A ∩ B = C</em></span> можно прочитать следующим образом:</p>
+<p style="text-align: center;"><em><span style="color: #000000;">«Элементы, принадлежащие множеству A </span></em><strong><span style="color: #000000;">И </span></strong><em><span style="color: #000000;">множеству B, есть элементы, принадлежащие множеству C».</span></em></p>
+<p>Или еще проще:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>«Друзья, одновременно принадлежащие Джону </em><strong>И</strong><em> Майклу, есть общие друзья Джона и Майкла».</em></span></p>
+<p>Теперь представим, что у Джона и Майкла нет общих друзей. Для удобства, как и прежде обозначим множество друзей Джона через букву <span style="color: #000000;"><em>A</em></span>, а множество друзей Майкла через букву <span style="color: #000000;"><em>B</em></span></p>
+<p style="text-align: left;"><em><span style="color: #000000;">A = { Макс, Джордж }</span></em></p>
+<p style="text-align: left;"><em><span style="color: #000000;">B = { Лео, Эван }</span></em></p>
+<p>В этом случае говорят, что исходные множества не имеют общих элементов и пересечением таких множеств является пустое множество. Пустое множество обозначается символом <span style="color: #000000;">∅</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>A ∩ B = </em>∅</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Рассмотрим два множества: множество <span style="color: #000000;"><em>A</em></span>, состоящее из чисел 1, 2, 3, 5, 7 и множество <em>B</em>, состоящее из чисел 1, 2, 3, 4, 6, 12, 18</p>
+<p style="text-align: left;"><span style="color: #000000;"><em>A</em> = { 1, 2, 3, 5, 7 }</span></p>
+<p style="text-align: left;"><span style="color: #000000;"><em>B</em> = { 1, 2, 3, 4, 6, 12, 18 }</span></p>
+<p>Зададим новое множество <span style="color: #000000;"><em>C</em></span> и добавим в него элементы, которые одновременно принадлежат множеству <span style="color: #000000;"><em>A</em></span> и множеству <span style="color: #000000;"><em>B</em></span></p>
+<p style="text-align: left;"><span style="color: #000000;"><em>C</em> = { 1, 2, 3 }</span></p>
+<p>Множество <em>С</em> является пересечением множеств <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span>, поскольку элементы множества <em>C</em> одновременно принадлежат множеству <span style="color: #000000;"><em>A</em></span> и множеству <span style="color: #000000;"><em>B</em></span></p>
+<hr/>
+<p><strong>Пример 3</strong>. Рассмотрим два множества: множество <em>A</em>, состоящее из чисел 1, 5, 7, 9 и множество <span style="color: #000000;"><em>B</em></span>, состоящее из чисел 1, 4, 5, 7</p>
+<p style="text-align: left;"><span style="color: #000000;">A = { 1, 5, 7, 9 }</span></p>
+<p style="text-align: left;"><span style="color: #000000;">B = { 1, 4, 5, 7 }</span></p>
+<p>Зададим новое множество <span style="color: #000000;"><em>C</em></span> и добавим в него элементы, которые одновременно принадлежат множеству <span style="color: #000000;"><em>A</em></span> и множеству <span style="color: #000000;"><em>B</em></span></p>
+<p style="text-align: left;"><span style="color: #000000;">C = { 1, 5, 7 }</span></p>
+<p>Множество <em>С</em> является пересечением множеств <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span>, поскольку элементы множества <em>C</em> одновременно принадлежат множеству <span style="color: #000000;"><em>A</em></span> и множеству <span style="color: #000000;"><em>B.</em></span></p>
+<hr/>
+<p><strong>Пример 4</strong>. Найти пересечение следующих множеств:</p>
+<p style="text-align: left;"><span style="color: #000000;"><em>A</em> = { 1, 2, 3, 7, 9 }</span></p>
+<p style="text-align: left;"><span style="color: #000000;"><em>B</em> = { 1, 3, 5, 7, 9}</span></p>
+<p><span style="color: #000000;"><em>С</em> = { 3, 4, 5, 8,  9}</span></p>
+<p>Пересечением множеств <span style="color: #000000;"><em>A</em></span>, <span style="color: #000000;"><em>B</em></span> и <span style="color: #000000;"><em>C</em></span> будет множество, состоящее из элементов, принадлежащих каждому из множеств <span style="color: #000000;"><em>A</em></span>, <span style="color: #000000;"><em>B</em></span> и <span style="color: #000000;"><em>C</em></span>. Этими элементами являются числа 3 и 9.</p>
+<p>Зададим новое множество <span style="color: #000000;"><em>D</em></span> и добавим в него элементы 3 и 9. Затем с помощью символа пересечения <span style="color: #000000;"><em>∩ </em></span>запишем, что пересечением множеств <span style="color: #000000;"><em>A, B</em></span> и <span style="color: #000000;"><em>C</em></span> является множество <span style="color: #000000;"><em>D</em></span></p>
+<p><span style="color: #000000;"><em>D</em> = { 3, 9}</span></p>
+<p><span style="color: #000000;"><em>A ∩ B ∩ C = D</em></span></p>
+<p>Чтобы найти пересечение, вовсе необязательно задавать множества с помощью букв. Если элементов мало, то множество можно задать прямым перечислением элементов.</p>
+<p>К примеру, пусть первое множество состоит из элементов <span style="color: #000000;">1, 3, 5,</span> а второе из элементов <span style="color: #000000;">2, 3, 5</span>. Пересечением в данном случае является множество, состоящее из элементов <span style="color: #000000;">3</span> и <span style="color: #000000;">5</span>. Чтобы записать пересечение, можно воспользоваться прямым перечислением:</p>
+<p style="text-align: center;"><span style="color: #000000;">{ 1, 3, 5 } ∩ { 2, 3, 5 } = { 3, 5 }</span></p>
+<p>Числовые промежутки, которые мы рассмотрели в предыдущих уроках, тоже являются множествами. Элементами таких множеств являются числа, входящие в числовой промежуток.</p>
+<p>Например, отрезок <span style="color: #000000;">[2; 6]</span> можно понимать, как множество всех чисел от 2 до 6. Для наглядности можно перечислить все целые числа, принадлежащие данному отрезку:</p>
+<p style="text-align: center;"><span style="color: #000000;">2, 3, 4, 5, 6 ∈ [2; 6]</span></p>
+<p>Следует иметь ввиду, что мы перечислили только целые числа. Отрезку <span style="color: #000000;">[2; 6] </span>также принадлежат и другие числа, не являющиеся целыми, например, десятичные дроби. Десятичные дроби располагаются между целыми числами, но их количество настолько велико, что перечислить их не представляется возможным.</p>
+<p>Еще пример. Интервал <span style="color: #000000;">(2; 6)</span> можно понимать, как множество всех чисел от 2 до 6, кроме чисел 2 и 6. Ранее мы говорили, что интервал это такой числовой промежуток, границы которого не принадлежат ему. Для наглядности можно перечислить все целые числа, принадлежащие интервалу <span style="color: #000000;">(2; 6)</span>:</p>
+<p style="text-align: center;"><span style="color: #000000;">3, 4, 5 ∈ (2; 6)</span></p>
+<p>Поскольку числовые промежутки являются множествами, то мы можем находить пересечения между различными числовыми промежутками. Рассмотрим несколько примеров.</p>
+<p><strong>Пример 5</strong>. Даны два числовых промежутка: <span style="color: #000000;">[2; 6]</span> и <span style="color: #000000;">[4; 8]</span>. Найти их пересечение.</p>
+<p>Оба промежутка обрамлены квадратными скобками, значит их границы принадлежат им.</p>
+<p>Для наглядности перечислим все целые числа, принадлежащие промежуткам <span style="color: #000000;">[2; 6]</span> и <span style="color: #000000;">[4; 8]</span>:</p>
+<p style="text-align: center;"><span style="color: #000000;">2, 3, 4, 5, 6 ∈ [2; 6]</span></p>
+<p style="text-align: center;"><span style="color: #000000;">4, 5, 6, 7, 8 ∈ [4; 8]</span></p>
+<p>Видно, что числа <span style="color: #000000;">4, 5, 6</span> принадлежат как первому промежутку <span style="color: #000000;">[2; 6]</span>, так и второму <span style="color: #000000;">[4; 8]</span>.</p>
+<p>Тогда пересечением числовых промежутков <span style="color: #000000;">[2; 6]</span> и <span style="color: #000000;">[4; 8]</span> будет числовой промежуток <span style="color: #000000;">[4; 6]</span></p>
+<p style="text-align: center;"><span style="color: #000000;">[2; 6] ∩ [4; 8] = [4; 6]</span></p>
+<p>Изобразим промежутки <span style="color: #000000;">[2; 6]</span> и <span style="color: #000000;">[4; 8] </span>на координатной прямой. На верхней области отметим числовой промежуток <span style="color: #000000;">[2; 6]</span>, на нижней — промежуток <span style="color: #000000;">[4; 8]</span></p>
+<p><img alt="два промежутка на одной кп" class="wp-image-8655 size-full aligncenter" decoding="async" height="49" loading="lazy" src="../media/c262c8f3dbc1f30a28406d7bb22e995a.png" width="518"/></p>
+<p>Видно, что числа, принадлежащие промежутку <span style="color: #000000;">[4; 6]</span>, принадлежат как промежутку <span style="color: #000000;">[2; 6]</span>, так и промежутку <span style="color: #000000;">[4; 8]</span>. Можно также заметить, что штрихи, входящие в промежутки <span style="color: #000000;">[2; 6]</span> и <span style="color: #000000;">[4; 8]</span> пересекаются в промежутке <span style="color: #000000;">[4; 6]</span>. В такой ситуации, когда перед глазами есть координатная прямая, понятие пересечения множеств можно понимать в прямом смысле что очень удобно.</p>
+<hr/>
+<p><strong>Пример 6</strong>. Найти пересечение числовых промежутков <span style="color: #000000;">[−2; 3]</span> и <span style="color: #000000;">[4; 7]</span></p>
+<p>Оба промежутка обрамлены квадратными скобками, значит их границы принадлежат им.</p>
+<p>Для наглядности перечислим все целые числа, принадлежащие промежуткам <span style="color: #000000;">[−2; 3]</span> и <span style="color: #000000;">[4; 7]</span>:</p>
+<p style="text-align: center;"><span style="color: #000000;">−2, −1, 0, 1, 2, 3 ∈ [−2; 3]</span></p>
+<p style="text-align: center;"><span style="color: #000000;">4, 5, 6, 7 ∈ [4; 7]</span></p>
+<p>Видно, что числовые промежутки <span style="color: #000000;">[−2; 3]</span> и <span style="color: #000000;">[4; 7]</span> не имеют общих чисел. Поэтому их пересечением будет пустое множество:</p>
+<p style="text-align: center;"><span style="color: #000000;">[−2; 3] ∩ [4; 7] = Ø</span></p>
+<p>Если изобразить числовые промежутки <span style="color: #000000;">[−2; 3]</span> и <span style="color: #000000;">[4; 7]</span><span style="color: #000000;"> </span>на координатной прямой, то можно увидеть, что они нигде не пересекаются:</p>
+<p><img alt="-2 3 и 4 7 координатная прямая" class="size-full wp-image-8753 aligncenter" decoding="async" height="50" loading="lazy" src="../media/8eae37a661b207e0772e7b1baacae383.png" width="551"/></p>
+<hr/>
+<p><strong>Пример 7</strong>. Дано множество из одного элемента <span style="color: #000000;">{ 2 }</span>. Найти его пересечение с промежутком <span style="color: #000000;">(−3; 4)</span></p>
+<p>Множество, состоящее из одного элемента <span style="color: #000000;">{ 2 }</span>, на координатной прямой изображается в виде закрашенного кружка, а числовой промежуток <span style="color: #000000;">(−3; 4)</span> это интервал, границы которого не принадлежат ему. Значит границы −3 и 4 будут изображаться в виде пустых кружков:</p>
+<p><img alt="числовой промежуток -3 4" class="size-full wp-image-11825 aligncenter" decoding="async" height="49" loading="lazy" src="../media/c61a64a87c4af2c9777380092727e4e7.png" width="519"/></p>
+<p>Пересечением множества <span style="color: #000000;">{ 2 }</span> и числового промежутка <span style="color: #000000;">(−3; 4)</span> будет множество, состоящее из одного элемента <span style="color: #000000;">{ 2 }</span>, поскольку элемент 2 принадлежит как множеству <span style="color: #000000;">{ 2 }</span>, так и числовому промежутку <span style="color: #000000;">(−3; 4)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">{ 2 } ∩ (−3; 4) = { 2 }</span></p>
+<p>На самом деле мы уже занимались пересечением числовых промежутков, когда решали системы линейных неравенств. Вспомните, как мы решали их. Сначала находили множество решений первого неравенства, затем множество решений второго. Затем находили множество решений, которые удовлетворяют обоим неравенствам.</p>
+<p>По сути, множество решений, удовлетворяющих обоим неравенствам, является пересечением множеств решений первого и второго неравенства. Роль этих множеств берут на себя числовые промежутки.</p>
+<p>Например, чтобы решить систему неравенств <img alt="x b i r 6 i x m r 3" class="alignnone wp-image-8540 size-full" decoding="async" height="58" loading="lazy" src="../media/88f1bba4c72779262461d44715e7ea7e.png" width="55"/> , мы должны сначала найти множества решений каждого неравенства, затем найти пересечение этих множеств.</p>
+<p>В данном примере решением первого неравенства <span style="color: #000000;"><em>x </em>≥ 3</span> является множество всех чисел, которые больше 3 (включая само число 3). Иначе говоря, решением неравенства является числовой промежуток <span style="color: #000000;">[3; +∞)</span></p>
+<p>Решением второго неравенства <span style="color: #000000;"><em>x </em>≤ 6</span> является множество всех чисел, которые меньше 6 (включая само число 6). Иначе говоря, решением неравенства является числовой промежуток <span style="color: #000000;">(−∞; 6]</span></p>
+<p>А общим решением системы будет пересечение множеств решений первого и второго неравенства, то есть пересечение числовых промежутков <span style="color: #000000;">[3; +∞)</span> и <span style="color: #000000;">(−∞; 6]</span></p>
+<p>Если мы изобразим множество решений системы <img alt="x b i r 6 i x m r 3" class="alignnone wp-image-8540 size-full" decoding="async" height="58" loading="lazy" src="../media/88f1bba4c72779262461d44715e7ea7e.png" width="55"/> на координатной прямой, то увидим, что эти решения принадлежат промежутку <span style="color: #000000;">[3; 6]</span>, который в свою очередь является пересечением промежутков <span style="color: #000000;">[3; +∞)</span> и <span style="color: #000000;">(−∞; 6]</span></p>
+<p style="text-align: center;"><span style="color: #000000;">[3; +∞) ∩ (−∞; 6] = [3; 6]</span></p>
+<p><img alt="числовой промежуток от 3 до 6" class="size-full wp-image-8656 aligncenter" decoding="async" height="51" loading="lazy" src="../media/25383011b7f5af231ba0f939cadd4b29.png" width="519"/></p>
+<p>Поэтому в качестве ответа мы указывали, что значения переменной <span style="color: #000000;"><em>x</em></span> принадлежат числовому промежутку <span style="color: #000000;">[3; 6],</span> то есть пересечению множеств решений первого и второго неравенства</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em> ∈ [3; 6]</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Решить неравенство <img alt="x m -1 x m -5 x m 4" class="alignnone size-full wp-image-8130" decoding="async" height="90" loading="lazy" src="../media/2eed18a8515fe50daea17c2b21a72aba.png" width="67"/></p>
+<p>Все неравенства, входящие в систему уже решены. Нужно только указать те решения, которые являются общими для всех неравенств.</p>
+<p>Решением первого неравенства является числовой промежуток <span style="color: #000000;">(−∞; −1)</span>.</p>
+<p>Решением второго неравенства является числовой промежуток <span style="color: #000000;">(−∞; −5)</span>.</p>
+<p>Решением третьего неравенства является числовой промежуток <span style="color: #000000;">(−∞; 4)</span>.</p>
+<p>Решением системы <img alt="x m -1 x m -5 x m 4" class="alignnone size-full wp-image-8130" decoding="async" height="90" loading="lazy" src="../media/2eed18a8515fe50daea17c2b21a72aba.png" width="67"/> будет пересечение числовых промежутков <span style="color: #000000;">(−∞; −1), (−∞; −5) и (−∞; 4)</span>. В данном случае этим пересечением является промежуток <span style="color: #000000;">(−∞; −5)</span>.</p>
+<p style="text-align: center;"><span style="color: #000000;">(−∞; −1) ∩ (−∞; −5) ∩ (−∞; 4) = (−∞; −5)</span></p>
+<p><img alt="-5 -1 i 4 на кп" class="wp-image-8658 size-full aligncenter" decoding="async" height="264" loading="lazy" src="../media/316a9f0884cc978290317df956290db3.png" width="653"/></p>
+<p>На рисунке представлены числовые промежутки и неравенства, которыми эти числовые промежутки заданы. Видно, что числа, принадлежащие промежутку <span style="color: #000000;">(−∞; −5)</span>, одновременно принадлежат всем исходным промежуткам.</p>
+<p>Запишем ответ к системе <img alt="x m -1 x m -5 x m 4" class="alignnone size-full wp-image-8130" decoding="async" height="90" loading="lazy" src="../media/2eed18a8515fe50daea17c2b21a72aba.png" width="67"/> с помощью числового промежутка:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em> ∈ (−∞; −5)</span></p>
+<hr/>
+<p><strong>Пример 3</strong>. Решить неравенство <img alt="y b 7 i y m 4 step 1" class="alignnone size-full wp-image-8710" decoding="async" height="58" loading="lazy" src="../media/53a71e18396035bf642fca36e6c1dcd3.png" width="58"/></p>
+<p>Решением первого неравенства <span style="color: #000000;"><em>y </em>&gt; 7</span> является числовой промежуток <span style="color: #000000;">(7; +∞)</span>.</p>
+<p>Решением второго неравенства <span style="color: #000000;"><em>y </em>&lt; 4</span> является числовой промежуток <span style="color: #000000;">(−∞; 4)</span>.</p>
+<p>Решением системы <img alt="y b 7 i y m 4 step 1" class="alignnone size-full wp-image-8710" decoding="async" height="58" loading="lazy" src="../media/53a71e18396035bf642fca36e6c1dcd3.png" width="58"/> будет пересечение числовых промежутков <span style="color: #000000;">(7; +∞) и (−∞; 4)</span>.</p>
+<p>В данном случае пересечением числовых промежутков <span style="color: #000000;">(7; +∞)</span> и <span style="color: #000000;">(−∞; 4)</span> является пустое множество, поскольку эти числовые промежутки не имеют общих элементов:</p>
+<p style="text-align: center;"><span style="color: #000000;">(7; +∞) ∩ (−∞; 4) = ∅</span></p>
+<p>Если изобразить числовые промежутки <span style="color: #000000;">(7; +∞)</span> и <span style="color: #000000;">(−∞; 4) </span>на координатной прямой, то можно увидеть, что они нигде не пересекаются:</p>
+<p><img alt="y b 7 i y m 4 координатная прямая" class="wp-image-8712 size-full aligncenter" decoding="async" height="50" loading="lazy" src="../media/46c5f25a0bedd68d0495d4d27af4d538.png" width="519"/></p>
+<hr/>
+<h2 id="yak2" style="text-align: center;">Объединение множеств</h2>
+<p><span style="color: #333399;"><strong>Объединением двух (или нескольких) исходных множеств называют множество, которое состоит из элементов, принадлежащих хотя бы одному из исходных множеств.</strong></span></p>
+<p>На практике объединение множеств состоит из всех элементов, принадлежащих исходным множествам. Поэтому и говорят, что элементы такого множества принадлежат хотя бы одному из исходных множеств.</p>
+<p>Рассмотрим множество <span style="color: #000000;"><em>A</em></span> с элементами <span style="color: #000000;">1, 2, 3</span> и множество <span style="color: #000000;"><em>B</em></span> с элементами <span style="color: #000000;">4, 5, 6.</span></p>
+<p><span style="color: #000000;"><em>A</em> = { 1, 2, 3 }</span></p>
+<p><span style="color: #000000;"><em>B</em> = { 4, 5, 6 }</span></p>
+<p>Зададим новое множество <span style="color: #000000;"><em>C</em></span> и добавим в него все элементы множества <span style="color: #000000;"><em>A</em></span> и все элементы множества <span style="color: #000000;"><em>B</em></span></p>
+<p><span style="color: #000000;"><em>C</em> = { 1, 2, 3, 4, 5, 6 }</span></p>
+<p>В данном случае<strong> объединением</strong> множеств <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span> является множество <span style="color: #000000;"><em>C</em></span> и обозначается следующим образом:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>A </em>∪<em> B = C</em></span></p>
+<p>Символ ∪ означает объединение и заменяет собой союз <strong>ИЛИ</strong>. Тогда выражение <span style="color: #000000;"><em>A </em>∪<em> B = C</em> </span>можно прочитать так:</p>
+<p style="text-align: center;"><em><span style="color: #000000;">Элементы, принадлежащие множеству A </span></em><span style="color: #000000;"><strong>ИЛИ </strong></span><em><span style="color: #000000;">множеству B, есть элементы, принадлежащие множеству C.</span></em></p>
+<p>В определении объединения сказано, что элементы такого множества принадлежат хотя бы одному из исходных множеств. Данную фразу можно понимать в прямом смысле.</p>
+<p>Вернёмся к созданному нами множеству <span style="color: #000000;"><em>C</em></span>, куда входят все элементы множеств <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span>. Возьмём для примера из этого множества элемент 5. Что можно про него сказать?</p>
+<p>Если 5 является элементом множества <span style="color: #000000;"><em>C</em></span>, а множество <span style="color: #000000;"><em>С</em> </span>является объединением множеств <span style="color: #000000;"><em>A</em> и <em>B</em></span>, то можно с уверенностью заявить, что элемент 5 принадлежит хотя бы одному из множеств <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span>. Так оно и есть:</p>
+<p><span style="color: #000000;"><em>A</em> = { 1, 2, 3 }</span></p>
+<p><span style="color: #000000;"><em>B</em> = { 4, <span style="color: #0000ff;"><strong>5</strong></span>, 6 }</span></p>
+<p><span style="color: #000000;"><em>C</em> = { 1, 2, 3, 4, <span style="color: #0000ff;"><strong>5</strong></span>, 6 }</span></p>
+<p>Возьмем ещё один элемент из множества <span style="color: #000000;"><em>С</em></span>, например, элемент 2. Что можно про него сказать?</p>
+<p>Если 2 является элементом множества <span style="color: #000000;"><em>C</em></span>, а множество <span style="color: #000000;"><em>С</em></span> является объединением множеств <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span>, то можно с уверенностью заявить, что элемент 2 принадлежит хотя бы одному из множеств <span style="color: #000000;"><em>A</em></span> и<span style="color: #000000;"><em> B</em></span>. Так оно и есть:</p>
+<p><span style="color: #000000;"><em>A</em> = {1, <strong><span style="color: #ff0000;">2</span></strong>, 3}</span></p>
+<p><span style="color: #000000;"><em>B</em> = {4, 5, 6}</span></p>
+<p><span style="color: #000000;"><em>C</em> = { 1, <span style="color: #ff0000;"><strong>2</strong></span>, 3, 4, 5, 6 }</span></p>
+<p>Если мы захотим объединить два или более множества и вдруг обнаружим, что один или несколько элементов принадлежат каждому из этих множеств, то в объединение повторяющиеся элементы будут входить только один раз.</p>
+<p>Например, рассмотрим множество <span style="color: #000000;"><em>A</em></span> с элементами <span style="color: #000000;">1, 2, 3, 4</span> и множество <span style="color: #000000;"><em>B</em></span> с элементами <span style="color: #000000;">2, 4, 5, 6.</span></p>
+<p><span style="color: #000000;"><em>A</em> = {1, <strong><span style="color: #0000ff;">2</span></strong>, 3, <strong><span style="color: #0000ff;">4</span></strong>}</span></p>
+<p><span style="color: #000000;"><em>B</em> = {<strong><span style="color: #0000ff;">2</span></strong>, <strong><span style="color: #0000ff;">4</span></strong>, 5, 6}</span></p>
+<p>Видим, что элементы <span style="color: #000000;">2</span> и <span style="color: #000000;">4</span> одновременно принадлежат и множеству <span style="color: #000000;"><em>A</em></span>, и множеству <em><span style="color: #000000;">B</span></em>. Если мы захотим объединить множества <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span>, то новое множество <span style="color: #000000;"><em>C</em></span> будет содержать элементы <span style="color: #000000;">2</span> и <span style="color: #000000;">4</span> только один раз. Выглядеть это будет так:</p>
+<p><span style="color: #000000;"><em>C</em> = { 1, 2, 3, 4, 5, 6 }</span></p>
+<p>Чтобы при объединении не допустить ошибок, обычно поступают так: сначала в новое множество добавляют все элементы первого множества, затем добавляют элементы второго множества, которые не принадлежат первому множеству. Попробуем сделать такое объединение с множествами <span style="color: #000000;"><em>A</em></span> и <span style="color: #000000;"><em>B</em></span>.</p>
+<p>Итак, у нас имеются следующие исходные множества:</p>
+<p><span style="color: #000000;"><em>A</em> = { 1, 2, 3, 4 }</span></p>
+<p><span style="color: #000000;"><em>B</em> = { 2, 4, 5, 6 }</span></p>
+<p>Зададим новое множество <span style="color: #000000;"><em>С</em></span> и добавим в него все элементы множества <em>A</em></p>
+<p><span style="color: #000000;"><em>C</em> = { 1, 2, 3, 4,</span></p>
+<p>Теперь добавим элементы из множества <span style="color: #000000;"><em>B</em></span>, которые не принадлежат множеству <span style="color: #000000;"><em>A</em></span>. Множеству <span style="color: #000000;"><em>A</em></span> не принадлежат элементы <span style="color: #000000;">5</span> и <span style="color: #000000;">6</span>. Их и добавим во множество <span style="color: #000000;"><em>C</em></span></p>
+<p><span style="color: #000000;"><em>C</em> = { 1, 2, 3, 4, 5, 6 }</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Друзьями Джона являются Том, Фред, Макс и Джордж. А друзьями Майкла являются Лео, Том, Фред и Эван. Найти объединение множеств друзей Джона и Майкла.</p>
+<p>Для начала зададим два множества: множество друзей Джона и множество друзей Майкла.</p>
+<table style="border: none;">
+<tbody>
+<tr>
+<td style="border: none; padding: 0 7px; text-align: right;"><span style="color: #000000;"><em>Друзья Джона = {</em></span></td>
+<td style="border: none; padding: 0;"><span style="color: #000000;"><em>Том,</em></span><br/>
+<span style="color: #000000;"><em>Фред,</em></span><br/>
+<span style="color: #000000;"><em>Макс,</em></span><br/>
+<span style="color: #000000;"><em>Джорж }</em></span></td>
+</tr>
+</tbody>
+</table>
+<table style="border: none;">
+<tbody>
+<tr>
+<td style="border: none; padding: 0 7px; text-align: right;"><span style="color: #000000;"><em>Друзья Майкла = {</em></span></td>
+<td style="border: none; padding: 0;"><span style="color: #000000;"><em>Лео,</em></span><br/>
+<span style="color: #000000;"><em>Том,</em></span><br/>
+<span style="color: #000000;"><em>Фред,</em></span><br/>
+<span style="color: #000000;"><em>Эван }</em></span></td>
+</tr>
+</tbody>
+</table>
+<p>Зададим новое множество с названием <span style="color: #000000;"><em>«Все друзья Джона и Майкла»</em></span> и добавим в него всех друзей Джона и Майкла.</p>
+<p>Заметим, что Том и Фред одновременно являются друзьями Джона и Майкла, поэтому мы добавим их в новое множество только один раз, поскольку сразу двух Томов и двух Фредов не бывает.</p>
+<table style="border: none;">
+<tbody>
+<tr>
+<td style="border: none; padding: 0 7px; text-align: right;"><span style="color: #000000;"><em>Все друзья Джона и Майкла</em></span></td>
+<td style="border: none; padding: 0; vertical-align: middle;"><span style="color: #000000;"><em>= { Том, Фред, Макс, Джордж, Лео, Эван }</em></span></td>
+</tr>
+</tbody>
+</table>
+<p>В данном случае множество всех друзей Джона и Майкла является объединением множеств друзей Джона и Майкла.</p>
+<p><span style="color: #000000;">Друзья Джона ∪ Друзья Майкла = Все друзья Джона и Майкла </span></p>
+<hr/>
+<p><strong>Пример 3</strong>. Даны два числовых промежутка: <span style="color: #000000;">[−7; 0]</span> и <span style="color: #000000;">[−3; 5]</span>. Найти их объединение.</p>
+<p>Оба промежутка обрамлены квадратными скобками, значит их границы принадлежат им.</p>
+<p>Для наглядности перечислим все целые числа, принадлежащие этим промежуткам:</p>
+<p style="text-align: center;"><span style="color: #000000;">−7, −6, −5, −4,</span> <span style="color: #0000ff;">−3,−2, −1</span>, <span style="color: #000000;">0  ∈ [−7; 0]</span></p>
+<p style="text-align: center;"><span style="color: #0000ff;">−3,−2, −1</span>, <span style="color: #000000;">0, 1, 2, 3, 4, 5 ∈ [−3; 5]</span></p>
+<p>Объединением числовых промежутков <span style="color: #000000;">[−7; 0]</span> и <span style="color: #000000;">[−3; 5]</span> будет числовой промежуток <span style="color: #000000;">[−7; 5]</span>, который содержит все числа промежутка <span style="color: #000000;">[−7; 0]</span> и <span style="color: #000000;">[−3; 5]</span> без повторов некоторых из чисел</p>
+<p style="text-align: center;"><span style="color: #000000;">−7, −6, −5, −4, −3,−2, −1, 0, 1, 2, 3, 4, 5 ∈ [−7; 5]</span></p>
+<p>Обратите внимание, что числа <span style="color: #000000;">−3,−2, −1</span> принадлежали и первому промежутку и второму. Но поскольку в объединение допускается включать такие элементы только один раз, мы включили их единоразово.</p>
+<p>Значит объединением числовых промежутков <span style="color: #000000;">[−7; 0]</span> и <span style="color: #000000;">[−3; 5]</span> будет числовой промежуток <span style="color: #000000;">[−7; 5]</span></p>
+<p style="text-align: center;"><span style="color: #000000;">[−7; 0] ∪ [−3; 5] = [−7; 5]</span></p>
+<p>Изобразим на координатной прямой промежутки <span style="color: #000000;">[−7; 0]</span> и <span style="color: #000000;">[−3; 5]</span>. На верхней области отметим числовой промежуток <span style="color: #000000;">[−7; 0]</span>, на нижней — промежуток <span style="color: #000000;">[−3; 5]</span></p>
+<p><img alt="два промежутка на одной кп -7 0 b -5 5" class="size-full wp-image-8738 aligncenter" decoding="async" height="49" loading="lazy" src="../media/8697780294bcd634ea418d9a5f24a94f.png" width="518"/></p>
+<p>Ранее мы выяснили, что промежуток <span style="color: #000000;">[−7; 5]</span> является объединением промежутков <span style="color: #000000;">[−7; 0]</span> и <span style="color: #000000;">[−3; 5]</span>. Здесь полезно вспомнить про определение объединения множеств, которое было приведено в самом начале. Объединение трактуется, как множество, состоящее из всех элементов, принадлежащих хотя бы одному из исходных множеств.</p>
+<p>Действительно, если взять любое число из промежутка <span style="color: #000000;">[−7; 5]</span>, то окажется, что оно принадлежит хотя бы одному из промежутков: либо промежутку <span style="color: #000000;">[−7; 0]</span> либо промежутку <span style="color: #000000;">[−3; 5]</span>.</p>
+<p>Возьмём из промежутка <span style="color: #000000;">[−7; 5]</span> любое число, например число <span style="color: #000000;">2</span>. Поскольку промежуток <span style="color: #000000;">[−7; 5]</span> является объединением промежутков <span style="color: #000000;">[−7; 0]</span> и <span style="color: #000000;">[−3; 5]</span>, то число <span style="color: #000000;">2</span> будет принадлежать хотя бы одному из этих промежутков. В данном случае число <span style="color: #000000;">2</span> принадлежит промежутку <span style="color: #000000;">[−3; 5]</span></p>
+<p><img alt="два промежутка на одной кп -7 0 b -5 5 шаг 2" class="size-full wp-image-8743 aligncenter" decoding="async" height="112" loading="lazy" src="../media/24f753711e6c9ad7b3529b0f53e2524f.png" width="519"/></p>
+<p>Возьмём ещё какое-нибудь число. Например, число <span style="color: #000000;">−4</span>. Это число будет принадлежать хотя бы одному из промежутков: <span style="color: #000000;">[−7; 0]</span> или <span style="color: #000000;">[−3; 5]</span>. В данном случае оно принадлежит промежутку <span style="color: #000000;">[−7; 0]</span></p>
+<p><img alt="два промежутка на одной кп -7 0 b -5 5 шаг 3" class="size-full wp-image-8744 aligncenter" decoding="async" height="112" loading="lazy" src="../media/713a2dc320592408a7f147f088930c5c.png" width="519"/></p>
+<p>Возьмём ещё какое-нибудь число. Например, число <span style="color: #000000;">−2</span>. Оно принадлежит как промежутку <span style="color: #000000;">[−7; 0]</span>, так и промежутку <span style="color: #000000;">[−3; 5]</span>. Но на координатной прямой оно указывается только один раз, поскольку в одной точке сразу два числа −2 не бывает.</p>
+<p>Не каждое объединение числовых промежутков является числовым промежутком. Например, попробуем найти объединение числовых промежутков [−2<span style="color: #000000;">; −1]</span> и [4<span style="color: #000000;">; 7].</span></p>
+<p>Идея остаётся та же самая — объединением числовых промежутков [−2<span style="color: #000000;">;−1]</span> и [4<span style="color: #000000;">; 7] </span>будет множество, состоящее из элементов, принадлежащих хотя бы одному из промежутков: <span style="color: #000000;">[−2; −1]</span> или <span style="color: #000000;">[4; 7]</span>. Но это множество не будет являться числовым промежутком. Для наглядности перечислим все целые числа, принадлежащие этому объединению:</p>
+<p style="text-align: center;"><span style="color: #000000;">[−2; −1] ∪ [4; 7] = { −2, −1, 4, 5, 6, 7 }</span></p>
+<p>Получили множество <span style="color: #000000;">{ −2, −1, 4, 5, 6, 7 }</span>. Это множество не является числовым промежутком по причине того, что числа, располагающиеся между<span style="color: #000000;"> −1</span> и <span style="color: #000000;">4</span>, не вошли в полученное множество</p>
+<p><img alt="-2 -1 и 4 7 на кп" class="wp-image-8766 size-full aligncenter" decoding="async" height="49" loading="lazy" src="../media/5011c444b38165df9d396bb991c15ec5.png" width="551"/></p>
+<p>Числовой промежуток должен содержать все числа от левой границы до правой. Если одно из чисел отсутствует, то числовой промежуток теряет смысл. Допустим, имеется линейка длиной 15 см</p>
+<p><img alt="линейка 15 см" class="size-full wp-image-8767 aligncenter" decoding="async" height="72" loading="lazy" src="../media/7554f8660cfe46c25eed7f2e0d130710.png" width="646"/></p>
+<p>Эта линейка является числовым промежутком <span style="color: #000000;">[0; 15], </span>поскольку содержит все числа в промежутке от 0 до 15 включительно. Теперь представим, что на линейке после числа 9 сразу следует число 12.</p>
+<p><img alt="линейка 15 см ошибка" class="size-full wp-image-8768 aligncenter" decoding="async" height="72" loading="lazy" src="../media/8d60bacb2667f5f9d67e959b4934a37b.png" width="566"/></p>
+<p>Эта линейка не является линейкой в 15 см, и её нежелательно использовать для измерения. Также, её нельзя назвать числовым промежутком <span style="color: #000000;">[0; 15]</span>, поскольку она не содержит все числа, которые должна была содержать.</p>
+<hr/>
+<h2 id="yak3" style="text-align: center;">Решение неравенств, содержащих знак ≠</h2>
+<p>Некоторые неравенства содержат знак <span style="color: #000000;"><strong>≠</strong> </span>(не равно). Например, <span style="color: #000000;">2<em>x </em>≠ 8</span>. Чтобы решить такое неравенство, нужно найти множество значений переменной <span style="color: #000000;"><em>x</em></span>, при которых левая часть <strong>не равна</strong> правой части.</p>
+<p>Решим неравенство <span style="color: #000000;">2<em>x </em>≠ 8</span>. Разделим обе части данного неравенства на 2, тогда получим:</p>
+<p><img alt="2x n r 8 шаг 1" class="size-full wp-image-8746 aligncenter" decoding="async" height="72" loading="lazy" src="../media/9d7b3fb3a9f6cbc7064c149b48ce2bf0.png" width="64"/></p>
+<p>Получили равносильное неравенство <span style="color: #000000;"><em>x </em>≠ 4</span>. Решением этого неравенства является множество всех чисел, <strong>не равных</strong> 4. То есть если мы подставим в неравенство <span style="color: #000000;"><em>x </em>≠ 4</span> любое число, которое не равно 4, то получим верное неравенство.</p>
+<p>Подставим, например, число 5</p>
+<p><span style="color: #000000;"><em>5 ≠ 4 — верное неравенство, поскольку 5 не равно 4</em></span></p>
+<p>Подставим 7</p>
+<p><span style="color: #000000;"><em>7 ≠ 4 — верное неравенство, поскольку 7 не равно 4</em></span></p>
+<p>И поскольку неравенство <span style="color: #000000;"><em>x </em>≠ 4</span> равносильно исходному неравенству <span style="color: #000000;">2<em>x </em>≠ 8</span>, то решения неравенства <span style="color: #000000;"><em>x </em>≠ 4</span> будут подходить и к неравенству <span style="color: #000000;">2<em>x </em>≠ 8</span>. Подставим те же тестовые значения <span style="color: #000000;">5</span> и <span style="color: #000000;">7</span> в неравенство <span style="color: #000000;">2<em>x </em>≠ 8</span>.</p>
+<p style="text-align: center;"><span style="color: #000000;">2 × 5 ≠ 8</span></p>
+<p style="text-align: center;"><span style="color: #000000;">2 × 7 ≠ 8</span></p>
+<p>Изобразим множество решений неравенства <span style="color: #000000;"><em>x</em> ≠ 4</span> на координатной прямой. Для этого выколем точку 4 на координатной прямой, а всю оставшуюся область с обеих сторон выделим штрихами:</p>
+<p><img alt="чп от -b do 4 i 4 do b" class="size-full wp-image-8747 aligncenter" decoding="async" height="51" loading="lazy" src="../media/fe309c2c09e55f7a86768a208adca601.png" width="648"/></p>
+<p>Теперь запишем ответ в виде числового промежутка. Для этого воспользуемся объединением множеств. Любое число, являющееся решением неравенства <span style="color: #000000;">2<em>x </em>≠ 8</span> будет принадлежать либо промежутку <span style="color: #000000;">(−∞; 4)</span> либо промежутку <span style="color: #000000;">(4; +∞).</span> Так и записываем, что значения переменной <span style="color: #000000;"><em>x</em></span> принадлежат <span style="color: #000000;">(−∞; 4) </span>или <span style="color: #000000;">(4; +∞)</span>. Напомним, что для слова <strong>«или»</strong> используется символ <span style="color: #000000;">∪</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em> ∈ (−∞; 4) ∪ (4; +∞)</span></p>
+<p>В этом выражении говорится, что значения, принимаемые переменной <span style="color: #000000;"><em>x</em></span>, принадлежат промежутку <span style="color: #000000;">(−∞; 4)</span> <strong>или</strong> промежутку <span style="color: #000000;">(4; +∞).</span></p>
+<p>Неравенства, содержащие знак <strong><span style="color: #000000;">≠</span></strong>, также можно решать, как обычные уравнения. Для этого знак <strong><span style="color: #000000;">≠</span></strong> заменяют на знак <strong><span style="color: #000000;">=</span></strong>. Тогда получится обычное уравнение. В конце решения найденное значение переменной x нужно исключить из множества решений.</p>
+<p>Решим предыдущее неравенство <span style="color: #000000;">2<em>x </em>≠ 8</span>, как обычное уравнение. Заменим знак <span style="color: #000000;">≠</span> на знак равенства <span style="color: #000000;">=</span>, получим уравнение <span style="color: #000000;">2<em>x = </em>8</span>. Разделим обе части данного уравнения на <span style="color: #000000;">2</span>, получим <span style="color: #000000;"><em>x </em>= 4</span>.</p>
+<p>Видим, что при <span style="color: #000000;"><em>x</em></span>, равном 4, уравнение обращается в верное числовое равенство. При других значениях равенства соблюдаться не будет. Эти другие значения нас и интересуют. А для этого достаточно исключить найденную четвёрку из множества решений.</p>
+<hr/>
+<p><strong>Пример 2</strong>. Решить неравенство <span style="color: #000000;">3<em>x </em>− 5 ≠ 1 − 2<em>x</em></span></p>
+<p>Перенесем <span style="color: #000000;">−2<em>x</em></span> из правой части в левую часть, изменив знак, а <span style="color: #000000;">−5</span> из левой части перенесём в правую часть, опять же изменив знак:</p>
+<p><img alt="3x - 5 naravno 1 - 2 x шаг 1" class="size-full wp-image-8748 aligncenter" decoding="async" height="16" loading="lazy" src="../media/8090a5cd685eeb6909327b46db1194b8.png" width="123"/></p>
+<p>Приведем подобные слагаемые в обеих частях:</p>
+<p><img alt="3x - 5 naravno 1 - 2 x шаг 2" class="size-full wp-image-8749 aligncenter" decoding="async" height="48" loading="lazy" src="../media/c7be4e3dd2eef1d3284a51556d66795b.png" width="132"/></p>
+<p>Разделим обе части получившегося неравенства на 5</p>
+<p><img alt="3x - 5 naravno 1 - 2 x шаг 3" class="size-full wp-image-8750 aligncenter" decoding="async" height="75" loading="lazy" src="../media/1e530c3688a7821b2c4ae1cfbd4b2f10.png" width="67"/></p>
+<p>Решением неравенства <span style="color: #000000;"><em>x </em>≠ 1,2</span> является множество всех чисел, <strong>не равных </strong><span style="color: #000000;">1,2</span>.</p>
+<p>Изобразим множество решений неравенства <span style="color: #000000;"><em>x </em>≠ 1,2</span> на координатной прямой и запишем ответ в виде числового промежутка:</p>
+<p><img alt="3x - 5 naravno 1 - 2 x шаг 4" class="size-full wp-image-8751 aligncenter" decoding="async" height="55" loading="lazy" src="../media/26174b64a9dfe8db1412c23390e85f68.png" width="648"/></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em> ∈ (−∞; 1,2) ∪ (1,2; +∞)</span></p>
+<p>В этом выражении говорится, что значения, принимаемые переменной <em>x</em> принадлежат промежутку <span style="color: #000000;">(−∞; 1,2)</span> <strong>или</strong> промежутку <span style="color: #000000;">(1,2; +∞)</span></p>
+<hr/>
+<h2 id="yak4" style="text-align: center;">Решение совокупностей неравенств</h2>
+<p>Рассмотрим ещё один вид неравенств, который называется <strong>совокупностью неравенств</strong>. Такой тип неравенств, возможно, вы будете решать редко, но для общего развития полезно изучить и их.</p>
+<p>Совокупность неравенств очень похожа на систему неравенств. Различие в том, что в системе неравенств нужно найти множество решений, удовлетворяющих каждому неравенству, образующему эту систему.</p>
+<p>А в случае с совокупностью неравенств, нужно найти множество решений, удовлетворяющих <strong>хотя бы одному</strong> неравенству, образующему эту совокупность.</p>
+<p>Совокупность неравенств обозначается квадратной скобкой. Например, следующая запись из двух неравенств является совокупностью:</p>
+<p><img alt="совокупность x b 3 x m 6" class="size-full wp-image-8771 aligncenter" decoding="async" height="58" loading="lazy" src="../media/b27f0c8af7313c649e616ba31ec730bb.png" width="56"/></p>
+<p>Решим данную совокупность. Сначала нужно решить каждое неравенство по отдельности.</p>
+<p>Решением первого неравенства <span style="color: #000000;"><em>x </em>≥ 3</span> является числовой промежуток <span style="color: #000000;">[3; +∞)</span>. Решением второго неравенства <span style="color: #000000;"><em>x </em>≤ 6</span> является числовой промежуток <span style="color: #000000;">(−∞; 6]</span>.</p>
+<p>Множество значений <span style="color: #000000;"><em>x</em></span>, при которых верно <strong>хотя бы одно</strong> из неравенств, будет принадлежать промежутку <span style="color: #000000;">[3; +∞)</span> <strong>или</strong> промежутку <span style="color: #000000;">(−∞; 6]</span>. Так и записываем:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em> ∈ [3; +∞) ∪ (−∞; 6]</span></p>
+<p>В этом выражении говорится, что переменная <span style="color: #000000;"><em>x</em></span>, входящая в<br/>
+совокупность <img alt="совокупность x b 3 x m 6" class="size-full wp-image-8771 alignnone" decoding="async" height="58" loading="lazy" src="../media/b27f0c8af7313c649e616ba31ec730bb.png" width="56"/> принимает все значения, принадлежащие промежутку <span style="color: #000000;">[3; +∞)</span> <strong>или</strong> промежутку <span style="color: #000000;">(−∞; 6]</span>. А это то, что нам нужно. Ведь решить совокупность означает найти множество решений, удовлетворяющих <strong>хотя бы одному</strong> неравенству, образующему эту совокупность. А любое число из промежутка <span style="color: #000000;">[3; +∞)</span> или промежутка <span style="color: #000000;">(−∞; 6]</span> будет удовлетворять хотя бы одному неравенству.</p>
+<p>Например, число 9 из промежутка <span style="color: #000000;">[3; +∞) </span>удовлетворяет первому неравенству <span style="color: #000000;"><em>x </em>≥ 3. </span>А число −7 из промежутка <span style="color: #000000;">(−∞; 6] </span>удовлетворяет второму неравенству <span style="color: #000000;"><em>x </em>≤ 6.</span></p>
+<p>Посмотрите внимательно на выражение <span style="color: #000000;"><em>x </em>∈ [3; +∞) ∪ (−∞; 6], </span>а именно на его правую часть. Ведь выражение<span style="color: #000000;"> [3; +∞) ∪ (−∞; 6] </span>представляет собой объединение числовых промежутков <span style="color: #000000;">[3; +∞) и (−∞; 6]</span>. Точнее, объединение множеств решений первого и второго неравенства.</p>
+<p>Стало быть, <strong>решением совокупности неравенств является объединение множеств</strong> решений первого и второго неравенства.</p>
+<p>Иначе говоря, решением совокупности <img alt="совокупность x b 3 x m 6" class="size-full wp-image-8771 alignnone" decoding="async" height="58" loading="lazy" src="../media/b27f0c8af7313c649e616ba31ec730bb.png" width="56"/> будет объединение числовых промежутков <span style="color: #000000;">[3; +∞) и (−∞; 6]</span></p>
+<p><img alt="числовой промежуток от 3 до 6" class="size-full wp-image-8656 aligncenter" decoding="async" height="51" loading="lazy" src="../media/25383011b7f5af231ba0f939cadd4b29.png" width="519"/></p>
+<p>Объединением числовых промежутков <span style="color: #000000;">[3; +∞) и (−∞; 6]</span> является промежуток <span style="color: #000000;">(−∞; +∞)</span>. Точнее, объединением числовых промежутков <span style="color: #000000;">[3; +∞) и (−∞; 6]</span> является вся координатная прямая. А вся координатная прямая это все числа, которые только могут быть</p>
+<p style="text-align: center;"><span style="color: #000000;">[3; +∞) ∪ (−∞; 6] = (−∞; +∞)</span></p>
+<p>Ответ можно оставить таким, каким мы его записали ранее:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈ [3; +∞) ∪ (−∞; 6] </span></p>
+<p>либо заменить на более короткий:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈ (−∞; +∞)</span></p>
+<p>Возьмём любое число из полученного объединения, и проверим удовлетворяет ли оно хотя бы одному неравенству.</p>
+<p>Возьмем для примера число 8. Оно удовлетворяет первому неравенству <em>x </em>≥ 3.</p>
+<p style="text-align: center;"><span style="color: #000000;">8 ≥ 3</span></p>
+<p>Возьмем еще какое-нибудь число, например, число 1. Оно удовлетворяет второму неравенству <span style="color: #000000;"><em>x </em>≤ 6</span></p>
+<p style="text-align: center;">1 ≤ 6</p>
+<p>Возьмем еще какое-нибудь число, например, число <span style="color: #000000;">5</span>. Оно удовлетворяет и первому неравенству <span style="color: #000000;"><em>x</em> ≥ 3</span> и второму <span style="color: #000000;"><em>x </em>≤ 6</span></p>
+<p><img alt="5 b 3 5 m 6" class="size-full wp-image-8772 aligncenter" decoding="async" height="58" loading="lazy" src="../media/5a22f8eb1af3dd1bfcbdc4b7ca704ce7.png" width="55"/></p>
+<hr/>
+<p><strong>Пример 2</strong>. Решить совокупность неравенств <img alt="совокупность 2x -1 3 - 0" class="wp-image-8770 size-full alignnone" decoding="async" height="62" loading="lazy" src="../media/43a4af62a076ead4a510fc0c8dca8088.png" width="96"/></p>
+<p>Чтобы решить эту совокупность, нужно найти множество решений, которые удовлетворяют хотя бы одному неравенству, образующему эту совокупность.</p>
+<p>Для начала найдём множество решений первого неравенства <span style="color: #000000;"><em>x </em>&lt; −0,25</span>. Этим множеством является числовой промежуток <span style="color: #000000;">(−∞; −0,25)</span>.</p>
+<p>Множеством решений второго неравенства <span style="color: #000000;"><em>x</em> ≥ −7</span> является числовой промежуток <span style="color: #000000;">[−7; +∞).</span></p>
+<p>Решением совокупности неравенств <img alt="совокупность 2x -1 3 - 0" class="wp-image-8770 size-full alignnone" decoding="async" height="62" loading="lazy" src="../media/43a4af62a076ead4a510fc0c8dca8088.png" width="96"/> будет объединение множеств решений первого и второго неравенства.</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈ (−∞; −0,25) ∪ [−7; +∞)</span></p>
+<p>Иначе говоря, решением совокупности <img alt="совокупность 2x -1 3 - 0" class="wp-image-8770 size-full alignnone" decoding="async" height="62" loading="lazy" src="../media/43a4af62a076ead4a510fc0c8dca8088.png" width="96"/> будет объединение числовых промежутков <span style="color: #000000;">(−∞; −0,25) и [−7; +∞)</span></p>
+<p><img alt="числовой промежуток от -7 до -025" class="wp-image-8774 size-full aligncenter" decoding="async" height="54" loading="lazy" src="../media/7147fadf2ef27936772d83ce1c998720.png" width="519"/></p>
+<p>Объединением числовых промежутков <span style="color: #000000;">(−∞; −0,25)</span> и <span style="color: #000000;">[−7; +∞)</span> является является вся координатная прямая. А вся координатная прямая это все числа, которые только могут быть</p>
+<p style="text-align: center;"><span style="color: #000000;">(−∞; −0,25) ∪ [−7; +∞) = (−∞; +∞)</span></p>
+<p>Ответ можно оставить таким, каким мы его записали ранее:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈ (−∞; −0,25) ∪ [−7; +∞)</span></p>
+<p>либо заменить на более короткий:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈ (−∞; +∞)</span></p>
+<hr/>
+<p><strong>Пример 3</strong>. Решить совокупность неравенств <img alt="3x na 2 m 2x - 1" class="alignnone size-full wp-image-8790" decoding="async" height="58" loading="lazy" src="../media/69313ca211a9f16218665bd9c5e34040.png" width="146"/></p>
+<p>Решим каждое неравенство по отдельности:</p>
+<p><img alt="3x na 2 m 2x - 1 решение" class="wp-image-8822 size-full aligncenter" decoding="async" height="426" loading="lazy" src="../media/f1eabf7f1795ba7cdfa4689aedaf2231.png" width="162"/></p>
+<p>Множеством решений первого неравенства <span style="color: #000000;"><em>x</em> &lt; −3</span> является числовой промежуток <span style="color: #000000;">(−∞; −3)</span>.</p>
+<p>Множеством решений второго неравенства <span style="color: #000000;"><em>x </em>≤ 0</span> является числовой промежуток <span style="color: #000000;">(−∞; 0]</span>.</p>
+<p>Решением совокупности неравенств <img alt="x m -3 i x m b 0" class="alignnone size-full wp-image-8792" decoding="async" height="58" loading="lazy" src="../media/d68a62ca1a76bc9b62b94a3e73f9ae7d.png" width="65"/> будет объединение множеств решений первого и второго неравенства.</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈ (−∞; −3) ∪ (−∞; 0]</span></p>
+<p>Иначе говоря, решением совокупности <img alt="x m -3 i x m b 0" class="alignnone size-full wp-image-8792" decoding="async" height="58" loading="lazy" src="../media/d68a62ca1a76bc9b62b94a3e73f9ae7d.png" width="65"/> будет объединение числовых промежутков <span style="color: #000000;">(−∞; −3) и (−∞; 0]</span></p>
+<p><img alt="кп -3 0" class="size-full wp-image-8793 aligncenter" decoding="async" height="50" loading="lazy" src="../media/5151b317a7a8123d6c74b03264733d4d.png" width="519"/></p>
+<p>Объединением числовых промежутков <span style="color: #000000;">(−∞; −3) и (−∞; 0]</span> является числовой промежуток <span style="color: #000000;">(−∞; 0]</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(−∞; −3) ∪ (−∞; 0] = (−∞; 0]</span></p>
+<p>Ответ можно оставить таким, каким мы его записали ранее:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈ (−∞; −3) ∪ (−∞; 0]</span></p>
+<p>либо заменить на более короткий:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈ (−∞; 0]</span></p>
+<hr/>
+<h2 id="yak5" style="text-align: center;">Задания для самостоятельного решения</h2>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 1.</span> Найдите пересечение и объединение следующих множеств:</div>
+<div class="b-test-work-example"><span style="color: #000000;">А = { 1, 2, 5 }</span><br/>
+<span style="color: #000000;">B = { 3, 4, 5 }</span></div>
+<div class="ex ex1" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><span style="color: #000000;">A ∩ B = { 5 }</span><br/>
+<span style="color: #000000;">A ∪ B = { 1, 2, 3, 4, 5 }</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex1" href="#" rel=".ex1">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 2.</span> Найдите пересечение и объединение следующих множеств:</div>
+<div class="b-test-work-example"><span style="color: #000000;">А = { −3, −2, −1, 0, 1, 2 }</span><br/>
+<span style="color: #000000;">B = { 1, 2, 3, 4, 5 }</span></div>
+<div class="ex ex2" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><span style="color: #000000;">A ∩ B = { 1, 2 }</span><br/>
+<span style="color: #000000;">A ∪ B = { −3, −2, −1, 0, 1, 2, 3, 4, 5 }</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex2" href="#" rel=".ex2">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 3.</span> Найдите пересечение и объединение следующих множеств:</div>
+<div class="b-test-work-example"><span style="color: #000000;">А = { 1, 2, 3 }</span><br/>
+<span style="color: #000000;">B = { 3, 4 }</span></div>
+<div class="ex ex3" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><span style="color: #000000;">A ∩ B = { 3 }</span><br/>
+<span style="color: #000000;">A ∪ B = { 1, 2, 3, 4 }</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex3" href="#" rel=".ex3">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 4.</span> Найдите пересечение и объединение следующих числовых промежутков:</div>
+<div class="b-test-work-example"><span style="color: #000000;">[−2; 7) и (0; 10]</span></div>
+<div class="ex ex4" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/a98b31c4cd7db97f5081906e280d92f4.png" style="padding-top: 25px; padding-bottom: 25px; clear: both;"/><br/>
+<span style="color: #000000;">[−2; 7) ∩ (0; 10] = (0; 7)</span><br/>
+<span style="color: #000000;">[−2; 7) ∪ (0; 10] = [−2; 10]</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex4" href="#" rel=".ex4">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 5.</span> Найдите пересечение и объединение следующих числовых промежутков:</div>
+<div class="b-test-work-example"><span style="color: #000000;">(−∞; 3] и [−2; 1)</span></div>
+<div class="ex ex5" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/ba727cb21a0ee4795ff4c231b311d1e4.png" style="padding-top: 25px; padding-bottom: 25px; clear: both;"/><br/>
+<span style="color: #000000;">(−∞; 3] ∩ [−2; 1) = [−2; 1)</span><br/>
+<span style="color: #000000;">(−∞; 3] ∪ [−2; 1) = (−∞; 3]</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex5" href="#" rel=".ex5">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 6.</span> Найдите пересечение и объединение следующих числовых промежутков:</div>
+<div class="b-test-work-example"><span style="color: #000000;">(3; +∞) и [2; +∞)</span></div>
+<div class="ex ex6" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/723ee8772e5899044b55a5c7d02ee344.png" style="padding-top: 25px; padding-bottom: 25px; clear: both;"/><br/>
+<span style="color: #000000;">(3; +∞) ∩ [2; +∞) = (3; +∞)</span><br/>
+<span style="color: #000000;">(3; +∞) ∪ [2; +∞) = [2; +∞)</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex6" href="#" rel=".ex6">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 7.</span> Найдите пересечение и объединение следующих числовых промежутков:</div>
+<div class="b-test-work-example"><span style="color: #000000;">[−3; −1] и (−2; 4]</span></div>
+<div class="ex ex7" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/1bb7862cc238726e42983cb521d92d2d.png" style="padding-top: 25px; padding-bottom: 25px; clear: both;"/><br/>
+<span style="color: #000000;">[−3; −1] ∩ (−2; 4] = (−2; −1]</span><br/>
+<span style="color: #000000;">[−3; −1] ∪ (−2; 4] = [−3; 4]</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex7" href="#" rel=".ex7">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 8.</span> Решите неравенство:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/d8249485554d302f72b8a675edb0b610.png"/></div>
+<div class="ex ex8" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/fae17ce4a862222113e56ea21ca71b85.png"/><br/>
+<img decoding="async" loading="lazy" src="../media/c7e39ac1c315a586e9a36463da748153.png" style="padding-top: 25px; clear: both;"/><br/>
+<img decoding="async" loading="lazy" src="../media/cf52e0aaf03bd13aee4dccb5adb290b4.png" style="padding-top: 20px; clear: both;"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex8" href="#" rel=".ex8">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 9.</span> Решите неравенство:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/2d0361235eabcb7780c066933ef05ced.png"/></div>
+<div class="ex ex9" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/56fff9824a4ab3efe0384dce3cb57b6e.png"/><br/>
+<img decoding="async" loading="lazy" src="../media/e9140ea5bcf54910b34fc7c1541e828d.png" style="padding-top: 25px; clear: both;"/><br/>
+<img decoding="async" loading="lazy" src="../media/858c080baf89958bbdd56150ee4c7bb1.png" style="padding-top: 20px; clear: both;"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex9" href="#" rel=".ex9">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 10.</span> Решите совокупность неравенств:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/fd38a52012a05707bc87c767739f7609.png"/></div>
+<div class="ex ex10" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f15b713f94b67283c87634d9ad6fef48.png"/><br/>
+<img decoding="async" loading="lazy" src="../media/04246a4ded85c2873d9dd59e8dd1e839.png" style="padding-top: 25px; clear: both;"/><br/>
+<img decoding="async" loading="lazy" src="../media/371117e0e6d6af7cf6266091789c49e6.png" style="padding-top: 20px; clear: both;"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex10" href="#" rel=".ex10">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 11.</span> Решите совокупность неравенств:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/67abb719d8f37a1d177f0de92dd8e37a.png"/></div>
+<div class="ex ex11" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/b5210bfdc79bc34ef66b1d51a83a6cd0.png"/><br/>
+<img decoding="async" loading="lazy" src="../media/26640e277a9b424f9c0771521463d8e5.png" style="padding-top: 25px; clear: both;"/><br/>
+<img decoding="async" loading="lazy" src="../media/cda0232131ee32f68f053457f99b2753.png" style="padding-top: 20px; clear: both;"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex11" href="#" rel=".ex11">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 12.</span> Решите совокупность неравенств:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/3127e6f8e6351c4fea735c90d05ba287.png"/></div>
+<div class="ex ex12" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/59d537d99b749ef7eacfae7e4d420b8b.png"/><br/>
+<img decoding="async" loading="lazy" src="../media/90b8db95604c6d18f26115a15a133fcc.png" style="padding-top: 25px; clear: both;"/><br/>
+<img decoding="async" loading="lazy" src="../media/aebb397fb843956b7e2116ac07d25bac.png" style="padding-top: 20px; clear: both;"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex12" href="#" rel=".ex12">Показать решение</a></div>
+</div>
+<hr/>
+</div></main></body></html>

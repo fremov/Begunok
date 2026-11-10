@@ -24,8 +24,8 @@ android {
         applicationId = "ru.begunok"
         minSdk = 26
         targetSdk = 35
-        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 5
-        versionName = System.getenv("VERSION_NAME")?.removePrefix("v") ?: "0.5"
+        versionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 7
+        versionName = System.getenv("VERSION_NAME")?.removePrefix("v") ?: "0.7"
         // Подключение к серверу Sintence по умолчанию — из local.properties (в git не попадает):
         //   lol.server=https://адрес   lol.me=Имя#TAG
         fun quoted(key: String): String {

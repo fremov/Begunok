@@ -1,0 +1,422 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>11. НОД и НОК</title><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../lesson.css"><script src="../lesson.js" defer></script></head><body><main><h1>11. НОД и НОК</h1><div class="entry-content">
+<p>Продолжаем изучать деление. В этом уроке мы познакомимся с такими понятиями, как НОД и НОК.</p>
+<p><strong>НОД</strong> — это наибольший общий делитель.</p>
+<p><strong>НОК</strong> — это наименьшее общее кратное.</p>
+<p>Тема довольно скучная, но разобраться в ней нужно обязательно. Не понимая этой темы, не получится эффективно работать с дробями, которые являются настоящей преградой в математике.</p>
+<nav id="menu"><b>Содержание урока</b>
+<ul class="navless">
+<li><a href="#yak1">Наибольший общий делитель</a></li>
+<li><a href="#yak2">Второй способ нахождения НОД</a></li>
+<li><a href="#yak8">Третий способ нахождения НОД</a></li>
+<li><a href="#yak3">Нахождение НОД для нескольких чисел</a></li>
+<li><a href="#naimenshee_obshchee_kratnoe">Наименьшее общее кратное</a></li>
+<li><a href="#yak5">Второй способ нахождения НОК</a></li>
+<li><a href="#yak6">Третий способ нахождения НОК</a></li>
+<li><a href="#yak7">Задания для самостоятельного решения</a></li>
+</ul>
+</nav>
+<h2 id="yak1" style="text-align: center;">Наибольший общий делитель</h2>
+<p><strong>Наибольшим общим делителем чисел <em>a</em> и <em>b</em> называется наибольшее число, на которое <em>a</em> и <em>b</em> делятся без остатка.</strong></p>
+<p>Чтобы хорошо понять это определение, подставим вместо переменных <span style="color: #000000;"><em>a</em></span> и <span style="color: #000000;"><em>b</em></span> любые два числа. Например, вместо переменной <span style="color: #000000;"><em>a</em></span> подставим число <span style="color: #000000;">12</span>, а вместо переменной <em><span style="color: #000000;">b</span> — </em>число <span style="color: #000000;">9</span>. Теперь попробуем прочитать это определение:</p>
+<p><strong>Наибольшим общим делителем чисел <em>12</em> и <em>9</em> называется наибольшее число, на которое <em>12</em> и <em>9</em> делятся без остатка.</strong></p>
+<p>Из определения понятно, что речь идёт об общем делителе чисел 12 и 9. Причем делитель является наибольшим из всех существующих делителей. Этот наибольший общий делитель (НОД) нужно найти.</p>
+<p>Для нахождения наибольшего общего делителя двух чисел, используется три способа. Первый способ довольно трудоёмкий, но зато позволяет хорошо понять суть темы и прочувствовать весь ее смысл.</p>
+<p>Второй и третий способы довольны просты и дают возможность быстро найти НОД. Рассмотрим все три способа. А какой применять на практике — выбирать вам.</p>
+<p>Первый способ заключается в поиске всех возможных делителей двух чисел и в выборе наибольшего из них. Рассмотрим этот способ на следующем примере: <em>найти наибольший общий делитель чисел 12 и 9</em>.</p>
+<p>Сначала найдём все возможные делители числа 12. Для этого разделим 12 на все делители в диапазоне от 1 до 12. Если делитель позволит разделить 12 без остатка, то мы будем выделять его синим цветом и в скобках делать соответствующее пояснение.</p>
+<p>12 : <span style="color: #0000ff;">1</span> = 12<br/>
+(12 разделилось на 1 без остатка, значит 1 является делителем числа 12)</p>
+<p>12 : <span style="color: #0000ff;">2</span> = 6<br/>
+(12 разделилось на 2 без остатка, значит 2 является делителем числа 12)</p>
+<p>12 : <span style="color: #0000ff;">3</span> = 4<br/>
+(12 разделилось на 3 без остатка, значит 3 является делителем числа 12)</p>
+<p>12 : <span style="color: #0000ff;">4</span> = 3<br/>
+(12 разделилось на 4 без остатка, значит 4 является делителем числа 12)</p>
+<p>12 : 5 = 2 (2 в остатке)<br/>
+(12 не разделилось на 5 без остатка, значит 5 не является делителем числа 12)</p>
+<p>12 : <span style="color: #0000ff;">6</span> = 2<br/>
+(12 разделилось на 6 без остатка, значит 6 является делителем числа 12)</p>
+<p>12 : 7 = 1 (5 в остатке)<br/>
+(12 не разделилось на 7 без остатка, значит 7 не является делителем числа 12)</p>
+<p>12 : 8 = 1 (4 в остатке)<br/>
+(12 не разделилось на 8 без остатка, значит 8 не является делителем числа 12)</p>
+<p>12 : 9 = 1 (3 в остатке)<br/>
+(12 не разделилось на 9 без остатка, значит 9 не является делителем числа 12)</p>
+<p>12 : 10 = 1 (2 в остатке)<br/>
+(12 не разделилось на 10 без остатка, значит 10 не является делителем числа 12)</p>
+<p>12 : 11 = 1 (1 в остатке)<br/>
+(12 не разделилось на 11 без остатка, значит 11 не является делителем числа 12)</p>
+<p>12 : <span style="color: #0000ff;">12</span> = 1<br/>
+(12 разделилось на 12 без остатка, значит 12 является делителем числа 12)</p>
+<p>Теперь найдём делители числа 9. Для этого проверим все делители от 1 до 9</p>
+<p>9 : <span style="color: #0000ff;">1</span> = 9<br/>
+(9 разделилось на 1 без остатка, значит 1 является делителем числа 9)</p>
+<p>9 : 2 = 4 (1 в остатке)<br/>
+(9 не разделилось на 2 без остатка, значит 2 не является делителем числа 9)</p>
+<p>9 : <span style="color: #0000ff;">3</span> = 3<br/>
+(9 разделилось на 3 без остатка, значит 3 является делителем числа 9)</p>
+<p>9 : 4 = 2 (1 в остатке)<br/>
+(9 не разделилось на 4 без остатка, значит 4 не является делителем числа 9)</p>
+<p>9 : 5 = 1 (4 в остатке)<br/>
+(9 не разделилось на 5 без остатка, значит 5 не является делителем числа 9)</p>
+<p>9 : 6 = 1 (3 в остатке)<br/>
+(9 не разделилось на 6 без остатка, значит 6 не является делителем числа 9)</p>
+<p>9 : 7 = 1 (2 в остатке)<br/>
+(9 не разделилось на 7 без остатка, значит 7 не является делителем числа 9)</p>
+<p>9 : 8 = 1 (1 в остатке)<br/>
+(9 не разделилось на 8 без остатка, значит 8 не является делителем числа 9)</p>
+<p>9 : <span style="color: #0000ff;">9</span> = 1<br/>
+(9 разделилось на 9 без остатка, значит 9 является делителем числа 9)</p>
+<p>Теперь выпишем делители обоих чисел. Числа выделенные синим цветом и являются делителями. Их и выпишем:</p>
+<p><img alt="делители числа 12 и 9" class="wp-image-6465 size-full aligncenter" decoding="async" height="110" loading="lazy" src="../media/f25b50f09a27a1928255b63a876e2d85.png" width="656"/></p>
+<p>Выписав делители, можно сразу определить какой является наибольшим и общим.</p>
+<p>Согласно определению, наибольшим общим делителем чисел 12 и 9, является число, на которое 12 и 9 делятся без остатка. Наибольшим и общим делителем чисел 12 и 9 является число 3</p>
+<p><img alt="делители числа 12 и 9 определение НОД" class="wp-image-6466 size-full aligncenter" decoding="async" height="133" loading="lazy" src="../media/ad716b934f41793989e4fd6639e7519a.png" width="658"/></p>
+<p>И число 12 и число 9 делятся на 3 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">12 : 3 = 4</span></p>
+<p style="text-align: center;"><span style="color: #000000;">9  : 3 = 3</span></p>
+<p style="text-align: center;">Значит НОД (12 и 9) = 3</p>
+<hr/>
+<h2 id="yak2" style="text-align: center;">Второй способ нахождения НОД</h2>
+<p>Теперь рассмотрим второй способ нахождения наибольшего общего делителя. Суть данного способа заключается в том, чтобы разложить оба числа на простые множители и перемножить общие из них.</p>
+<p><strong>Пример 1</strong>. Найти НОД чисел 24 и 18</p>
+<p>Сначала разложим оба числа на простые множители:</p>
+<p><img alt="разложение 24 и 18 на простые множители" class="wp-image-8376 size-full aligncenter" decoding="async" height="180" loading="lazy" src="../media/1e87eb8562f848a83d59efdb44c63582.png" width="404"/></p>
+<p>Теперь перемножим их общие множители. Чтобы не запутаться, общие множители можно подчеркнуть.</p>
+<p>Смотрим на разложение числа 24. Первый его множитель это 2. Ищем такой же множитель в разложении числа 18 и видим, что он там тоже есть. Подчеркиваем обе двойки:</p>
+<p><img alt="нод 24 и 18 на простые множители шаг 2" class="wp-image-8378 size-full aligncenter" decoding="async" height="181" loading="lazy" src="../media/1bb20d541fe11b2ea1be8cf3c7270cac.png" width="412"/></p>
+<p>Снова смотрим на разложение числа 24. Второй его множитель тоже 2. Ищем такой же множитель в разложении числа 18 и видим, что его там второй раз уже нет. Тогда ничего не подчёркиваем.</p>
+<p>Следующая двойка в разложении числа 24 также отсутствует в разложении числа 18.</p>
+<p>Переходим к последнему множителю в разложении числа 24. Это множитель 3. Ищем такой же множитель в разложении числа 18 и видим, что там он тоже есть. Подчеркиваем обе тройки:</p>
+<p><img alt="нод 24 и 18 на простые множители шаг 3" class="wp-image-8379 size-full aligncenter" decoding="async" height="180" loading="lazy" src="../media/a1c773809410be5176344852ab479f55.png" width="411"/></p>
+<p>Итак, общими множителями чисел 24 и 18 являются множители 2 и 3. Чтобы получить НОД, эти множители необходимо перемножить:</p>
+<p style="text-align: center;"><span style="color: #000000;">2 × 3 = 6</span></p>
+<p style="text-align: center;">Значит НОД (24 и 18) = 6</p>
+<hr/>
+<h2 id="yak8" style="text-align: center;">Третий способ нахождения НОД</h2>
+<p style="text-align: left;">Теперь рассмотрим третий способ нахождения наибольшего общего делителя. Суть данного способа заключается в том, что числа подлежащие поиску наибольшего общего делителя раскладывают на простые множители. Затем из разложения первого числа вычеркивают множители, которые не входят в разложение второго числа. Оставшиеся числа в первом разложении перемножают и получают НОД.</p>
+<p><strong>Пример 1</strong>. Найти НОД чисел 28 и 16.</p>
+<p>В первую очередь, раскладываем числа 28 и 16 на простые множители:</p>
+<p><img alt="разложение чисел 28 и 16" class="wp-image-8380 size-full aligncenter" decoding="async" height="180" loading="lazy" src="../media/d21e1f1ba5808e52f511730d1803aae9.png" width="366"/></p>
+<p>Получили два разложения: <img alt="2 на 2 на 7" class="alignnone wp-image-6032 size-full" decoding="async" height="18" loading="lazy" src="../media/be5de7a0d1c97789ee676ed96d7b49f8.png" width="77"/> и <img alt="2 на 2 на 2 на 2" class="alignnone size-full wp-image-6034" decoding="async" height="18" loading="lazy" src="../media/58021b19f79db167a96322e3f5fd710d.png" width="111"/></p>
+<p style="text-align: left;">Теперь из разложения первого числа вычеркнем множители, которые не входят в разложение второго числа. В разложение второго числа не входит семёрка. Её и вычеркнем из первого разложения:</p>
+<p><img alt="2 на 2 на 7 без 7" class="size-full wp-image-6036 aligncenter" decoding="async" height="72" loading="lazy" src="../media/13becf9b31e33c667dcc143b069c7c4b.png" width="322"/></p>
+<p style="text-align: left;">Теперь перемножаем оставшиеся множители и получаем НОД:</p>
+<p><img alt="2 на 2 равно 4" class="size-full wp-image-6037 aligncenter" decoding="async" height="37" loading="lazy" src="../media/f84f22b979c43c9d743c091607f9d68b.png" width="311"/></p>
+<p>Число 4 является наибольшим общим делителем чисел 28 и 16. Оба этих числа делятся на 4 без остатка:</p>
+<p style="text-align: center;">28 : 4 = 7</p>
+<p style="text-align: center;">16 : 4 = 4</p>
+<p style="text-align: center;"> НОД (28 и 16) = 4</p>
+<hr/>
+<p><strong>Пример 2.</strong> Найти НОД чисел 100 и 40</p>
+<p style="text-align: left;">Раскладываем на множители число 100</p>
+<p><img alt="разложение числа 100 на множители" class="wp-image-8382 size-full aligncenter" decoding="async" height="180" loading="lazy" src="../media/841e4d4a6b71aae39d184e5e2962b9c1.png" width="147"/></p>
+<p style="text-align: left;">Раскладываем на множители число 40</p>
+<p><img alt="разложение числа 40 на множители" class="wp-image-8384 size-full aligncenter" decoding="async" height="180" loading="lazy" src="../media/82e4126da16b0c30261a095e38533ee8.png" width="147"/></p>
+<p>Получили два разложения: 2 × 2 × 5 × 5 и 2 × 2 × 2 × 5</p>
+<p style="text-align: left;">Теперь из разложения первого числа вычеркнем множители, которые не входят в разложение второго числа. В разложение второго числа не входит одна пятерка (там только одна пятёрка). Её и вычеркнем из первого разложения</p>
+<p style="text-align: center;"><img alt="2 на 2 на 5 на 5" class="alignnone size-full wp-image-8373" decoding="async" height="46" loading="lazy" src="../media/b444dcb03ab9eedaa527860394592c6a.png" width="236"/></p>
+<p style="text-align: center;">Перемножим оставшиеся числа:</p>
+<p style="text-align: center;"><img alt="2 на 2 на 5 равно 20" class="alignnone size-full wp-image-8375" decoding="async" height="26" loading="lazy" src="../media/457be8f7675f98253b44dca687fc7c3e.png" width="243"/></p>
+<p style="text-align: left;">Получили ответ 20. Значит число 20 является наибольшим общим делителем чисел 100 и 40. Эти два числа делятся на 20 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">100 : 20 = 5</span></p>
+<p style="text-align: center;"><span style="color: #000000;">40 : 20 = 2</span></p>
+<p style="text-align: center;"> НОД (100 и 40) = 20.</p>
+<hr/>
+<p style="text-align: left;"><strong>Пример 3.</strong> Найти НОД чисел 72 и 128</p>
+<p style="text-align: left;">Раскладываем на множители число 72</p>
+<p style="text-align: left;"><img alt="разложение числа 72 на множители" class="wp-image-8387 size-full aligncenter" decoding="async" height="225" loading="lazy" src="../media/ac2ff07baba51f19af92cee0a42fea8a.png" width="147"/></p>
+<p style="text-align: left;">Раскладываем на множители число 128</p>
+<p style="text-align: left;"><img alt="разложение числа 128 на множители" class="wp-image-8388 size-full aligncenter" decoding="async" height="305" loading="lazy" src="../media/1d044d03f1fbc48cf5479ec614126125.png" width="148"/>Получили два разложения: <span style="color: #000000;">2 × 2 × 2 × 3 × 3 и 2 × 2 × 2 × 2 × 2 × 2 × 2</span>.</p>
+<p style="text-align: left;">Теперь из разложения первого числа вычеркнем множители, которые не входят в разложение второго числа. В разложение второго числа не входят две тройки (там их вообще нет). Их и вычеркнем из первого разложения:</p>
+<p style="text-align: center;"><img alt="2 на 2 на 2 на 3 на 3" class="alignnone size-full wp-image-8390" decoding="async" height="48" loading="lazy" src="../media/1450731b3fb58896fcb613b93d483160.png" width="392"/></p>
+<p style="text-align: center;">Перемножим оставшиеся числа:</p>
+<p style="text-align: center;"><img alt="2 на 2 на 2 равно 8" class="alignnone size-full wp-image-8391" decoding="async" height="26" loading="lazy" src="../media/a6fbea008d46d9bf662651da17d71825.png" width="289"/></p>
+<p style="text-align: left;">Получили ответ 8. Значит число 8 является наибольшим общим делителем чисел 72 и 128. Эти два числа делятся на 8 без остатка:</p>
+<p style="text-align: center;">72 : 8 = 9</p>
+<p style="text-align: center;">128 : 8 = 16</p>
+<p style="text-align: center;"> НОД (72 и 128) = 8</p>
+<hr/>
+<h2 id="yak3" style="text-align: center;">Нахождение НОД для нескольких чисел</h2>
+<p style="text-align: left;">Наибольший общий делитель можно находить и для нескольких чисел, а не только для двух. Для этого числа, подлежащие поиску наибольшего общего делителя, раскладывают на простые множители, затем находят произведение общих простых множителей этих чисел.</p>
+<p style="text-align: left;">Например, найдём НОД для чисел 18,  24  и  36</p>
+<p style="text-align: left;">Разложим на множители число 18</p>
+<p><img alt="разложение числа 18 на множители" class="wp-image-8392 size-full aligncenter" decoding="async" height="143" loading="lazy" src="../media/ef442bafaa202a2d64608fda0c031cb0.png" width="147"/></p>
+<p style="text-align: left;">Разложим на множители число 24</p>
+<p style="text-align: left;"><img alt="разложение числа 24 на множители" class="wp-image-8394 size-full aligncenter" decoding="async" height="184" loading="lazy" src="../media/75cafcd98d3a048d97e5e449f10a7be6.png" width="147"/></p>
+<p style="text-align: left;">Разложим на множители число 36</p>
+<p><img alt="разложение числа 36 на множители" class="wp-image-8395 size-full aligncenter" decoding="async" height="184" loading="lazy" src="../media/b46a22374adb44222625b852b01182cd.png" width="147"/></p>
+<p style="text-align: left;">Получили три разложения:</p>
+<p><img alt="разложения чисел 18 24 и 36" class="size-full wp-image-8397 aligncenter" decoding="async" height="178" loading="lazy" src="../media/7f51bc324ca62f5b404fa72ec7ab57ff.png" width="288"/></p>
+<p style="text-align: left;">Теперь найдём и подчеркнём общие множители:</p>
+<p><img alt="разложения чисел 18 24 и 36 шаг 2" class="size-full wp-image-8398 aligncenter" decoding="async" height="186" loading="lazy" src="../media/9c6171a51c5fff425c83e0c9346ad41f.png" width="302"/></p>
+<p style="text-align: left;">Мы видим, что общие множители для чисел 18, 24 и 36 это множители 2 и 3. Эти множители входят во все три разложения. Перемножив эти множители, мы получим НОД, который ищем:</p>
+<p style="text-align: center;"><span style="color: #000000;">2 × 3 = 6</span></p>
+<p style="text-align: left;">Получили ответ 6. Значит число 6 является наибольшим общим делителем чисел 18, 24 и 36. Эти три числа делятся на 6 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">18 : 6 = 3</span></p>
+<p style="text-align: center;"><span style="color: #000000;">24 : 6 = 4</span></p>
+<p style="text-align: center;"><span style="color: #000000;">36 : 6 = 6</span></p>
+<p style="text-align: center;"> НОД (18, 24 и 36) = 6</p>
+<hr/>
+<p style="text-align: left;"><strong>Пример 2.</strong> Найти НОД для чисел 12, 24, 36 и 42</p>
+<p style="text-align: left;">Разложим на простые множители каждое число. Затем найдём произведение общих простых множителей.</p>
+<p>Разложим на множители число 12</p>
+<p><img alt="разложение числа 12 на множители" class="size-full wp-image-8400 aligncenter" decoding="async" height="143" loading="lazy" src="../media/b39b88e30575162ac18e8b09fd50a0d6.png" width="147"/></p>
+<p>Разложим на множители число 24</p>
+<p><img alt="разложение числа 24 на множители" class="size-full wp-image-8401 aligncenter" decoding="async" height="184" loading="lazy" src="../media/fb299e9184482ae81d4d4501f211155f.png" width="147"/></p>
+<p style="text-align: left;">Разложим на множители число 36</p>
+<p><img alt="разложение числа 36 на множители" class="size-full wp-image-8402 aligncenter" decoding="async" height="183" loading="lazy" src="../media/6459915e8f6e13349a8ebe7b57c9ab6e.png" width="147"/></p>
+<p> </p>
+<p>Разложим на множители число 42</p>
+<p><img alt="разложение числа 42 на множители" class="size-full wp-image-8403 aligncenter" decoding="async" height="143" loading="lazy" src="../media/70e9dedfbe11360d4cde155338f67be3.png" width="147"/></p>
+<p>Получили четыре разложения:</p>
+<p><img alt="разложения чисел 42 36 24 12 шаг 1" class="size-full wp-image-8405 aligncenter" decoding="async" height="254" loading="lazy" src="../media/5933a90fe2062a1ea115e4a70228937e.png" width="302"/></p>
+<p>Теперь найдём и подчеркнём общие множители:</p>
+<p><img alt="разложения чисел 42 36 24 12 шаг 2" class="size-full wp-image-8406 aligncenter" decoding="async" height="262" loading="lazy" src="../media/4f2fca488856c14f0606938d690b168c.png" width="302"/></p>
+<p>Мы видим, что общие множители для чисел 12, 24, 36, и 42 это множители 2 и 3. Перемножив эти множители, мы получим НОД, который ищем:</p>
+<p style="text-align: center;">2 × 3 = 6</p>
+<p style="text-align: left;">Получили ответ 6. Значит число 6 является наибольшим общим делителем чисел 12, 24, 36 и 42. Эти числа делятся на 6 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">12 : 6 = 2</span></p>
+<p style="text-align: center;"><span style="color: #000000;">24 : 6 = 4</span></p>
+<p style="text-align: center;"><span style="color: #000000;">36 : 6 = 6</span></p>
+<p style="text-align: center;"><span style="color: #000000;">42 : 6 = 7</span></p>
+<p style="text-align: center;"> НОД (12, 24 , 36 и 42) = 6</p>
+<hr/>
+<h2 id="naimenshee_obshchee_kratnoe" style="text-align: center;">Наименьшее общее кратное</h2>
+<p style="text-align: left;">Из предыдущего урока мы знаем, что если какое-то число без остатка разделилось на другое, его называют кратным этого числа.</p>
+<p style="text-align: left;">Оказывается, кратное может быть общим у нескольких чисел. И сейчас нас будет интересовать кратное двух чисел, причем оно должно быть максимально маленьким.</p>
+<p><strong>Определение. Наименьшее общее кратное (НОК) чисел <em>a</em> и <em>b —</em> это наименьшее число, которое кратно <em>a</em> и <em>b</em>. Другими словами, это такое маленькое число, которое делится без остатка на число <em>a</em> и число <em>b</em>.</strong></p>
+<p>Определение содержит две переменные <em>a</em> и <em>b</em>. Давайте подставим вместо этих переменных любые два числа. Например, вместо переменной <em>a</em> подставим число 9, а вместо переменной <em>b</em> подставим число 12. Теперь попробуем прочитать определение:</p>
+<p><strong>Наименьшее общее кратное (НОК) чисел <em>9</em> и <em>12 —</em> это наименьшее число, которое кратно <em>9</em> и <em>12</em>. Другими словами, это такое маленькое число, которое делится без остатка на число <em>9</em> и на число <em>12</em>.</strong></p>
+<p>Из определения понятно, что наименьшее общее кратное это наименьшее число, которое делится без остатка на 9 и на 12. Это наименьшее общее кратное требуется найти.</p>
+<p>Для нахождения наименьшего общего кратного (НОК) можно пользоваться тремя способами. Первый способ заключается в том, что можно выписать первые кратные двух чисел, а затем выбрать среди этих кратных такое число, которое будет общим для обоих чисел и маленьким. Давайте применим этот способ.</p>
+<p>В первую очередь, найдем первые кратные для числа 9. Чтобы найти кратные для 9, нужно эту девятку поочерёдно умножить на числа от 1 до 9. Получаемые ответы будут кратными для числа 9.</p>
+<p>Итак, начнём. Кратные будем выделять синим цветом:</p>
+<p><img alt="нахождение кратных числа 9 вручную" class="size-full wp-image-8676 aligncenter" decoding="async" height="283" loading="lazy" src="../media/a4a3b4ce6ac87efa692a27af347c27f5.png" width="110"/></p>
+<p>Теперь находим кратные для числа 12. Для этого поочерёдно умножим число 12 на все числа 1 до 12:</p>
+<p><img alt="нахождение кратных числа 12 вручную" class="size-full wp-image-8677 aligncenter" decoding="async" height="382" loading="lazy" src="../media/9941dc1b14743c34c0f4a6110870a3c9.png" width="151"/></p>
+<p style="text-align: left;">Теперь выпишем кратные обоих чисел:</p>
+<p style="text-align: left;"><img alt="-5 -1 i 4 на кп" class="wp-image-8674 size-full aligncenter" decoding="async" height="310" loading="lazy" src="../media/a228b483c9dc6d248945b9838f1d2490.png" width="650"/></p>
+<p> </p>
+<p>Теперь найдём общие кратные обоих чисел. Найдя, сразу подчеркнём их:</p>
+<p style="text-align: left;"><img alt="кратные чисел 9 и 12 подчеркивание" class="wp-image-8672 size-full aligncenter" decoding="async" height="308" loading="lazy" src="../media/9eadf5bb7b1a10703b3a96eb94ad6e7b.png" width="650"/></p>
+<p>Общими кратными для чисел 9 и 12 являются кратные 36 и 72. Наименьшим же из них является 36.</p>
+<p>Значит наименьшее общее кратное для чисел 9 и 12 это число 36. Данное число делится на 9 и 12 без остатка:</p>
+<p style="text-align: center;">36 : 9 = 4</p>
+<p style="text-align: center;">36 : 12 = 3</p>
+<p style="text-align: center;">НОК (9 и 12) = 36</p>
+<hr/>
+<h2 id="yak5" style="text-align: center;">Второй способ нахождения НОК</h2>
+<p>Второй способ заключается в том, что числа для которых ищется наименьшее общее кратное раскладываются на простые множители. Затем выписываются множители, входящие в первое разложение, и добавляют недостающие множители из второго разложения. Полученные множители перемножают и получают НОК.</p>
+<p style="text-align: left;">Применим данный способ для предыдущей задачи. Найдём НОК для чисел 9 и 12.</p>
+<p style="text-align: left;">Разложим на множители число 9</p>
+<p style="text-align: center;"><img alt="разложение числа 9 на множители" class="alignnone wp-image-8414 size-full" decoding="async" height="104" loading="lazy" src="../media/aef5d18b25f88aa17685e59ea011afe3.png" width="67"/></p>
+<p style="text-align: left;">Разложим на множители число 12</p>
+<p><img alt="" class="size-full wp-image-8400 aligncenter" decoding="async" height="143" loading="lazy" src="../media/b39b88e30575162ac18e8b09fd50a0d6.png" width="147"/></p>
+<p style="text-align: left;">Выпишем первое разложение:</p>
+<p style="text-align: center;"><img alt="3 на 3 на 2 на 2 шаг 1" class="alignnone wp-image-8419 size-full" decoding="async" height="26" loading="lazy" src="../media/23e5cdcda2690ab08a0bf6080cafb787.png" width="400"/></p>
+<p style="text-align: left;">Теперь допишем множители из второго разложения, которых нет в первом разложении. В первом разложении нет двух двоек. Их и допишем:</p>
+<p style="text-align: center;"><img alt="3 на 3 на 2 на 2 шаг 2" class="wp-image-8418 size-full aligncenter" decoding="async" height="26" loading="lazy" src="../media/6fa3cfb879483b44e59189ad13acedbc.png" width="400"/></p>
+<p style="text-align: left;">Теперь перемножаем эти множители:</p>
+<p style="text-align: center;"><img alt="3 на 3 на 2 на 2 шаг 3" class="alignnone size-full wp-image-8417" decoding="async" height="26" loading="lazy" src="../media/77f107e57d1976f6461460d82c189048.png" width="400"/></p>
+<p>Получили ответ 36. Значит наименьшее общее кратное чисел 9 и 12 это число 36. Данное число делится на 9 и 12 без остатка:</p>
+<p style="text-align: center;">36 : 9 = 4</p>
+<p style="text-align: center;">36 : 12 = 3</p>
+<p style="text-align: center;">НОК (9 и 12) = 36</p>
+<p style="text-align: left;">Говоря простым языком, всё сводится к тому, чтобы организовать новое разложение куда входят оба разложения сразу. Разложением первого числа 9 являлись множители 3 и 3, а разложением второго числа 12 являлись множители 2, 2 и 3.</p>
+<p style="text-align: left;">Наша задача состояла в том, чтобы организовать новое разложение куда входило бы разложение числа 9 и разложение числа 12 одновременно. Для этого мы выписали разложение первого числа и дописали туда множители из второго разложения, которых не было в первом разложении. В результате получили новое разложение <span style="color: #000000;">3 × 3 × 2 × 2</span>. Нетрудно увидеть воочию, что в него одновременно входят разложение числа 9 и разложение числа 12</p>
+<p style="text-align: left;"><img alt="Разложение чисел 9 и 12" class="wp-image-3797 size-full aligncenter" decoding="async" height="322" loading="lazy" src="../media/42d11044bf6ef78aa59f3646589fe466.png" width="452"/></p>
+<hr/>
+<p><strong>Пример 2.</strong> Найти НОК чисел 50 и 180</p>
+<p>Разложим на множители число 50</p>
+<p><img alt="разложение числа 50 на множители" class="wp-image-8424 size-full aligncenter" decoding="async" height="143" loading="lazy" src="../media/c411768bfae1e3d09e543c0aa0b65d61.png" width="147"/></p>
+<p>Разложим на множители число 180</p>
+<p><img alt="разложение числа 180 на множители" class="wp-image-8425 size-full aligncenter" decoding="async" height="223" loading="lazy" src="../media/ad03627c0cc5cf6c0fe7cc4eccc06063.png" width="144"/></p>
+<p style="text-align: left;">Выпишем первое разложение:</p>
+<p style="text-align: center;"><img alt="255233 шаг 1" class="size-full wp-image-8429 aligncenter" decoding="async" height="26" loading="lazy" src="../media/3b7995528a3598899fef6029a663b7d7.png" width="598"/></p>
+<p style="text-align: left;">Теперь допишем множители из второго разложения, которых нет первом разложении. В первом разложении нет ещё одной двойки и двух троек. Их и допишем:</p>
+<p style="text-align: center;"><span style="color: #0000ff;"><img alt="255233 шаг 2" class="size-full wp-image-8428 aligncenter" decoding="async" height="26" loading="lazy" src="../media/3792912965e3c47f3d138871c212d3de.png" width="598"/></span></p>
+<p style="text-align: left;">Теперь перемножаем эти множители:</p>
+<p style="text-align: center;"><img alt="255233 шаг 3" class="size-full wp-image-8426 aligncenter" decoding="async" height="26" loading="lazy" src="../media/e9d712eaa6d3cd55c8ef8880a76f5ac9.png" width="598"/></p>
+<p>Получили ответ 900. Значит наименьшее общее кратное чисел 50 и 180 это число 900. Данное число делится на 50 и 180 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">900 : 50 = 18</span></p>
+<p style="text-align: center;"><span style="color: #000000;">900 : 180 = 5</span></p>
+<p style="text-align: center;">НОК (50 и 180) = 900</p>
+<hr/>
+<p style="text-align: left;"><strong>Пример 3.</strong> Найти НОК чисел 8, 15 и 33</p>
+<p style="text-align: left;">Разложим на множители число 8</p>
+<p style="text-align: left;"><img alt="разложение числа 8 на множители" class="wp-image-8433 size-full aligncenter" decoding="async" height="143" loading="lazy" src="../media/d25a2438d1af47145b6ecc5d7975dfdf.png" width="147"/></p>
+<p style="text-align: left;">Разложим на множители число 15</p>
+<p style="text-align: left;"><img alt="разложение числа 15 на множители" class="wp-image-8434 size-full aligncenter" decoding="async" height="103" loading="lazy" src="../media/b411a67efab999ee95262990388b248b.png" width="147"/></p>
+<p style="text-align: left;">Разложим на множители число 33</p>
+<p style="text-align: left;"><img alt="разложение числа 33 на множители" class="wp-image-8435 size-full aligncenter" decoding="async" height="103" loading="lazy" src="../media/ee104922e847c18ffd62cc9b1d39a03a.png" width="147"/></p>
+<p style="text-align: left;">Выпишем первое разложение:</p>
+<p style="text-align: center;"><img alt="2223511 шаг 1" class="size-full wp-image-8439 aligncenter" decoding="async" height="26" loading="lazy" src="../media/1ef14f93d8177a8633c0858b8d0ae2c8.png" width="638"/></p>
+<p style="text-align: left;">Теперь допишем множители из второго и третьего разложения, которых нет первом разложении. Допишем множители 3 и 5 из второго разложения, и множитель 11 из третьего разложения:</p>
+<p style="text-align: center;"><span style="color: #0000ff;"><img alt="2223511 шаг 2" class="size-full wp-image-8438 aligncenter" decoding="async" height="26" loading="lazy" src="../media/5f8277bfcb6c9c9c18749cfb39886ed8.png" width="638"/></span></p>
+<p style="text-align: left;">Теперь перемножаем эти множители:</p>
+<p style="text-align: center;"><img alt="2223511 шаг 3" class="size-full wp-image-8436 aligncenter" decoding="async" height="26" loading="lazy" src="../media/4c252281a77357b8209089ac372a62e1.png" width="638"/></p>
+<p>Получили ответ 1320. Значит наименьшее общее кратное чисел 8, 15 и 33 это число 1320. Данное число делится на 8, 15 и 33 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">1320 : 8 = 165</span></p>
+<p style="text-align: center;"><span style="color: #000000;">1320 : 15 = 88</span></p>
+<p style="text-align: center;"><span style="color: #000000;">1320 : 33 = 40</span></p>
+<p style="text-align: center;">НОК (8, 15 и 33) = 1320</p>
+<hr/>
+<h2 id="yak6" style="text-align: center;">Третий способ нахождения НОК</h2>
+<p>Есть и третий способ нахождения наименьшего общего кратного. Он работает при условии, что его ищут для двух чисел и при условии, что уже найден наибольший общий делитель этих чисел.</p>
+<p>Данный способ разумнее использовать, когда одновременно нужно найти НОД и НОК двух чисел.</p>
+<p>К примеру, пусть требуется найти НОД и НОК чисел 24 и 12. Сначала найдем НОД этих чисел:</p>
+<p><img alt="нок для 24 и 12 для второго способа нахождения НОК step 1" class="size-full wp-image-6052 aligncenter" decoding="async" height="258" loading="lazy" src="../media/f413e7915995dedef815a15fb5851253.png" width="289"/></p>
+<p>Теперь для нахождения наименьшего общего кратного чисел 24 и 12, нужно перемножить эти два числа и полученный результат разделить на их наибольший общий делитель.</p>
+<p>Итак, перемножим числа 24 и 12</p>
+<p><img alt="нок для 24 и 12 для второго способа нахождения НОК step 2" class="size-full wp-image-6053 aligncenter" decoding="async" height="175" loading="lazy" src="../media/353797549bf4edf161a05f5400f5605c.png" width="81"/></p>
+<p>Разделим полученное число 288 на НОД чисел 24 и 12</p>
+<p><img alt="нок для 24 и 12 для второго способа нахождения НОК step 3" class="size-full wp-image-6054 aligncenter" decoding="async" height="189" loading="lazy" src="../media/62f819294b150db057aa54cf8abffcc2.png" width="133"/></p>
+<p>Получили ответ 24. Значит наименьшее общее кратное чисел 24 и 12 равно 24</p>
+<p style="text-align: center;">НОК (24 и 12) = 24</p>
+<hr/>
+<p><strong>Пример 2</strong>. Найти НОД и НОК чисел 36 и 48</p>
+<p>Найдем НОД чисел 36 и 48</p>
+<p><img alt="нок для 36 и 48 для второго способа нахождения НОК step 1" class="size-full wp-image-6055 aligncenter" decoding="async" height="286" loading="lazy" src="../media/5730cd747b4c788d1384f52b11edff7d.png" width="288"/></p>
+<p>Перемножим числа 36 и 48</p>
+<p><img alt="нок для 36 и 48 для второго способа нахождения НОК step 2" class="size-full wp-image-6056 aligncenter" decoding="async" height="167" loading="lazy" src="../media/ea9fbb4fcf8f239cbd7d3fec572a0ac2.png" width="98"/></p>
+<p>Разделим 1728 на НОД чисел 36 и 48</p>
+<p><img alt="нок для 36 и 48 для второго способа нахождения НОК step 3" class="size-full wp-image-6057 aligncenter" decoding="async" height="255" loading="lazy" src="../media/23fd12c9c810deb36d2415e8f4d47ff9.png" width="170"/></p>
+<p>Получили 144. Значит наименьшее общее кратное чисел 36 и 48 равно 144</p>
+<p style="text-align: center;">НОК (36 и 48) = 144</p>
+<p>Для проверки можно найти НОК обычным вторым способом, которым мы пользовались ранее. Если мы всё сделали правильно, то должны получить 144</p>
+<p><img alt="нок для 36 и 48 для второго способа нахождения НОК step 4" class="size-full wp-image-6058 aligncenter" decoding="async" height="286" loading="lazy" src="../media/fb976e5a0c3dc5fc95843bdad86b3e53.png" width="404"/></p>
+<p>Не расстраивайтесь, если сразу не научитесь находить НОД и НОК. Главное понимать, что это такое и как оно работает. А ошибки вполне естественны на первых порах. Как говорят: «На ошибках учимся».</p>
+<hr/>
+<h2 id="yak7" style="text-align: center;">Задания для самостоятельного решения</h2>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 1.</span> Найдите НОД чисел 12 и 16</div>
+<div class="ex ex1" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/27a7168227815c2572713a51dee4ecba.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex1" href="#" rel=".ex1">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 2.</span> Найдите НОК чисел 12 и 16</div>
+<div class="ex ex2" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/2619b3913c76bb71e8b4192858b026e0.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex2" href="#" rel=".ex2">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 3.</span> Найдите НОД чисел 40 и 32</div>
+<div class="ex ex3" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/bc142e9984765fb6f83008cdaafc0397.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex3" href="#" rel=".ex3">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 4.</span> Найдите НОК чисел 40 и 32</div>
+<div class="ex ex4" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/56a0b4f7e73110587f6ba93188b1d1b6.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex4" href="#" rel=".ex4">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 5.</span> Найдите НОД чисел 54 и 86</div>
+<div class="ex ex5" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/87cf245cc0ac6aef486c504e0adb784b.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex5" href="#" rel=".ex5">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 6.</span> Найдите НОК чисел 54 и 86</div>
+<div class="ex ex6" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/750f919147c0bccade73f8f17a8838a7.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex6" href="#" rel=".ex6">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 7.</span> Найдите НОД чисел 98 и 35</div>
+<div class="ex ex7" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/c8ba0a19ecba98a5595515a048985fef.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex7" href="#" rel=".ex7">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 8.</span> Найдите НОК чисел 98 и 35</div>
+<div class="ex ex8" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/454e86b3562235bdbe54393298fb2015.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex8" href="#" rel=".ex8">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 9.</span> Найдите НОД чисел 112 и 82</div>
+<div class="ex ex9" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/080eca75e6a7b049d0cb2f064851106b.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex9" href="#" rel=".ex9">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 10.</span> Найдите НОК чисел 112 и 82</div>
+<div class="ex ex10" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/76e91fac6c09e63f761fc13e774fbe51.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex10" href="#" rel=".ex10">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 11.</span> Найдите НОД чисел 24, 48, 64</div>
+<div class="ex ex11" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/c4659c2c113c74afa41c13af26d220f7.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex11" href="#" rel=".ex11">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 12.</span> Найдите НОК чисел 24, 48, 64</div>
+<div class="ex ex12" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/1b0dc8d52e235473ae55c098adc259de.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex12" href="#" rel=".ex12">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 13.</span> Найдите НОД чисел 18, 48, 96</div>
+<div class="ex ex13" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/859a3d6a678871ec16d7dfc2a7d46eec.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex13" href="#" rel=".ex13">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 14.</span> Найдите НОК чисел 18, 48, 96</div>
+<div class="ex ex14" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/416b5e2d4ed9a2b26a553e0ece3b0e3d.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex14" href="#" rel=".ex14">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 15.</span> Найдите НОД чисел 28, 24, 76</div>
+<div class="ex ex15" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/4ba827f82bdb7780251a6ad4cf9536f1.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex15" href="#" rel=".ex15">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 16.</span> Найдите НОК чисел 28, 24, 76</div>
+<div class="ex ex16" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/27a6d7c31f276cc40ae1a94b34326781.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex16" href="#" rel=".ex16">Показать решение</a></div>
+</div>
+<div class="kpm_LTR notranslate" id="kpm-root" translate="no"></div>
+<hr/>
+</div></main></body></html>

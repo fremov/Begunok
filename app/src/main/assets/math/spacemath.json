@@ -1,0 +1,531 @@
+{
+  "source": "https://spacemath.xyz/",
+  "title": "Математика с нуля",
+  "lessons": [
+    {
+      "id": "chisla",
+      "order": 1,
+      "title": "Числа",
+      "url": "https://spacemath.xyz/chisla/",
+      "localPath": "lessons/chisla.html"
+    },
+    {
+      "id": "osnovnie_operacii",
+      "order": 2,
+      "title": "Основные операции",
+      "url": "https://spacemath.xyz/osnovnie_operacii/",
+      "localPath": "lessons/osnovnie_operacii.html"
+    },
+    {
+      "id": "virajeniya",
+      "order": 3,
+      "title": "Выражения",
+      "url": "https://spacemath.xyz/virajeniya/",
+      "localPath": "lessons/virajeniya.html"
+    },
+    {
+      "id": "preobrazovanie_virajeniy",
+      "order": 4,
+      "title": "Замены в выражениях",
+      "url": "https://spacemath.xyz/preobrazovanie_virajeniy/",
+      "localPath": "lessons/preobrazovanie_virajeniy.html"
+    },
+    {
+      "id": "razryadi_dlya_nachinayushix",
+      "order": 5,
+      "title": "Разряды для начинающих",
+      "url": "https://spacemath.xyz/razryadi_dlya_nachinayushix/",
+      "localPath": "lessons/razryadi_dlya_nachinayushix.html"
+    },
+    {
+      "id": "umnojenie",
+      "order": 6,
+      "title": "Умножение",
+      "url": "https://spacemath.xyz/umnojenie/",
+      "localPath": "lessons/umnojenie.html"
+    },
+    {
+      "id": "delenie",
+      "order": 7,
+      "title": "Деление",
+      "url": "https://spacemath.xyz/delenie/",
+      "localPath": "lessons/delenie.html"
+    },
+    {
+      "id": "poryadok_deistviy",
+      "order": 8,
+      "title": "Порядок действий",
+      "url": "https://spacemath.xyz/poryadok_deistviy/",
+      "localPath": "lessons/poryadok_deistviy.html"
+    },
+    {
+      "id": "zakoni_matematiki",
+      "order": 9,
+      "title": "Законы математики",
+      "url": "https://spacemath.xyz/zakoni_matematiki/",
+      "localPath": "lessons/zakoni_matematiki.html"
+    },
+    {
+      "id": "deliteli_i_kratnie",
+      "order": 10,
+      "title": "Делители и кратные",
+      "url": "https://spacemath.xyz/deliteli_i_kratnie/",
+      "localPath": "lessons/deliteli_i_kratnie.html"
+    },
+    {
+      "id": "nod_i_nok",
+      "order": 11,
+      "title": "НОД и НОК",
+      "url": "https://spacemath.xyz/nod_i_nok/",
+      "localPath": "lessons/nod_i_nok.html"
+    },
+    {
+      "id": "drobi",
+      "order": 12,
+      "title": "Дроби",
+      "url": "https://spacemath.xyz/drobi/",
+      "localPath": "lessons/drobi.html"
+    },
+    {
+      "id": "deistviya_s_drobyami",
+      "order": 13,
+      "title": "Действия с дробями",
+      "url": "https://spacemath.xyz/deistviya_s_drobyami/",
+      "localPath": "lessons/deistviya_s_drobyami.html"
+    },
+    {
+      "id": "smeshanie_chisla",
+      "order": 14,
+      "title": "Смешанные числа",
+      "url": "https://spacemath.xyz/smeshanie_chisla/",
+      "localPath": "lessons/smeshanie_chisla.html"
+    },
+    {
+      "id": "sravnenie_drobey",
+      "order": 15,
+      "title": "Сравнение дробей",
+      "url": "https://spacemath.xyz/sravnenie_drobey/",
+      "localPath": "lessons/sravnenie_drobey.html"
+    },
+    {
+      "id": "edinici_izmereniya",
+      "order": 16,
+      "title": "Единицы измерения",
+      "url": "https://spacemath.xyz/edinici_izmereniya/",
+      "localPath": "lessons/edinici_izmereniya.html"
+    },
+    {
+      "id": "primenenie_drobey",
+      "order": 17,
+      "title": "Практика по дробям",
+      "url": "https://spacemath.xyz/primenenie_drobey/",
+      "localPath": "lessons/primenenie_drobey.html"
+    },
+    {
+      "id": "desyatichnie_drobi",
+      "order": 18,
+      "title": "Десятичные дроби",
+      "url": "https://spacemath.xyz/desyatichnie_drobi/",
+      "localPath": "lessons/desyatichnie_drobi.html"
+    },
+    {
+      "id": "deystviya_s_desyatichnimi_drobyami",
+      "order": 19,
+      "title": "Действия с десятичными дробями",
+      "url": "https://spacemath.xyz/deystviya_s_desyatichnimi_drobyami/",
+      "localPath": "lessons/deystviya_s_desyatichnimi_drobyami.html"
+    },
+    {
+      "id": "primenenie_desyatichnix_drobey",
+      "order": 20,
+      "title": "Практика по десятичным дробям",
+      "url": "https://spacemath.xyz/primenenie_desyatichnix_drobey/",
+      "localPath": "lessons/primenenie_desyatichnix_drobey.html"
+    },
+    {
+      "id": "okruglenie_chisel",
+      "order": 21,
+      "title": "Округление чисел",
+      "url": "https://spacemath.xyz/okruglenie_chisel/",
+      "localPath": "lessons/okruglenie_chisel.html"
+    },
+    {
+      "id": "periodicheskie_drobi",
+      "order": 22,
+      "title": "Периодические дроби",
+      "url": "https://spacemath.xyz/periodicheskie_drobi/",
+      "localPath": "lessons/periodicheskie_drobi.html"
+    },
+    {
+      "id": "perevod_edinic",
+      "order": 23,
+      "title": "Перевод единиц",
+      "url": "https://spacemath.xyz/perevod_edinic/",
+      "localPath": "lessons/perevod_edinic.html"
+    },
+    {
+      "id": "sootnosheniya",
+      "order": 24,
+      "title": "Соотношения",
+      "url": "https://spacemath.xyz/sootnosheniya/",
+      "localPath": "lessons/sootnosheniya.html"
+    },
+    {
+      "id": "proporciya",
+      "order": 25,
+      "title": "Пропорция",
+      "url": "https://spacemath.xyz/proporciya/",
+      "localPath": "lessons/proporciya.html"
+    },
+    {
+      "id": "rasstoyanie_scorost_vremya",
+      "order": 26,
+      "title": "Расстояние, скорость, время",
+      "url": "https://spacemath.xyz/rasstoyanie_scorost_vremya/",
+      "localPath": "lessons/rasstoyanie_scorost_vremya.html"
+    },
+    {
+      "id": "pryamaya_proporcionalnost",
+      "order": 27,
+      "title": "Прямая и обратная пропорциональность",
+      "url": "https://spacemath.xyz/pryamaya_proporcionalnost/",
+      "localPath": "lessons/pryamaya_proporcionalnost.html"
+    },
+    {
+      "id": "procenti",
+      "order": 28,
+      "title": "Проценты",
+      "url": "https://spacemath.xyz/procenti/",
+      "localPath": "lessons/procenti.html"
+    },
+    {
+      "id": "otricatelnie_chisla",
+      "order": 29,
+      "title": "Отрицательные числа",
+      "url": "https://spacemath.xyz/otricatelnie_chisla/",
+      "localPath": "lessons/otricatelnie_chisla.html"
+    },
+    {
+      "id": "modul_chisla",
+      "order": 30,
+      "title": "Модуль числа",
+      "url": "https://spacemath.xyz/modul_chisla/",
+      "localPath": "lessons/modul_chisla.html"
+    },
+    {
+      "id": "chto_takoe_mnojestvo",
+      "order": 31,
+      "title": "Что такое множество?",
+      "url": "https://spacemath.xyz/chto_takoe_mnojestvo/",
+      "localPath": "lessons/chto_takoe_mnojestvo.html"
+    },
+    {
+      "id": "slozhenie_i_vychitanie_celyh_chisel",
+      "order": 32,
+      "title": "Сложение и вычитание целых чисел",
+      "url": "https://spacemath.xyz/slozhenie_i_vychitanie_celyh_chisel/",
+      "localPath": "lessons/slozhenie_i_vychitanie_celyh_chisel.html"
+    },
+    {
+      "id": "umnozhenie-i-delenie-tselyh-chisel",
+      "order": 33,
+      "title": "Умножение и деление целых чисел",
+      "url": "https://spacemath.xyz/umnozhenie-i-delenie-tselyh-chisel/",
+      "localPath": "lessons/umnozhenie-i-delenie-tselyh-chisel.html"
+    },
+    {
+      "id": "ratsionalnye-chisla",
+      "order": 34,
+      "title": "Рациональные числа",
+      "url": "https://spacemath.xyz/ratsionalnye-chisla/",
+      "localPath": "lessons/ratsionalnye-chisla.html"
+    },
+    {
+      "id": "sravnenie-ratsionalnyh-chisel",
+      "order": 35,
+      "title": "Сравнение рациональных чисел",
+      "url": "https://spacemath.xyz/sravnenie-ratsionalnyh-chisel/",
+      "localPath": "lessons/sravnenie-ratsionalnyh-chisel.html"
+    },
+    {
+      "id": "slozhenie_i_vychitanie-racionalnyh_chisel",
+      "order": 36,
+      "title": "Сложение и вычитание рациональных чисел",
+      "url": "https://spacemath.xyz/slozhenie_i_vychitanie-racionalnyh_chisel/",
+      "localPath": "lessons/slozhenie_i_vychitanie-racionalnyh_chisel.html"
+    },
+    {
+      "id": "umnozhenie-i-delenie-ratsionalnyh-chisel",
+      "order": 37,
+      "title": "Умножение и деление рациональных чисел",
+      "url": "https://spacemath.xyz/umnozhenie-i-delenie-ratsionalnyh-chisel/",
+      "localPath": "lessons/umnozhenie-i-delenie-ratsionalnyh-chisel.html"
+    },
+    {
+      "id": "dopolnitelnye-svedeniya-o-drobyah",
+      "order": 38,
+      "title": "Дополнительные сведения о дробях",
+      "url": "https://spacemath.xyz/dopolnitelnye-svedeniya-o-drobyah/",
+      "localPath": "lessons/dopolnitelnye-svedeniya-o-drobyah.html"
+    },
+    {
+      "id": "bukvennye-vyrazheniya",
+      "order": 39,
+      "title": "Буквенные выражения",
+      "url": "https://spacemath.xyz/bukvennye-vyrazheniya/",
+      "localPath": "lessons/bukvennye-vyrazheniya.html"
+    },
+    {
+      "id": "vynesenie-obshhego-mnozhitelya-za-skobki",
+      "order": 40,
+      "title": "Вынесение общего множителя за скобки",
+      "url": "https://spacemath.xyz/vynesenie-obshhego-mnozhitelya-za-skobki/",
+      "localPath": "lessons/vynesenie-obshhego-mnozhitelya-za-skobki.html"
+    },
+    {
+      "id": "raskrytie-skobok",
+      "order": 41,
+      "title": "Раскрытие скобок",
+      "url": "https://spacemath.xyz/raskrytie-skobok/",
+      "localPath": "lessons/raskrytie-skobok.html"
+    },
+    {
+      "id": "prostejshie-zadachi-po-matematike",
+      "order": 42,
+      "title": "Простейшие задачи по математике",
+      "url": "https://spacemath.xyz/prostejshie-zadachi-po-matematike/",
+      "localPath": "lessons/prostejshie-zadachi-po-matematike.html"
+    },
+    {
+      "id": "zadachi-na-drobi",
+      "order": 43,
+      "title": "Задачи на дроби",
+      "url": "https://spacemath.xyz/zadachi-na-drobi/",
+      "localPath": "lessons/zadachi-na-drobi.html"
+    },
+    {
+      "id": "zadachi-na-protsenty",
+      "order": 44,
+      "title": "Задачи на проценты",
+      "url": "https://spacemath.xyz/zadachi-na-protsenty/",
+      "localPath": "lessons/zadachi-na-protsenty.html"
+    },
+    {
+      "id": "zadachi-na-dvizhenie",
+      "order": 45,
+      "title": "Задачи на движение",
+      "url": "https://spacemath.xyz/zadachi-na-dvizhenie/",
+      "localPath": "lessons/zadachi-na-dvizhenie.html"
+    },
+    {
+      "id": "proizvoditelnost",
+      "order": 46,
+      "title": "Производительность",
+      "url": "https://spacemath.xyz/proizvoditelnost/",
+      "localPath": "lessons/proizvoditelnost.html"
+    },
+    {
+      "id": "elementy-statistiki",
+      "order": 47,
+      "title": "Элементы статистики",
+      "url": "https://spacemath.xyz/elementy-statistiki/",
+      "localPath": "lessons/elementy-statistiki.html"
+    },
+    {
+      "id": "obshhie-svedeniya-ob-uravneniyah",
+      "order": 48,
+      "title": "Общие сведения об уравнениях",
+      "url": "https://spacemath.xyz/obshhie-svedeniya-ob-uravneniyah/",
+      "localPath": "lessons/obshhie-svedeniya-ob-uravneniyah.html"
+    },
+    {
+      "id": "reshenie-zadach-s-pomoshhyu-uravnenij",
+      "order": 49,
+      "title": "Решение задач с помощью уравнений",
+      "url": "https://spacemath.xyz/reshenie-zadach-s-pomoshhyu-uravnenij/",
+      "localPath": "lessons/reshenie-zadach-s-pomoshhyu-uravnenij.html"
+    },
+    {
+      "id": "reshenie-zadach-s-pomoshhyu-proportsii",
+      "order": 50,
+      "title": "Решение задач с помощью пропорции",
+      "url": "https://spacemath.xyz/reshenie-zadach-s-pomoshhyu-proportsii/",
+      "localPath": "lessons/reshenie-zadach-s-pomoshhyu-proportsii.html"
+    },
+    {
+      "id": "sistemy-linejnyh-uravnenij",
+      "order": 51,
+      "title": "Системы линейных уравнений",
+      "url": "https://spacemath.xyz/sistemy-linejnyh-uravnenij/",
+      "localPath": "lessons/sistemy-linejnyh-uravnenij.html"
+    },
+    {
+      "id": "obshhie-svedeniya-o-neravenstvah",
+      "order": 52,
+      "title": "Общие сведения о неравенствах",
+      "url": "https://spacemath.xyz/obshhie-svedeniya-o-neravenstvah/",
+      "localPath": "lessons/obshhie-svedeniya-o-neravenstvah.html"
+    },
+    {
+      "id": "sistemy-linejnyh-neravenstv-s-odnoj-peremennoj",
+      "order": 53,
+      "title": "Системы линейных неравенств с одной переменной",
+      "url": "https://spacemath.xyz/sistemy-linejnyh-neravenstv-s-odnoj-peremennoj/",
+      "localPath": "lessons/sistemy-linejnyh-neravenstv-s-odnoj-peremennoj.html"
+    },
+    {
+      "id": "operatsii-nad-mnozhestvami",
+      "order": 54,
+      "title": "Операции над множествами",
+      "url": "https://spacemath.xyz/operatsii-nad-mnozhestvami/",
+      "localPath": "lessons/operatsii-nad-mnozhestvami.html"
+    },
+    {
+      "id": "stepen-s-naturalnym-pokazatelem",
+      "order": 55,
+      "title": "Степень с натуральным показателем",
+      "url": "https://spacemath.xyz/stepen-s-naturalnym-pokazatelem/",
+      "localPath": "lessons/stepen-s-naturalnym-pokazatelem.html"
+    },
+    {
+      "id": "stepen-s-tselym-pokazatelem",
+      "order": 56,
+      "title": "Степень с целым показателем",
+      "url": "https://spacemath.xyz/stepen-s-tselym-pokazatelem/",
+      "localPath": "lessons/stepen-s-tselym-pokazatelem.html"
+    },
+    {
+      "id": "perimetr-ploshhad-i-obyom",
+      "order": 57,
+      "title": "Периметр, площадь и объём",
+      "url": "https://spacemath.xyz/perimetr-ploshhad-i-obyom/",
+      "localPath": "lessons/perimetr-ploshhad-i-obyom.html"
+    },
+    {
+      "id": "odnochleny",
+      "order": 58,
+      "title": "Одночлены",
+      "url": "https://spacemath.xyz/odnochleny/",
+      "localPath": "lessons/odnochleny.html"
+    },
+    {
+      "id": "mnogochleny",
+      "order": 59,
+      "title": "Многочлены",
+      "url": "https://spacemath.xyz/mnogochleny/",
+      "localPath": "lessons/mnogochleny.html"
+    },
+    {
+      "id": "formuly-sokrashhennogo-umnozheniya",
+      "order": 60,
+      "title": "Формулы сокращённого умножения",
+      "url": "https://spacemath.xyz/formuly-sokrashhennogo-umnozheniya/",
+      "localPath": "lessons/formuly-sokrashhennogo-umnozheniya.html"
+    },
+    {
+      "id": "razlozhenie-mnogochlena-na-mnozhiteli",
+      "order": 61,
+      "title": "Разложение многочлена на множители",
+      "url": "https://spacemath.xyz/razlozhenie-mnogochlena-na-mnozhiteli/",
+      "localPath": "lessons/razlozhenie-mnogochlena-na-mnozhiteli.html"
+    },
+    {
+      "id": "delenie-mnogochlenov",
+      "order": 62,
+      "title": "Деление многочленов",
+      "url": "https://spacemath.xyz/delenie-mnogochlenov/",
+      "localPath": "lessons/delenie-mnogochlenov.html"
+    },
+    {
+      "id": "tozhdestvennye-preobrazovaniya-mnogochlenov",
+      "order": 63,
+      "title": "Тождественные преобразования многочленов",
+      "url": "https://spacemath.xyz/tozhdestvennye-preobrazovaniya-mnogochlenov/",
+      "localPath": "lessons/tozhdestvennye-preobrazovaniya-mnogochlenov.html"
+    },
+    {
+      "id": "kvadratnyj-koren",
+      "order": 64,
+      "title": "Квадратный корень",
+      "url": "https://spacemath.xyz/kvadratnyj-koren/",
+      "localPath": "lessons/kvadratnyj-koren.html"
+    },
+    {
+      "id": "algoritm-izvlecheniya-kvadratnogo-kornya",
+      "order": 65,
+      "title": "Алгоритм извлечения квадратного корня",
+      "url": "https://spacemath.xyz/algoritm-izvlecheniya-kvadratnogo-kornya/",
+      "localPath": "lessons/algoritm-izvlecheniya-kvadratnogo-kornya.html"
+    },
+    {
+      "id": "kvadratnoe-uravnenie",
+      "order": 66,
+      "title": "Квадратное уравнение",
+      "url": "https://spacemath.xyz/kvadratnoe-uravnenie/",
+      "localPath": "lessons/kvadratnoe-uravnenie.html"
+    },
+    {
+      "id": "kvadratnoe-uravnenie-s-chyotnym-vtorym-koeffitsientom",
+      "order": 67,
+      "title": "Квадратное уравнение с чётным вторым коэффициентом",
+      "url": "https://spacemath.xyz/kvadratnoe-uravnenie-s-chyotnym-vtorym-koeffitsientom/",
+      "localPath": "lessons/kvadratnoe-uravnenie-s-chyotnym-vtorym-koeffitsientom.html"
+    },
+    {
+      "id": "teorema-vieta",
+      "order": 68,
+      "title": "Теорема Виета",
+      "url": "https://spacemath.xyz/teorema-vieta/",
+      "localPath": "lessons/teorema-vieta.html"
+    },
+    {
+      "id": "razlozhenie-kvadratnogo-tryohchlena-na-mnozhiteli",
+      "order": 69,
+      "title": "Разложение квадратного трёхчлена на множители",
+      "url": "https://spacemath.xyz/razlozhenie-kvadratnogo-tryohchlena-na-mnozhiteli/",
+      "localPath": "lessons/razlozhenie-kvadratnogo-tryohchlena-na-mnozhiteli.html"
+    },
+    {
+      "id": "obobshhyonnoe-ponyatie-modulya-chisla",
+      "order": 70,
+      "title": "Обобщённое понятие модуля числа",
+      "url": "https://spacemath.xyz/obobshhyonnoe-ponyatie-modulya-chisla/",
+      "localPath": "lessons/obobshhyonnoe-ponyatie-modulya-chisla.html"
+    },
+    {
+      "id": "uravnenie-s-modulem",
+      "order": 71,
+      "title": "Уравнение с модулем",
+      "url": "https://spacemath.xyz/uravnenie-s-modulem/",
+      "localPath": "lessons/uravnenie-s-modulem.html"
+    },
+    {
+      "id": "reshenie-uravnenij-s-modulem-metodom-intervalov",
+      "order": 72,
+      "title": "Решение уравнений с модулем методом интервалов",
+      "url": "https://spacemath.xyz/reshenie-uravnenij-s-modulem-metodom-intervalov/",
+      "localPath": "lessons/reshenie-uravnenij-s-modulem-metodom-intervalov.html"
+    },
+    {
+      "id": "neravenstva-s-modulem",
+      "order": 73,
+      "title": "Неравенства с модулем",
+      "url": "https://spacemath.xyz/neravenstva-s-modulem/",
+      "localPath": "lessons/neravenstva-s-modulem.html"
+    },
+    {
+      "id": "reshenie-neravenstv-s-modulem-metodom-intervalov",
+      "order": 74,
+      "title": "Решение неравенств с модулем методом интервалов",
+      "url": "https://spacemath.xyz/reshenie-neravenstv-s-modulem-metodom-intervalov/",
+      "localPath": "lessons/reshenie-neravenstv-s-modulem-metodom-intervalov.html"
+    },
+    {
+      "id": "izvlechenie-kvadratnogo-kornya-iz-obeih-chastej-uravneniya",
+      "order": 75,
+      "title": "Извлечение квадратного корня из обеих частей уравнения",
+      "url": "https://spacemath.xyz/izvlechenie-kvadratnogo-kornya-iz-obeih-chastej-uravneniya/",
+      "localPath": "lessons/izvlechenie-kvadratnogo-kornya-iz-obeih-chastej-uravneniya.html"
+    }
+  ]
+}

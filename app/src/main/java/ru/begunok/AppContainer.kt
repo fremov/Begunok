@@ -11,6 +11,7 @@ import ru.begunok.alerts.VoicePack
 import ru.begunok.data.ReadingRepository
 import ru.begunok.data.FinanceRepository
 import ru.begunok.data.MentalRepository
+import ru.begunok.data.MathRepository
 import ru.begunok.data.SettingsRepository
 import ru.begunok.data.ShowerRepository
 import ru.begunok.data.WeightRepository
@@ -40,6 +41,7 @@ class AppContainer(context: Context) {
     val weight = WeightRepository(database.weightDao())
     val mental = MentalRepository(database.mentalDao())
     val finance = FinanceRepository(database.financeDao())
+    val math = MathRepository(appContext)
     val health = HealthRepository(appContext)
     val voicePack = VoicePack(appContext)
     val lolSettings = LolSettings(appContext)

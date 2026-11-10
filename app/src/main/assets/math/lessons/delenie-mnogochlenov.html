@@ -1,0 +1,383 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>62. Деление многочленов</title><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../lesson.css"><script src="../lesson.js" defer></script></head><body><main><h1>62. Деление многочленов</h1><div class="entry-content">
+<p>Продолжаем изучать многочлены. В данном уроке мы научимся их делить.</p>
+<nav id="before-themes"><b>Предварительные навыки</b>
+<ul class="before-themes_item">
+<li style="list-style-type: none;">
+<ul class="before-themes_item">
+<li style="list-style-type: none;">
+<ul class="before-themes_item">
+<li><a data-lesson-id="delenie" href="delenie.html" rel="noopener noreferrer">Деление</a></li>
+<li><a data-lesson-id="stepen-s-naturalnym-pokazatelem" href="stepen-s-naturalnym-pokazatelem.html" rel="noopener noreferrer">Степень с натуральным показателем</a></li>
+<li><a data-lesson-id="perimetr-ploshhad-i-obyom" href="perimetr-ploshhad-i-obyom.html" rel="noopener noreferrer">Периметр, площадь и объём</a></li>
+<li><a data-lesson-id="mnogochleny" href="mnogochleny.html" rel="noopener noreferrer">Многочлены</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+<nav id="menu"><b>Содержание урока</b>
+<ul class="navless">
+<li style="list-style-type: none;">
+<ul class="navless">
+<li><a href="#delenie_mnogochlena_na_odnochlen">Деление многочлена на одночлен</a></li>
+<li><a href="#delenie_odnochlena_na_mnogochlen">Деление одночлена на многочлен</a></li>
+<li><a href="#delenie_mnogochlena_na_mnogochlen">Деление многочлена на многочлен</a></li>
+<li><a href="#delenie_mnogochlena_na_mnogochlen_s_ostatkom">Деление многочлена на многочлен с остатком</a></li>
+<li><a href="#kogda_delenie_mnogochlenov_nevozmozhno">Когда деление многочленов невозможно</a></li>
+<li><a href="#zadaniya_dlya_samostoyatelnogo_resheniya">Задания для самостоятельного решения</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+<h2 id="delenie_mnogochlena_na_odnochlen" style="text-align: center;">Деление многочлена на одночлен</h2>
+<p>Чтобы разделить многочлен на одночлен, нужно разделить на этот одночлен каждый член многочлена, затем сложить полученные частные.</p>
+<p>Например, разделим многочлен <span style="color: #000000;">15<em>x</em><sup>2</sup><em>y</em><sup>3 </sup>+ 10<em>xy</em><sup>2 </sup>+ 5<em>xy</em><sup>3</sup></span> на одночлен <span style="color: #000000;"><em>xy</em></span>. Запишем это деление в виде дроби:</p>
+<p><img alt="многочлен деление пр 1" class="size-full wp-image-10158 aligncenter" decoding="async" height="54" loading="lazy" src="../media/58a366331ea462953d84ff819559ae50.png" width="186"/></p>
+<p>Теперь делим каждый член многочлена <span style="color: #000000;">15<em>x</em><sup>2</sup><em>y</em><sup>3 </sup>+ 10<em>xy</em><sup>2 </sup>+ 5<em>xy</em><sup>3</sup></span> на одночлен <span style="color: #000000;"><em>xy. </em></span>Получающиеся частные будем складывать:</p>
+<p><img alt="многочлен деление пр 1 шаг 2" class="size-full wp-image-10160 aligncenter" decoding="async" height="54" loading="lazy" src="../media/cdc1839ac6a3fc4db129345714c27556.png" width="413"/></p>
+<p>Получили привычное для нас деление одночленов. Выполним это деление:</p>
+<p><img alt="многочлен деление пр 1 решение" class="size-full wp-image-10159 aligncenter" decoding="async" height="54" loading="lazy" src="../media/7b6f4ee60b5a65578f02693afcd24818.png" width="586"/>Таким образом, при делении многочлена <span style="color: #000000;">15<em>x</em><sup>2</sup><em>y</em><sup>3 </sup>+ 10<em>xy</em><sup>2 </sup>+ 5<em>xy</em><sup>3</sup></span> на одночлен <span style="color: #000000;"><em>xy</em></span> получается многочлен <span style="color: #000000;">15<em>xy</em><sup>2 </sup>+ 10<em>y</em> + 5<em>y</em><sup>2</sup></span>.</p>
+<p><img alt="многочлен деление пр 1 решение шаг 2" class="size-full wp-image-10275 aligncenter" decoding="async" height="54" loading="lazy" src="../media/74c24d8d4da6d3d833371c51bd7aaa4b.png" width="361"/></p>
+<p>При делении одного числа на другое, частное должно быть таким, чтобы при его перемножении с делителем, получалось делимое. Это правило сохраняется и при делении многочлена на одночлен.</p>
+<p>В нашем примере произведение полученного многочлена <span style="color: #000000;">15<em>xy</em><sup>2 </sup>+ 10<em>y </em>+ 5<em>y</em><sup>2</sup></span> и делителя <span style="color: #000000;"><em>xy</em></span> должно быть равно многочлену <span style="color: #000000;">15<em>x</em><sup>2</sup><em>y</em><sup>3 </sup>+ 10<em>xy</em><sup>2 </sup>+ 5<em>xy</em><sup>3</sup></span>, то есть исходному делимому. Проверим так ли это:</p>
+<p style="text-align: center;"><span style="color: #000000;">(15<em>xy</em><sup>2 </sup>+ 10<em>y </em>+ 5<em>y</em><sup>2</sup>)<em>xy</em> = 15<em>x</em><sup>2</sup><em>y</em><sup>3 </sup>+ 10<em>xy</em><sup>2 </sup>+ 5<em>xy</em><sup>3</sup></span></p>
+<p>Деление многочлена на одночлен очень похоже на <a data-lesson-id="deistviya_s_drobyami" href="deistviya_s_drobyami.html#slozhenie_drobej_s_odinakovymi_znamenatelyami" rel="noopener noreferrer" title="Перейти к уроку, где рассказывается об этом">сложение дробей с одинаковыми знаменателями</a>. Мы помним, что для сложения дробей с одинаковыми знаменателями, нужно сложить их числители, а знаменатель оставить без изменений.</p>
+<p>Например, чтобы сложить дроби <img alt="одна четвертая" class="alignnone size-full wp-image-5140" decoding="async" height="43" loading="lazy" src="../media/10ca5f417c20dace86796efef9c57bfc.png" width="12"/>, <img alt="две четвертых" class="alignnone size-full wp-image-5842" decoding="async" height="45" loading="lazy" src="../media/32f49fe096fb3ae9d902b2325262d950.png" width="14"/> и <img alt="три четвёртых" class="alignnone size-full wp-image-2786" decoding="async" height="51" loading="lazy" src="../media/3bfb7e155747e5d53b030057e1d3f138.png" width="13"/> нужно записать следующее выражение:</p>
+<p><img alt="деление многочленов пример 3" class="size-full wp-image-10236 aligncenter" decoding="async" height="45" loading="lazy" src="../media/83669a3928e475eed397e7db7103d541.png" width="186"/></p>
+<p>Если мы вычислим выражение <img alt="деление многочленов рисунок 3" class="alignnone size-full wp-image-10237" decoding="async" height="45" loading="lazy" src="../media/9c83cdb7c4091087ce9832d6c1d01c2f.png" width="66"/>, то получим дробь <img alt="6 на 4" class="alignnone size-full wp-image-10276" decoding="async" height="45" loading="lazy" src="../media/d2a5bf5fbfba87c3c5089a3afb7bcfc1.png" width="11"/>, значение которой равно <span style="color: #000000;">1,5.</span></p>
+<p>При этом выражение <img alt="деление многочленов рисунок 3" class="alignnone size-full wp-image-10237" decoding="async" height="45" loading="lazy" src="../media/9c83cdb7c4091087ce9832d6c1d01c2f.png" width="66"/> мы можем вернуть в исходное состояние <img alt="деление многочленов рисунок 4" class="alignnone size-full wp-image-10238" decoding="async" height="45" loading="lazy" src="../media/f616725fdddc15a4668eae6ebdedfc47.png" width="93"/>, и вычислить по отдельности каждую дробь, затем сложить полученные частные. Результат по прежнему будет равен <span style="color: #000000;">1,5</span></p>
+<p><img alt="дмо рис 1" class="size-full wp-image-10277 aligncenter" decoding="async" height="45" loading="lazy" src="../media/0b83de34599f7ea9cddff0b365154223.png" width="383"/></p>
+<p>Тоже самое происходит при делении многочлена на одночлен. Одночлен берёт на себя роль общего знаменателя для всех членов многочлена. Например, при делении многочлена <span style="color: #000000;"><em>ax + bx + cx</em></span> на многочлен <span style="color: #000000;"><em>x</em></span>, образуется три дроби с общим знаменателем <span style="color: #000000;"><em>x</em></span></p>
+<p><img alt="дмо рис 4" class="wp-image-10373 size-full aligncenter" decoding="async" height="46" loading="lazy" src="../media/a9df9a5090be4bd484ee557757b8e7fa.png" width="233"/></p>
+<p>Вычисление каждой дроби даст в результате многочлен <span style="color: #000000;"><em>a + b + c</em></span></p>
+<p><img alt="дмо рис 3" class="wp-image-10375 size-full aligncenter" decoding="async" height="47" loading="lazy" src="../media/78ebc9f35df351b985d23381b550360a.png" width="328"/></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разделить многочлен <span style="color: #000000;">8<em>m</em><sup>3</sup><em>n </em>+ 24<em>m</em><sup>2</sup><em>n</em><sup>2</sup></span> на одночлен <span style="color: #000000;">8<em>m</em><sup>2</sup><em>n</em></span></p>
+<p><img alt="деление многочленов пример 2" class="wp-image-10519 size-full aligncenter" decoding="async" height="49" loading="lazy" src="../media/266f55096c1d166737f00c8193d70411.png" width="374"/></p>
+<hr/>
+<p><strong>Пример 3</strong>. Разделить многочлен <span style="color: #000000;">4<em>c</em><sup>2</sup><em>d </em>− 12<em>c</em><sup>4</sup><em>d</em><sup>3</sup></span> на одночлен <span style="color: #000000;">−4<em>c</em><sup>2</sup><em>d</em></span></p>
+<p><img alt="деление многочленов пример 4" class="size-full wp-image-10246 aligncenter" decoding="async" height="57" loading="lazy" src="../media/c357d023075d331c3d8f77de61811c30.png" width="438"/></p>
+<hr/>
+<h2 id="delenie_odnochlena_na_mnogochlen" style="text-align: center;">Деление одночлена на многочлен</h2>
+<p>Не существует тождественного преобразования, позволяющего разделить одночлен на многочлен.</p>
+<p>Допустим, мы захотели разделить одночлен <span style="color: #000000;">2<em>xy</em></span> на многочлен <span style="color: #000000;">5<em>x </em>+ 3<em>y </em>+ 5</span>.</p>
+<p><img alt="дм рис 4" class="size-full wp-image-10520 aligncenter" decoding="async" height="49" loading="lazy" src="../media/6ad38f59bd0872d042f3d68a9827b62a.png" width="92"/></p>
+<p>Результатом этого деления должен быть многочлен, перемножение которого с многочленом <span style="color: #000000;">5<em>x </em>+ 3<em>y </em>+ 5</span> даёт одночлен <span style="color: #000000;">2<em>xy</em></span>. Но не существует многочлена, перемножение которого с многочленом <span style="color: #000000;">5<em>x </em>+ 3<em>y </em>+ 5</span> давало бы в результате одночлен <span style="color: #000000;">2<em>xy</em></span>, поскольку перемножение многочленов даёт в результате многочлен, а не одночлен.</p>
+<p>Но в учебниках можно встретить задания на нахождение значения выражения при заданных значениях переменных. В исходных выражениях таких заданий бывает выполнено деление одночлена на многочлен. В этом случае никаких преобразований выполнять не нужно. Достаточно подставить значения переменных в исходное выражение и вычислить получившееся числовое выражение.</p>
+<p>Например, найдём значение выражения <img alt="деление многочленов пример 5" class="alignnone size-full wp-image-10247" decoding="async" height="44" loading="lazy" src="../media/99529b1b981cafbc1cdc7b5fd14cb70a.png" width="98"/> при <span style="color: #000000;"><em>x </em>= 2</span>.</p>
+<p>Выражение <img alt="деление многочленов пример 5" class="alignnone size-full wp-image-10247" decoding="async" height="44" loading="lazy" src="../media/99529b1b981cafbc1cdc7b5fd14cb70a.png" width="98"/> представляет собой деление одночлена на многочлен. В данном случае мы не сможем выполнить какие-либо преобразования. Единственное, что мы сможем сделать — это подставить число 2 в исходное выражение вместо переменной <span style="color: #000000;"><em>x</em></span> и найти значение выражения:</p>
+<p><img alt="деление многочленов пример 5 решение" class="size-full wp-image-10248 aligncenter" decoding="async" height="44" loading="lazy" src="../media/8454eae5fcccb1cf54e23389fda2615a.png" width="433"/></p>
+<hr/>
+<h2 id="delenie_mnogochlena_na_mnogochlen" style="text-align: center;">Деление многочлена на многочлен</h2>
+<p>Если первый многочлен умножить на второй многочлен, получается третий многочлен. Например, если умножить многочлен <span style="color: #000000;"><em>x</em> + 5</span> на многочлен <span style="color: #000000;"><em>x</em> + 3</span>, получается многочлен <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 8<em>x</em> + 15</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>x</em> + 5)(<em>x</em> + 3) = <em>x</em><sup>2</sup> + <span style="border-bottom: 2px solid #333399;">5<em>x</em></span> + <span style="border-bottom: 2px solid #333399;">3<em>x</em></span> + 15 = <em>x</em><sup>2</sup> + 8<em>x</em> + 15</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>x</em> + 5)(<em>x</em> + 3) = <em>x</em><sup>2</sup> + 8<em>x</em> + 15</span></p>
+<p>Если произведение разделить на множитель, то получится множимое. Это правило распространяется не только для чисел, но и для многочленов.</p>
+<p>Тогда согласно этому правилу, деление полученного нами многочлена <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 8<em>x</em> + 15</span> на многочлен <span style="color: #000000;"><em>x </em>+ 3</span> должно давать в результате многочлен <span style="color: #000000;"><em>x</em> + 5</span>.</p>
+<p><img alt="дмм рис 4" class="wp-image-10294 size-full aligncenter" decoding="async" height="50" loading="lazy" src="../media/c88cd6a42c2cb6efbc41a7452d1ed9e2.png" width="161"/></p>
+<p>Деление многочлена на многочлен выполняется <a data-lesson-id="delenie" href="delenie.html" rel="noopener noreferrer" title="Деление">уголком</a>. Отличие будет в том, что при делении многочленов не нужно определять первое неполное делимое, как в случае деления обычных чисел.</p>
+<p>Выполним уголком деление многочлена <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 8<em>x</em> + 15</span> на многочлен <span style="color: #000000;"><em>x</em> + 3</span>. Так мы поэтапно увидим, как получается многочлен <span style="color: #000000;"><em>x</em> + 5</span>.</p>
+<p><img alt="дм пр 1 шаг 1" class="size-full wp-image-10249 aligncenter" decoding="async" height="65" loading="lazy" src="../media/30b7d1292aa5ed030288a9099028abd8.png" width="277"/></p>
+<p>В данном случае результат нам известен заранее. Это будет многочлен <span style="color: #000000;"><em>x</em> + 5</span>. Но чаще всего результат бывает неизвестным. Поэтому решение будем комментировать так, будто результат нам неизвестен.</p>
+<p>Результатом деления должен быть новый многочлен. Члены этого многочлена будут появляться один за другим в процессе деления.</p>
+<p>Сейчас наша задача найти первый член нового многочлена. Как это сделать?</p>
+<p>Когда мы изначально перемножали многочлены <span style="color: #000000;"><em>x</em> + 5</span> и <span style="color: #000000;"><em>x</em> + 3</span><span style="color: #000000;">, </span>мы сначала умножили первый член первого многочлена на первый член второго многочлена. Тем самым мы получили первый член третьего многочлена:</p>
+<p><img alt="дмм рис 5" class="size-full wp-image-10295 aligncenter" decoding="async" height="34" loading="lazy" src="../media/2f24d7de7bddba041bfb6537c2714455.png" width="320"/></p>
+<p>Если мы обратно разделим первый член третьего многочлена на первый член второго многочлена, то получим первый член первого многочлена. А это то, что нам нужно. Ведь мы должны прийти к многочлену <span style="color: #000000;"><em>x</em> + 5</span>.</p>
+<p>Этот же принцип нахождения первого члена будет выполняться и при решении других задач на деление многочленов.</p>
+<p>Итак, чтобы найти первый член нового многочлена, нужно первый член делимого разделить на первый член делителя.</p>
+<p>Если первый член делимого (в нашем случае это <em>x</em><sup>2</sup>) разделить на первый член делителя (это <em>x</em>), получится <em>x</em>. То есть первым членом нового многочлена является <em>x</em>. Записываем его под правым углом:</p>
+<p><img alt="дм пр 1 шаг 2" class="wp-image-10251 size-full aligncenter" decoding="async" height="72" loading="lazy" src="../media/8d13adf1cdb28d33c64eefa064e1bc36.png" width="288"/></p>
+<p>Теперь, как и при делении обычных чисел, умножаем <span style="color: #000000;"><em>x</em></span> на делитель <span style="color: #000000;"><em>x </em>+ 3</span>. На этом этапе нужно суметь умножить одночлен на многочлен. При умножении <span style="color: #000000;"><em>x</em></span> на <span style="color: #000000;"><em>x </em>+ 3</span>, получается <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 3<em>x</em></span>. Записываем этот многочлен под делимым <span style="color: #000000;"><em>x</em><sup>2</sup>+ 8<em>x</em>+ 15 </span>так, чтобы подобные члены располагались друг под другом:</p>
+<p><img alt="дм пр 1 шаг 3" class="size-full wp-image-10252 aligncenter" decoding="async" height="72" loading="lazy" src="../media/ba390246e58535df7d7673b8f7615f30.png" width="288"/></p>
+<p>Теперь из делимого <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 8<em>x </em>+ 15</span> вычитаем <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 3<em>x</em></span>. Подобные члены вычитаем из подобных им членов. Если из <span style="color: #000000;"><em>x</em><sup>2</sup></span> вычесть <span style="color: #000000;"><em>x</em><sup>2</sup></span>, получится <span style="color: #000000;">0</span>. Ноль не записываем. Далее если из <span style="color: #000000;">8<em>x</em></span> вычесть <span style="color: #000000;">3<em>x</em></span>, получится <span style="color: #000000;">5<em>x</em></span>. Записываем <span style="color: #000000;">5<em>x</em></span> так, чтобы этот член оказался под членами <span style="color: #000000;">3<em>x</em></span> и <span style="color: #000000;">8<em>x</em></span></p>
+<p><img alt="дм пр 1 шаг 4" class="size-full wp-image-10253 aligncenter" decoding="async" height="100" loading="lazy" src="../media/59e9e2772dcad2252743690a39e131af.png" width="288"/></p>
+<p>Теперь, как и при делении обычных чисел, сносим следующий член делимого. Следующий член это 15. Сносить его нужно вместе со своим знаком:</p>
+<p><img alt="дм пр 1 шаг 5" class="size-full wp-image-10254 aligncenter" decoding="async" height="99" loading="lazy" src="../media/17784a26796f1ad90c7220d98743e6aa.png" width="288"/></p>
+<p>Теперь делим многочлен <span style="color: #000000;">5<em>x </em>+ 15</span> на <span style="color: #000000;"><em>x </em>+ 3</span>. Для этого нужно найти второй член нового многочлена. Чтобы его найти, нужно первый член делимого (сейчас это член <span style="color: #000000;">5<em>x</em></span>) разделить на первый член делителя (это член <span style="color: #000000;"><em>x</em></span>). Если <span style="color: #000000;">5<em>x</em></span> разделить на <span style="color: #000000;"><em>x</em></span>, получится 5. То есть вторым членом нового многочлена является 5. Записываем его под правым углом, вместе со своим знаком (член 5 в данном случае положителен)</p>
+<p><img alt="дм пр 1 шаг 6" class="size-full wp-image-10255 aligncenter" decoding="async" height="99" loading="lazy" src="../media/850d2c73205428eb7fab1d76c430782d.png" width="288"/></p>
+<p>Теперь умножаем 5 на делитель <span style="color: #000000;"><em>x </em>+ 3</span>. При умножении <span style="color: #000000;">5</span> на <span style="color: #000000;"><em>x </em>+ 3</span>, получается <span style="color: #000000;">5<em>x </em>+ 15</span>. Записываем этот многочлен под делимым <span style="color: #000000;">5<em>x </em>+ 15</span></p>
+<p><img alt="дм пр 1 шаг 7" class="size-full wp-image-10256 aligncenter" decoding="async" height="135" loading="lazy" src="../media/3fb4a248b3845f1adac4d01842ef5c11.png" width="288"/></p>
+<p>Теперь из делимого <span style="color: #000000;">5<em>x </em>+ 15</span> вычитаем <span style="color: #000000;">5<em>x </em>+ 15</span>. Если из <span style="color: #000000;">5<em>x </em>+ 15</span> вычесть <span style="color: #000000;">5<em>x </em>+ 15</span> получится 0.</p>
+<p><img alt="дм пр 1 шаг 8" class="size-full wp-image-10257 aligncenter" decoding="async" height="171" loading="lazy" src="../media/46539e6d8f38ff51b797d67268505171.png" width="288"/></p>
+<p>На этом деление завершено.</p>
+<p>После выполнения деления можно выполнить проверку, умножив частное на делитель. В нашем случае, если частное <span style="color: #000000;"><em>x </em>+ 5</span> умножить на делитель <span style="color: #000000;"><em>x </em>+ 3</span>, должен получаться многочлен <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 8<em>x </em>+ 15</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>x</em> + 5)(<em>x</em> + 3) = <em>x</em><sup>2</sup> + <span style="border-bottom: 2px solid #333399;">5<em>x</em></span> + <span style="border-bottom: 2px solid #333399;">3<em>x</em></span> + 15 = <em>x</em><sup>2</sup> + 8<em>x</em> + 15</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разделить многочлен <span style="color: #000000;"><em>x</em><sup>2 </sup>− 8<em>x</em> + 7</span> на многочлен <span style="color: #000000;"><em>x </em>− 7</span></p>
+<p>Записываем уголком данное деление:</p>
+<p><img alt="дм пр 2 шаг 1" class="size-full wp-image-10258 aligncenter" decoding="async" height="68" loading="lazy" src="../media/aabef862fae2a36ae69501d0f5e7a8dd.png" width="269"/></p>
+<p>Находим первый член частного. Разделим первый член делимого на первый член делителя, получим <span style="color: #000000;"><em>x</em></span>. Записываем <span style="color: #000000;"><em>x</em></span> под правым углом:</p>
+<p><img alt="дм пр 2 шаг 2" class="size-full wp-image-10259 aligncenter" decoding="async" height="68" loading="lazy" src="../media/9ba2c40bb795264f66cf70f91278f3f2.png" width="269"/></p>
+<p>Умножаем <span style="color: #000000;"><em>x</em></span> на <span style="color: #000000;"><em>x </em>− 7</span>, получаем <span style="color: #000000;"><em>x</em><sup>2 </sup>− 7<em>x</em></span>. Записываем этот многочлен под делимым <span style="color: #000000;"><em>x</em><sup>2 </sup>− 8<em>x </em>+ 7</span> так, чтобы подобные члены располагались друг под другом:</p>
+<p><img alt="дм пр 2 шаг 3" class="size-full wp-image-10260 aligncenter" decoding="async" height="73" loading="lazy" src="../media/5a2820df6efa84d8c1559a3c27e06529.png" width="269"/></p>
+<p>Вычитаем из <span style="color: #000000;"><em>x</em><sup>2 </sup>− 8<em>x </em>+ 7</span> многочлен <span style="color: #000000;"><em>x</em><sup>2 </sup>− 7<em>x</em></span>. При вычитании <span style="color: #000000;"><em>x</em><sup>2</sup></span> из <span style="color: #000000;"><em>x</em><sup>2</sup></span> получается <span style="color: #000000;">0</span>. Ноль не записываем. А при вычитании <span style="color: #000000;">−7<em>x</em></span> из <span style="color: #000000;">−8<em>x</em></span> получается <span style="color: #000000;"><em>−x</em></span>, поскольку <span style="color: #000000;">−8<em>x </em>− (−7<em>x</em>) = −8<em>x </em>+ 7<em>x </em>= −<em>x</em></span>. Записываем <span style="color: #000000;"><em>−x</em></span> под членами <span style="color: #000000;">−7<em>x</em></span> и <span style="color: #000000;">−8<em>x</em></span>. Далее сносим следующий член <span style="color: #000000;">7</span></p>
+<p><img alt="дм пр 2 шаг 4" class="wp-image-10263 size-full aligncenter" decoding="async" height="103" loading="lazy" src="../media/cc140502c747ffc6920d22f5553e9383.png" width="269"/></p>
+<p>Следует быть внимательным при вычитании отрицательных членов. Часто на этом этапе допускаются ошибки. Если на первых порах вычитание в столбик даётся тяжело, то можно использовать обычное вычитание многочленов в строку, которое мы изучили ранее. Для этого нужно отдельно выписать делимое и вычесть из него многочлен, который под ним располагается. Преимущество этого метода заключается в том, что следующие члены делимого сносить не нужно — они автоматически перейдут в новое делимое. Давайте воспользуемся этим методом:</p>
+<p><img alt="дм пр 2 шаг 4 1" class="size-full wp-image-10262 aligncenter" decoding="async" height="29" loading="lazy" src="../media/d3bbb9cb02b074f2febc87fc9b353bc5.png" width="467"/></p>
+<p>Вернёмся к нашей задаче. Разделим многочлен <span style="color: #000000;">−<em>x</em> + 7</span> на <span style="color: #000000;"><em>x</em> − 7</span>. Для этого нужно найти второй член частного. Чтобы его найти, нужно первый член делимого (сейчас это член <span style="color: #000000;">−<em>x</em></span>) разделить на первый член делителя (это член <span style="color: #000000;"><em>x</em></span>). Если <span style="color: #000000;">−<em>x</em></span> разделить на <span style="color: #000000;"><em>x</em></span>, получится <span style="color: #000000;">−1</span>. Записываем <span style="color: #000000;">−1</span> под правым углом вместе со своим знаком:</p>
+<p><img alt="дм пр 2 шаг 5" class="size-full wp-image-10264 aligncenter" decoding="async" height="103" loading="lazy" src="../media/92d008e57bb68e547b43747c9ee1f479.png" width="269"/></p>
+<p>Умножаем <span style="color: #000000;">−1</span> на <span style="color: #000000;"><em>x</em> − 7</span>, получаем <span style="color: #000000;">−<em>x</em> + 7</span>. Записываем этот многочлен под делимым <span style="color: #000000;">−<em>x</em> + 7</span></p>
+<p><img alt="дм пр 2 шаг 6" class="size-full wp-image-10265 aligncenter" decoding="async" height="138" loading="lazy" src="../media/ea831f47b939f7972a0782869dd60512.png" width="269"/></p>
+<p>Теперь из <span style="color: #000000;">−<em>x</em> + 7</span> вычитаем <span style="color: #000000;">−<em>x</em> + 7</span>. Если из <span style="color: #000000;">−<em>x</em> + 7</span> вычесть <span style="color: #000000;">−<em>x</em> + 7</span> получится <span style="color: #000000;">0</span></p>
+<p><img alt="дм пр 2 шаг 7" class="size-full wp-image-10266 aligncenter" decoding="async" height="171" loading="lazy" src="../media/72a998bc16b2c6d46b2bad7cea969e28.png" width="269"/></p>
+<p>Деление завершено. Таким образом, частное от деления многочлена <span style="color: #000000;"><em>x</em><sup>2 </sup>− 8<em>x </em>+ 7</span> на многочлен <span style="color: #000000;"><em>x </em>− 7</span> равно <span style="color: #000000;"><em>x </em>− 1</span></p>
+<p><img alt="дмм пример 2 шаг последний" class="size-full wp-image-10376 aligncenter" decoding="async" height="49" loading="lazy" src="../media/991d64bbab32e22688629ec2de15d805.png" width="156"/></p>
+<p>Выполним проверку. Умножим частное <span style="color: #000000;"><em>x </em>− 1</span> на делитель <span style="color: #000000;"><em>x</em> − 7</span>. У нас должен получиться многочлен <span style="color: #000000;"><em>x</em><sup>2 </sup>− 8<em>x</em> + 7</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>x</em> − 1)(<em>x</em> − 7) = <em>x</em><sup>2</sup> − <em>x</em> − 7<em>x</em> + 7 = <em>x</em><sup>2</sup> − 8<em>x</em> + 7</span></p>
+<hr/>
+<p><strong>Пример 3</strong>. Разделить многочлен <span style="color: #000000;"><em>x</em><sup>6 </sup>+ 2<em>x</em><sup>4 </sup>+ <em>x</em><sup>7 </sup>+ 2<em>x</em><sup>5</sup></span> на многочлен <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span></p>
+<p><img alt="дмм пример 3 шаг 1" class="size-full wp-image-10296 aligncenter" decoding="async" height="96" loading="lazy" src="../media/8c66633a80a909dd89c5cecbb5605fe2.png" width="379"/></p>
+<p>Найдём первый член частного. Разделим первый член делимого на первый член делителя, получим <span style="color: #000000;"><em>x</em><sup>4</sup></span></p>
+<p><img alt="дмм пример 3 шаг 2" class="size-full wp-image-10297 aligncenter" decoding="async" height="96" loading="lazy" src="../media/d1d268171574d9b8a5fbeb2b39d82294.png" width="379"/></p>
+<p>Умножаем <span style="color: #000000;"><em>x</em><sup>4</sup></span> на делитель <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span> и полученный результат записываем под делимым. Если <span style="color: #000000;"><em>x</em><sup>4</sup></span> умножить на <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span> получится <span style="color: #000000;"><em>x</em><sup>6 </sup>+ <em>x</em><sup>7</sup></span>. Члены этого многочлена записываем под делимым так, чтобы подобные члены располагались друг под другом:</p>
+<p><img alt="дмм пример 3 шаг 3" class="size-full wp-image-10298 aligncenter" decoding="async" height="96" loading="lazy" src="../media/e5c985bba43d73d92d82e23b782b4825.png" width="379"/></p>
+<p>Теперь из делимого вычитаем многочлен <span style="color: #000000;"><em>x</em><sup>6 </sup>+ <em>x</em><sup>7</sup></span>. Вычитание <span style="color: #000000;"><em>x</em><sup>6</sup></span> из <span style="color: #000000;"><em>x</em><sup>6</sup></span> даст в результате 0. Вычитание <span style="color: #000000;"><em>x</em><sup>7</sup></span> из <span style="color: #000000;"><em>x</em><sup>7</sup></span> тоже даст в результате 0. Оставшиеся члены <span style="color: #000000;">2<em>x</em><sup>4</sup></span> и <span style="color: #000000;">2<em>x</em><sup>5</sup></span> снесём:</p>
+<p><img alt="дмм пример 3 шаг 4" class="aligncenter wp-image-10299 size-full" decoding="async" height="127" loading="lazy" src="../media/901902a475aeaf1f64a70512cec277a3.png" width="379"/></p>
+<p>Получилось новое делимое <span style="color: #000000;">2<em>x</em><sup>4 </sup>+ 2<em>x</em><sup>5</sup></span>. Это же делимое можно было получить, выписав отдельно многочлен <span style="color: #000000;"><em>x</em><sup>6 </sup>+ 2<em>x</em><sup>4 </sup>+ <em>x</em><sup>7 </sup>+ 2<em>x</em><sup>5</sup></span> и вычтя из него многочлен <span style="color: #000000;"><em>x</em><sup>6 </sup>+ <em>x</em><sup>7</sup></span></p>
+<p><img alt="дмм пример 3 вычитание скобки" class="size-full wp-image-10302 aligncenter" decoding="async" height="33" loading="lazy" src="../media/ce6227f8d52b86a231d71786550471b7.png" width="621"/></p>
+<p>Разделим многочлен <span style="color: #000000;">2<em>x</em><sup>4 </sup>+ 2<em>x</em><sup>5</sup></span> на делитель <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span>. Как и раньше сначала делим первый член делимого на первый член делителя, получим <span style="color: #000000;">2<em>x</em><sup>2</sup></span>. Записываем этот член в частном:</p>
+<p><img alt="дмм пример 3 шаг 5" class="size-full wp-image-10300 aligncenter" decoding="async" height="127" loading="lazy" src="../media/b166ff98d5ff9b337ec7f0986a9c1801.png" width="379"/></p>
+<p>Умножаем <span style="color: #000000;">2<em>x</em><sup>2</sup></span> на делитель <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span> и полученный результат записываем под делимым. Если <span style="color: #000000;">2<em>x</em><sup>2</sup></span> умножить на <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span> получится <span style="color: #000000;">2<em>x</em><sup>4 </sup>+ 2<em>x</em><sup>5</sup></span>. Записываем члены этого многочлена под делимым так, чтобы подобные члены располагались друг под другом. Затем выполним вычитание:</p>
+<p><img alt="дмм пример 3 шаг 6" class="size-full wp-image-10301 aligncenter" decoding="async" height="207" loading="lazy" src="../media/26b3ef2259d86e4f3ec2c630d207f2b9.png" width="379"/></p>
+<p>Вычитание многочлена <span style="color: #000000;">2<em>x</em><sup>4 </sup>+ 2<em>x</em><sup>5</sup></span> из многочлена <span style="color: #000000;">2<em>x</em><sup>4 </sup>+ 2<em>x</em><sup>5</sup></span> дало в результате 0, поэтому деление успешно завершилось.</p>
+<p>В промежуточных вычислениях члены нового делимого располагались друг от друга, образуя большие расстояния. Это было по причине того, что при умножении частного на делитель, результаты были записаны так, чтобы подобные члены располагались друг под другом.</p>
+<p>Эти расстояния между членами нового делимого образуются тогда, когда члены исходных многочленов расположены беспорядочно. Поэтому перед делением желательно упорядочить члены исходных многочленов в порядке убывания степеней. Тогда решение примет более аккуратный и понятный вид.</p>
+<p>Решим предыдущий пример, упорядочив члены исходных многочленов в порядке убывания степеней. Если члены многочлена <span style="color: #000000;"><em>x</em><sup>6 </sup>+ 2<em>x</em><sup>4 </sup>+ <em>x</em><sup>7 </sup>+ 2<em>x</em><sup>5</sup></span> упорядочить в порядке убывания степеней, то получим многочлен <span style="color: #000000;"><em>x</em><sup>7 </sup>+ <em>x</em><sup>6 </sup>+ 2<em>x</em><sup>5 </sup>+ 2<em>x</em><sup>4</sup></span>. А если члены многочлена <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span> упорядочить в порядке убывания степеней, то получим многочлен <span style="color: #000000;"><em>x</em><sup>3 </sup></span>+ <span style="color: #000000;"><em>x</em><sup>2</sup></span></p>
+<p>Тогда деление уголком многочлена <span style="color: #000000;"><em>x</em><sup>6 </sup>+ 2<em>x</em><sup>4 </sup>+ <em>x</em><sup>7 </sup>+ 2<em>x</em><sup>5</sup></span> на многочлен <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span> примет следующий вид:</p>
+<p><img alt="дмм пример 4 решение" class="size-full wp-image-10303 aligncenter" decoding="async" height="197" loading="lazy" src="../media/c653ea9419b71ce3998fea5541dde536.png" width="369"/></p>
+<p>Деление завершено. Таким образом, частное от деления многочлена <span style="color: #000000;"><em>x</em><sup>6 </sup>+ 2<em>x</em><sup>4 </sup>+ <em>x</em><sup>7 </sup>+ 2<em>x</em><sup>5</sup></span> на многочлен <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span> равно <span style="color: #000000;"><em>x</em><sup>4 </sup>+ 2<em>x</em><sup>2</sup></span></p>
+<p><img alt="дмм пример 3 шаг последний" class="wp-image-10379 size-full aligncenter" decoding="async" height="49" loading="lazy" src="../media/ce101b0136792e029a35034d72c262ca.png" width="252"/></p>
+<p>Выполним проверку. Умножим частное <span style="color: #000000;"><em>x</em><sup>4 </sup>+ 2<em>x</em><sup>2</sup></span> на делитель <span style="color: #000000;"><em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup></span>. У нас должен получиться многочлен <span style="color: #000000;"><em>x</em><sup>6 </sup>+ 2<em>x</em><sup>4 </sup>+ <em>x</em><sup>7 </sup>+ 2<em>x</em><sup>5</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>x</em><sup>4 </sup>+ 2<em>x</em><sup>2</sup>)(<em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup>) = <em>x</em><sup>4 </sup>(<em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup>) + 2<em>x</em><sup>2</sup>(<em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup>) = <em>x</em><sup>6 </sup>+ 2<em>x</em><sup>4 </sup>+ <em>x</em><sup>7 </sup>+ 2<em>x</em><sup>5</sup></span></p>
+<p>При перемножении многочленов члены исходных многочленов тоже желательно упорядочивать в порядке убывания степеней. Тогда члены полученного многочлена тоже будут упорядочены в порядке убывания степеней.</p>
+<p>Перепишем умножение <span style="color: #000000;">(<em>x</em><sup>4 </sup>+ 2<em>x</em><sup>2</sup>)(<em>x</em><sup>2 </sup>+ <em>x</em><sup>3</sup>) </span>упорядочив члены многочленов в порядке убывания степеней.</p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>x</em><sup>4 </sup>+ 2<em>x</em><sup>2</sup>)(<em>x</em><sup>3 </sup>+ <em>x</em><sup>2</sup>) = <em>x</em><sup>4</sup>(<em>x</em><sup>3 </sup>+ <em>x</em><sup>2</sup>) + 2<em>x</em><sup>2</sup>(<em>x</em><sup>3 </sup>+ <em>x</em><sup>2</sup>) = <em>x</em><sup>7 </sup>+ <em>x</em><sup>6 </sup>+ 2<em>x</em><sup>5 </sup>+ 2<em>x</em><sup>4</sup></span></p>
+<hr/>
+<p><strong>Пример 4</strong>. Разделить многочлен <span style="color: #000000;">17<em>x</em><sup>2 </sup>− 6<em>x</em><sup>4 </sup>+ 5<em>x</em><sup>3 </sup>− 23<em>x</em> + 7</span> на многочлен <span style="color: #000000;">7 − 3<em>x</em><sup>2 </sup>− 2<em>x</em></span></p>
+<p>Упорядочим члены исходных многочленов в порядке убывания степеней и выполним уголком данное деление:</p>
+<p><img alt="дмм пример 5" class="size-full wp-image-10304 aligncenter" decoding="async" height="271" loading="lazy" src="../media/e1be37877469788dedae65fcdf4ee451.png" width="559"/></p>
+<p>Значит,</p>
+<p><img alt="дм рис 5" class="size-full wp-image-10521 aligncenter" decoding="async" height="49" loading="lazy" src="../media/6f4936683a6019a8acc7ae9a97d9c63e.png" width="343"/></p>
+<hr/>
+<p><strong>Пример 5</strong>. Разделить многочлен <span style="color: #000000;">4<em>a</em><sup>4 </sup>− 14<em>a</em><sup>3</sup><em>b</em> − 24<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4</sup></span> на многочлен <span style="color: #000000;"><em>a</em><sup>2 </sup>− 3<em>ab</em> − 9<em>b</em><sup>2</sup></span></p>
+<p><img alt="дмм пример 5 шаг 1" class="size-full wp-image-10362 aligncenter" decoding="async" height="66" loading="lazy" src="../media/c9d01358eba22d039252c7009c25b2ac.png" width="418"/></p>
+<p>Найдем первый член частного. Разделим первый член делимого на первый член делителя, получим <span style="color: #000000;">4<em>a</em><sup>2</sup></span>. Записываем <span style="color: #000000;">4<em>a</em><sup>2</sup></span> в частном:</p>
+<p><img alt="дмм пример 5 шаг 2" class="size-full wp-image-10363 aligncenter" decoding="async" height="66" loading="lazy" src="../media/22354353ea59ea4ac8899f5019e15470.png" width="418"/></p>
+<p>Умножим <span style="color: #000000;">4<em>a</em><sup>2</sup></span> на делитель <span style="color: #000000;"><em>a</em><sup>2 </sup>− 3<em>ab</em> − 9<em>b</em><sup>2</sup></span> и полученный результат запишем под делимым:</p>
+<p><img alt="дмм пример 5 шаг 3" class="size-full wp-image-10364 aligncenter" decoding="async" height="66" loading="lazy" src="../media/755c564459c59ceb6301aa84f8d0a69b.png" width="418"/></p>
+<p>Вычтем из делимого полученный многочлен <span style="color: #000000;">4<em>a</em><sup>4 </sup>− 12<em>a</em><sup>3</sup><em>b </em>− 36<em>a</em><sup>2</sup><em>b</em><sup>2</sup></span></p>
+<p><img alt="дмм пример 5 шаг 4" class="wp-image-10366 size-full aligncenter" decoding="async" height="91" loading="lazy" src="../media/e783944fa8f0b1c60a830bc9e1b807e2.png" width="418"/></p>
+<p>Теперь делим <span style="color: #000000;">−2<em>a</em><sup>3</sup><em>b </em>+ 12<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4</sup></span> на делитель <span style="color: #000000;"><em>a</em><sup>2 </sup>− 3<em>ab</em> − 9<em>b</em><sup>2</sup></span>. Разделим первый член делимого на первый член делителя, получим <span style="color: #000000;">−2<em>ab</em></span>. Записываем <span style="color: #000000;">−2<em>ab</em></span> в частном:</p>
+<p><img alt="дмм пример 5 шаг 5" class="size-full wp-image-10367 aligncenter" decoding="async" height="91" loading="lazy" src="../media/67ef1f9c680131761b9afa777b40c4d5.png" width="418"/></p>
+<p>Умножим <span style="color: #000000;">−2<em>ab</em></span> на делитель <span style="color: #000000;"><em>a</em><sup>2 </sup>− 3<em>ab</em> − 9<em>b</em><sup>2</sup></span> и полученный результат запишем под делимым <span style="color: #000000;">−2<em>a</em><sup>3</sup><em>b </em>+ 12<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4</sup></span></p>
+<p><img alt="дмм пример 5 шаг 6" class="size-full wp-image-10368 aligncenter" decoding="async" height="128" loading="lazy" src="../media/a69043ba7089c7d3e120a1b076928445.png" width="418"/></p>
+<p>Вычтем из многочлена <span style="color: #000000;">−2<em>a</em><sup>3</sup><em>b </em>+ 12<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4</sup></span> многочлен <span style="color: #000000;">−2<em>a</em><sup>3</sup><em>b </em>+ 12<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 18<em>ab</em><sup>3</sup></span>. При вычитании подобных членов обнаруживаем, что члены<span style="color: #000000;"> −54<em>b</em><sup>4</sup></span> и <span style="color: #000000;">18<em>ab</em><sup>3</sup></span> не являются подобными, а значит их вычитание не даст никакого преобразования. В этом случае выполняем вычитание там где это можно, а именно вычтем <span style="color: #000000;">−2<em>a</em><sup>3</sup><em>b</em></span> из <span style="color: #000000;">−2<em>a</em><sup>3</sup><em>b</em></span> и <span style="color: #000000;">6<em>a</em><sup>2</sup><em>b</em><sup>2</sup></span> из <span style="color: #000000;">12<em>a</em><sup>2</sup><em>b</em><sup>2</sup></span>, а вычитание <span style="color: #000000;">18<em>ab</em><sup>3</sup></span> из <span style="color: #000000;">−54<em>b</em><sup>4</sup></span> запишем в виде разности <span style="color: #000000;">−54<em>b</em><sup>4 </sup>− (+18<em>ab</em><sup>3</sup>)</span> или <span style="color: #000000;">−54<em>b</em><sup>4 </sup>− 18<em>ab</em><sup>3</sup></span></p>
+<p><img alt="дмм пример 5 шаг 7" class="size-full wp-image-10369 aligncenter" decoding="async" height="164" loading="lazy" src="../media/af3e5b3bc0587cac2a5d089faac7c379.png" width="418"/></p>
+<p>Этот же результат можно получить, если выполнить вычитание многочленов в строку с помощью скобок:</p>
+<p><img alt="дмм пример 5 шаг 8" class="size-full wp-image-10370 aligncenter" decoding="async" height="88" loading="lazy" src="../media/53140e6c704375b933c3aea0ad977ca9.png" width="441"/></p>
+<p>Вернёмся к нашей задаче. Разделим <span style="color: #000000;">6<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4 </sup>− 18<em>ab</em><sup>3</sup></span> на делитель <span style="color: #000000;"><em>a</em><sup>2 </sup>− 3<em>ab</em> − 9<em>b</em><sup>2</sup></span>. Делим первый член делимого на первый член делителя, получим <span style="color: #000000;">6<em>b</em><sup>2</sup></span>. Записываем <span style="color: #000000;">6<em>b</em><sup>2</sup></span> в частном:</p>
+<p><img alt="дмм пример 5 шаг 9" class="size-full wp-image-10371 aligncenter" decoding="async" height="154" loading="lazy" src="../media/554a2a3e1ca55055a473e7b971e161c4.png" width="418"/></p>
+<p>Умножим <span style="color: #000000;">6<em>b</em><sup>2</sup></span> на делитель <span style="color: #000000;"><em>a</em><sup>2 </sup>− 3<em>ab</em> − 9<em>b</em><sup>2</sup></span> и полученный результат запишем под делимым <span style="color: #000000;">6<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4 </sup>− 18<em>ab</em><sup>3</sup></span>. Сразу вычтем этот полученный результат из делимого <span style="color: #000000;">6<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4 </sup>− 18<em>ab</em><sup>3</sup></span></p>
+<p><img alt="дмм пример 5 шаг 10" class="size-full wp-image-10372 aligncenter" decoding="async" height="210" loading="lazy" src="../media/9c31732c6be83daf1f05c1b1dbae420f.png" width="418"/></p>
+<p>Деление завершено. Таким образом, частное от деления многочлена <span style="color: #000000;">4<em>a</em><sup>4 </sup>− 14<em>a</em><sup>3</sup><em>b</em> − 24<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4</sup></span> на многочлен <span style="color: #000000;"><em>a</em><sup>2 </sup>− 3<em>ab</em> − 9<em>b</em><sup>2</sup></span> равно <span style="color: #000000;">4<em>a</em><sup>2 </sup>− 2<em>ab</em> + 6<em>b</em><sup>2</sup></span>.</p>
+<p><img alt="дм рис 6" class="size-full wp-image-10522 aligncenter" decoding="async" height="49" loading="lazy" src="../media/f548338ed4f069d7a451eaa4f4eeb272.png" width="391"/></p>
+<p>Выполним проверку. Умножим частное <span style="color: #000000;">4<em>a</em><sup>2 </sup>− 2<em>ab</em> + 6<em>b</em><sup>2</sup></span> на делитель <span style="color: #000000;"><em>a</em><sup>2 </sup>− 3<em>ab</em> − 9<em>b</em><sup>2</sup></span>. У нас должен получиться многочлен <span style="color: #000000;">4<em>a</em><sup>4 </sup>− 14<em>a</em><sup>3</sup><em>b</em> − 24<em>a</em><sup>2</sup><em>b</em><sup>2 </sup>− 54<em>b</em><sup>4</sup></span></p>
+<p><img alt="дмм пример 5 шаг 11" class="size-full wp-image-10380 aligncenter" decoding="async" height="164" loading="lazy" src="../media/5c8370734061525257f4d0548e0d8982.png" width="595"/></p>
+<hr/>
+<h2 id="delenie_mnogochlena_na_mnogochlen_s_ostatkom" style="text-align: center;">Деление многочлена на многочлен с остатком</h2>
+<p>Как и при делении обычных чисел, при делении многочлена на многочлен может образоваться остаток от деления.</p>
+<p>Для начала вспомним деление обычных чисел с остатком. Например, разделим уголком 15 на 2. С остатком это деление будет выполнено так:</p>
+<p><img alt="15 на 2 решение" class="wp-image-10306 size-full aligncenter" decoding="async" height="104" loading="lazy" src="../media/1df7cbf6fb1d4c9591fa55fef6c83bf3.png" width="104"/></p>
+<p>То есть при делении 15 на 2 получается 7 целых и 1 в остатке. Ответ записывается следующим образом:</p>
+<p><img alt="15 на 2 дробный вид" class="size-full wp-image-10307 aligncenter" decoding="async" height="45" loading="lazy" src="../media/7decdfa71e228ba4759aa15ba5b73075.png" width="72"/></p>
+<p>Рациональное число <img alt="семь целых одна вторая" class="alignnone size-full wp-image-6292" decoding="async" height="45" loading="lazy" src="../media/52b910bde3ddce952737486bc1ac576c.png" width="26"/> читается как семь целых плюс одна вторая. Знак «плюс» по традиции не записывают. Но если при делении многочлена на многочлен образуется остаток, то этот плюс записывать нужно.</p>
+<p>Например, если при делении многочлена <span style="color: #000000;"><em>a</em></span> на многочлен <span style="color: #000000;"><em>b</em></span> получится частное <span style="color: #000000;"><em>c</em></span>, да еще останется остаток <span style="color: #000000;"><em>q</em></span>, то ответ будет записан так:</p>
+<p><img alt="дмм рис 6" class="size-full wp-image-10308 aligncenter" decoding="async" height="41" loading="lazy" src="../media/e963be7e373c01f7db226780a3885fca.png" width="90"/></p>
+<p>Например, разделим многочлен <span style="color: #000000;">2<em>x</em><sup>3 </sup>− <em>x</em><sup>2 </sup>− 5<em>x </em>+ 4</span> на многочлен <span style="color: #000000;"><em>x </em>− 3</span></p>
+<p><img alt="дммо пример 1 шаг 1" class="size-full wp-image-10309 aligncenter" decoding="async" height="86" loading="lazy" src="../media/834f8d52b6873ea3634d598bb9eba429.png" width="410"/></p>
+<p>Найдем первый член частного. Разделим первый член делимого на первый член делителя, получим <span style="color: #000000;">2<em>x</em><sup>2</sup></span>. Записываем <span style="color: #000000;">2<em>x</em><sup>2</sup></span> в частном:</p>
+<p><img alt="дммо пример 1 шаг 2" class="size-full wp-image-10310 aligncenter" decoding="async" height="86" loading="lazy" src="../media/ba1539241dc984eb09ceaa5df8791903.png" width="410"/></p>
+<p>Умножим <span style="color: #000000;">2<em>x</em><sup>2</sup></span> на делитель <span style="color: #000000;"><em>x </em>− 3</span> и полученный результат запишем под делимым:</p>
+<p><img alt="дммо пример 1 шаг 3" class="size-full wp-image-10311 aligncenter" decoding="async" height="86" loading="lazy" src="../media/f4e5b889c879af8a675168802b75a6cc.png" width="410"/></p>
+<p>Вычтем из делимого полученный многочлен <span style="color: #000000;">2<em>x</em><sup>3 </sup>− 6<em>x</em><sup>2</sup></span></p>
+<p><img alt="дммо пример 1 шаг 4" class="wp-image-10313 size-full aligncenter" decoding="async" height="118" loading="lazy" src="../media/6a6d4dcc5334ba17e78fc500c096008d.png" width="410"/></p>
+<p>Теперь делим <span style="color: #000000;">5<em>x</em><sup>2 </sup>− 5<em>x </em>+ 4</span> на делитель <span style="color: #000000;"><em>x </em>− 3</span>. Разделим первый член делимого на первый член делителя, получим <span style="color: #000000;">5<em>x</em></span>. Записываем <span style="color: #000000;">5<em>x</em></span> в частном:</p>
+<p><img alt="дммо пример 1 шаг 5" class="size-full wp-image-10314 aligncenter" decoding="async" height="118" loading="lazy" src="../media/847f2b7de1f5b40f6b6ba7375347f781.png" width="410"/></p>
+<p>Умножим <span style="color: #000000;">5<em>x</em></span> на делитель <span style="color: #000000;"><em>x </em>− 3</span> и полученный результат запишем под делимым <span style="color: #000000;">5<em>x</em><sup>2 </sup>− 5<em>x </em>+ 4</span></p>
+<p><img alt="дммо пример 1 шаг 6" class="size-full wp-image-10315 aligncenter" decoding="async" height="160" loading="lazy" src="../media/df9d609bef497ae0eaa6f99521558fd7.png" width="410"/></p>
+<p>Вычтем из многочлена <span style="color: #000000;">5<em>x</em><sup>2 </sup>− 5<em>x </em>+ 4</span> многочлен <span style="color: #000000;">5<em>x</em><sup>2 </sup>− 15<em>x</em></span></p>
+<p><img alt="дммо пример 1 шаг 7" class="size-full wp-image-10316 aligncenter" decoding="async" height="186" loading="lazy" src="../media/8ba54bf2d7e0105dcc2484fa72776446.png" width="410"/></p>
+<p>Теперь делим <span style="color: #000000;">10<em>x </em>+ 4</span> на делитель <span style="color: #000000;"><em>x </em>− 3</span>. Разделим первый член делимого на первый член делителя, получим <span style="color: #000000;">10</span>. Записываем <span style="color: #000000;">10</span> в частном:</p>
+<p><img alt="дммо пример 1 шаг 8" class="size-full wp-image-10317 aligncenter" decoding="async" height="186" loading="lazy" src="../media/ca1b7392bc74d7a13c2ef5beaa5ea2cd.png" width="410"/></p>
+<p>Умножим <span style="color: #000000;">10</span> на делитель <span style="color: #000000;"><em>x </em>− 3</span> и полученный результат запишем под делимым <span style="color: #000000;">10<em>x </em>+ 4</span>. Сразу вычтем этот полученный результат из делимого <span style="color: #000000;">10<em>x </em>+ 4</span></p>
+<p><img alt="дммо пример 1 шаг 10" class="size-full wp-image-10318 aligncenter" decoding="async" height="255" loading="lazy" src="../media/5684d4de4ed941f84cb4ccbb16570a2a.png" width="410"/></p>
+<p>Число 34, полученное в результате вычитания многочлена <span style="color: #000000;">10<em>x </em>− 30</span> из многочлена <span style="color: #000000;">10<em>x </em>+ 4</span>, является остатком. Мы не сможем найти следующий член частного, который при умножении с делителем <span style="color: #000000;"><em>x </em>− 3</span> дал бы нам в результате <span style="color: #000000;">34</span>.</p>
+<p>Поэтому при делении многочлена <span style="color: #000000;">2<em>x</em><sup>3 </sup>− 2<em>x</em><sup>2 </sup>− 5<em>x </em>+ 4</span> на многочлен <span style="color: #000000;"><em>x </em>− 3</span> получается <span style="color: #000000;">2<em>x</em><sup>2 </sup>+ 5<em>x </em>+ 10</span> и <span style="color: #000000;">34</span> в остатке. Ответ записывается таким же образом, как и при делении обычных чисел. Сначала записывается целая часть (она располагается под правым углом) плюс остаток, разделенный на делитель:</p>
+<p><img alt="дммо рис 2" class="size-full wp-image-10320 aligncenter" decoding="async" height="49" loading="lazy" src="../media/6ae067bc4f94c91ecd7b7a43b3c677b1.png" width="333"/></p>
+<hr/>
+<h2 id="kogda_delenie_mnogochlenov_nevozmozhno" style="text-align: center;">Когда деление многочленов невозможно</h2>
+<p>Деление многочлена на многочлен невозможно в случае, если степень делимого окажется меньше степени делителя.</p>
+<p>Например, нельзя разделить многочлен <span style="color: #000000;"><em>x</em><sup>3 </sup>+ <em>x</em></span> на многочлен <span style="color: #000000;"><em>x</em><sup>4</sup> + <em>x</em><sup>2</sup></span>, поскольку делимое является многочленом третьей степени, а делитель — многочленом четвёртой степени.</p>
+<p>Вопреки этому запрету можно попробовать разделить многочлен <span style="color: #000000;"><em>x</em><sup>3 </sup>+ <em>x</em></span> на многочлен <span style="color: #000000;"><em>x</em><sup>4</sup> + <em>x</em><sup>2</sup></span>, и даже получить частное <em>x</em><span style="color: #000000;"><sup>−</sup></span><span style="color: #000000;"><sup>1</sup></span>, которое при перемножении с делителем будет давать делимое:</p>
+<p><img alt="дм рис 2" class="size-full wp-image-10428 aligncenter" decoding="async" height="107" loading="lazy" src="../media/77c644ec990a8fb9d6876c1cfe08e696.png" width="176"/></p>
+<p><img alt="дм рис 3" class="size-full wp-image-10430 aligncenter" decoding="async" height="29" loading="lazy" src="../media/3d55c8bdf39c97d99b818fe0195fb56a.png" width="482"/></p>
+<p>Но при делении многочлена на многочлен должен получаться именно многочлен, а частное <span style="color: #000000;"><em>x</em><sup>−</sup><sup>1</sup></span> многочленом не является. Ведь многочлен состоит из одночленов, а одночлен в свою очередь это <strong>произведение</strong> чисел, переменных и степеней. Выражение <span style="color: #000000;"><em>x</em><sup>−</sup><sup>1</sup></span> это дробь <img alt="1 na x" class="alignnone wp-image-10429 size-full" decoding="async" height="45" loading="lazy" src="../media/f8d6cd831b2b3418e28e04d2c1677a5e.png" width="23"/>, которая не является произведением.</p>
+<p>Пусть имеется прямоугольник со сторонами 4 и 2</p>
+<p><img alt="пр 42x рис 1" class="wp-image-10388 size-full aligncenter" decoding="async" height="225" loading="lazy" src="../media/8f082b106b34d4b597b8adba51d4084f.png" width="501"/></p>
+<p>Площадь этого прямоугольника будет равна <span style="color: #000000;">4 × 2 = 8 <em>кв.ед.</em></span></p>
+<p>Увеличим длину и ширину этого прямоугольника на <span style="color: #000000;"><em>x</em></span></p>
+<p><img alt="пр 42x рис 2" class="wp-image-10523 size-full aligncenter" decoding="async" height="312" loading="lazy" src="../media/f612ce1525dc990d675e421d4dba88ac.png" width="501"/></p>
+<p>Достроим отсутствующие стороны:</p>
+<p><img alt="пр 42x рис 3" class="wp-image-10524 size-full aligncenter" decoding="async" height="312" loading="lazy" src="../media/aa813c0b8f4d79c714868c35fff4d0f2.png" width="501"/></p>
+<p>Теперь прямоугольник имеет длину <span style="color: #000000;"><em>x </em>+ 4</span> и ширину <span style="color: #000000;"><em>x </em>+ 2</span>. Площадь этого прямоугольника будет равна произведению <span style="color: #000000;">(<em>x</em> + 4)(<em>x</em> + 2)</span> и выражаться многочленом <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 6<em>x </em>+ 8</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>x </em>+ 4)(<em>x </em>+ 2) = <em>x</em><sup>2 </sup>+ 4<em>x </em>+ 2<em>x </em>+ 8 = <em>x</em><sup>2 </sup>+ 6<em>x </em>+ 8</span></p>
+<p>При этом мы можем выполнить обратную операцию, а именно разделить площадь <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 6<em>x </em>+ 8</span> на ширину <span style="color: #000000;"><em>x </em>+ 2</span> и получить длину <span style="color: #000000;"><em>x </em>+ 4</span>.</p>
+<p><img alt="дм рис 1" class="wp-image-10427 size-full aligncenter" decoding="async" height="171" loading="lazy" src="../media/2ff09272c519f2a58ca008f2f90b6eca.png" width="298"/></p>
+<p>Степень многочлена <span style="color: #000000;"><em>x</em><sup>2 </sup>+ 6<em>x </em>+ 8</span> равна сумме степеней многочленов-сомножителей <span style="color: #000000;"><em>x </em>+ 4</span> и <span style="color: #000000;"><em>x </em>+ 2</span>, а значит ни одна из степеней многочленов-сомножителей не может превосходить степень многочлена-произведения. Следовательно, чтобы обратное деление было возможным, степень делителя должна быть меньше степени делимого.</p>
+<hr/>
+<h2 id="zadaniya_dlya_samostoyatelnogo_resheniya" style="text-align: center;">Задания для самостоятельного решения</h2>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 1.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/5df46447a1c8f9ebe06679c5022b3aca.png"/></div>
+<div class="ex ex1" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/b2b3dca75943794bc653f4d4f41d771d.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex1" href="#" rel=".ex1">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 2.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/66940dce676a62384c195ac3dec76393.png"/></div>
+<div class="ex ex2" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/1dbf3ce7b260ba54e68f318fb36065ee.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex2" href="#" rel=".ex2">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 3.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/cae942a0e9040b34b9968d26969dd19e.png"/></div>
+<div class="ex ex3" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/87376442038065352dbe557d74bf33c3.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex3" href="#" rel=".ex3">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 4.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/7f68a0c25aa833ae355bebeef09a515f.png"/></div>
+<div class="ex ex4" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/fca93041848d51ca0ba2bc2cccacee96.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex4" href="#" rel=".ex4">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 5.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/146c322753ecc05e680545fb0324ed70.png"/></div>
+<div class="ex ex5" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/cf983169e498796b6a12dc75200fcc45.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex5" href="#" rel=".ex5">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 6.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/4671655bca2cf656d88e8b6d96031ee7.png"/></div>
+<div class="ex ex6" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/ed7103a21b4bf3cdeb537e436cc10779.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex6" href="#" rel=".ex6">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 7.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/a922ab87ce6a88a0dee69e8ff6be55ff.png"/></div>
+<div class="ex ex7" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/ba5507200c26142b2ec52d3325b9a4b1.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex7" href="#" rel=".ex7">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 8.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/90f87cbb18234f1c42d46d8f7f04031a.png"/></div>
+<div class="ex ex8" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/6322a7c2f6a26e9fc546a47ebf82902f.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex8" href="#" rel=".ex8">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 9.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/5a140741c2956954c45ef7e2f70ee1da.png"/></div>
+<div class="ex ex9" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f396af2a09a4ac6a6d66b0f7f36ccb01.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex9" href="#" rel=".ex9">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 10.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/a335cec05f2d68272af21a912007db18.png"/></div>
+<div class="ex ex10" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/a8701ee8dd0f86f2e56c3b93a8487340.png"/></div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/17339ef0e9b584156cb25e587be9ce10.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex10" href="#" rel=".ex10">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 11.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/0bbddb16350dea4dc3e1395ebb8709ad.png"/></div>
+<div class="ex ex11" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/fcd2c5596324a025f7ca17a4dc8876ec.png"/></div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f777e8273133f0637346288646cbe518.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex11" href="#" rel=".ex11">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 12.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/cfc4480aa3a62a2549c9b084efa46dd7.png"/></div>
+<div class="ex ex12" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/c248d7a5708f22b34b7c417ed8829659.png"/></div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/e40c5403116b0c826a3a74e684b585f5.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex12" href="#" rel=".ex12">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 13.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/a110c8da39bb0b6230cd6ab6a19c77fa.png"/></div>
+<div class="ex ex13" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/52b18e81c4fcda902df32598533a257d.png"/></div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/fb2e4702ddf5b991f79be88597ad8395.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex13" href="#" rel=".ex13">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 14.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/1ddbb7756c59d1d02842dec62f8fae7b.png"/></div>
+<div class="ex ex14" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/319134cb84d4e98abb55e4fccf8451ae.png"/></div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/caebe17d8e94ce97e98e974d3b746161.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex14" href="#" rel=".ex14">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 15.</span> Выполните деление:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/7ef19dfb2903ba0cdd4bfb639916506b.png"/></div>
+<div class="ex ex15" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/6978143529813f715d02c48b85185933.png"/></div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/e88e25cf3a1738324e3913b4166fbbfe.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex15" href="#" rel=".ex15">Показать решение</a></div>
+</div>
+<hr/>
+</div></main></body></html>

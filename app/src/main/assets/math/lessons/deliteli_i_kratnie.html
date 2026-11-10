@@ -1,0 +1,266 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>10. Делители и кратные</title><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../lesson.css"><script src="../lesson.js" defer></script></head><body><main><h1>10. Делители и кратные</h1><div class="entry-content">
+<p>В этом уроке мы познакомимся с <strong>делителями</strong> и <strong>кратными</strong>.</p>
+<nav id="menu"><b>Содержание урока</b>
+<ul class="navless">
+<li><a href="#yak1">Что такое делитель?</a></li>
+<li><a href="#yak2">Кратные числа</a></li>
+<li><a href="#yak3">Признаки делимости чисел</a></li>
+<li><a href="#yak4">Чётные и нечётные числа</a></li>
+<li><a href="#yak5">Простые и составные числа</a></li>
+<li><a href="#razlojenie_chisla_na_mnojiteli">Разложение составного числа на простые множители</a></li>
+<li><a href="#yak7">Нахождение делителей числа</a></li>
+<li><a href="#yak8">Задания для самостоятельного решения</a></li>
+</ul>
+</nav>
+<h2 id="yak1" style="text-align: center;">Что такое делитель?</h2>
+<p>Рассмотрим простой пример:</p>
+<p style="text-align: center;">8 : 2 = 4</p>
+<p>Видим, что число 8 разделилось на 2 без остатка. Говорят, что число <span style="color: #000000;">2</span> является делителем числа 8.</p>
+<p>Рассмотрим еще примеры, когда одно число без остатка разделилось на другое.</p>
+<p><strong>Пример 1</strong>. Число 2 является делителем числа 8, поскольку 8 делится на 2 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">8 : 2 = 4</span></p>
+<p><strong>Пример 2</strong>. Число 3 является делителем числа 9, поскольку 9 делится на 3 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">9 : 3 = 3</span></p>
+<p><strong>Пример 3.</strong> Число 4 <strong>не является</strong> делителем числа 10 поскольку 10 не делится на 4 без остатка:</p>
+<p style="text-align: center;"><span style="color: #000000;">10 : 4 = 2 (2 в остатке)</span></p>
+<hr/>
+<p><span style="color: #333399;"><strong>Определение</strong>. <strong>Делителем числа <em>а</em> называется число, на которое число <em>а</em> делится без остатка</strong>.</span></p>
+<p>Данное определение содержит переменную <span style="color: #000000;"><em>a</em></span>. Подставим вместо этой переменной любое<em> </em>число, например число 12 и прочитаем определение:</p>
+<p><span style="color: #333399;"><strong>Делителем числа <span style="color: #993300;">12</span> называется число, на которое <span style="color: #993300;">12</span> делится без остатка</strong>.</span></p>
+<p>Попробуем перечислить эти числа:</p>
+<p style="text-align: center;"><span style="color: #0000ff;">1, 2, 3, 4, 6, 12</span></p>
+<p>Все эти числа являются делителями числа 12, поскольку число 12 делится на них без остатка. Покажем это:</p>
+<p style="text-align: center;"><span style="color: #000000;">12 : <span style="color: #0000ff;">1</span> = 12</span><br/>
+<span style="color: #000000;">12 : <span style="color: #0000ff;">2</span> = 6</span><br/>
+<span style="color: #000000;">12 : <span style="color: #0000ff;">3</span> = 4</span><br/>
+<span style="color: #000000;">12 : <span style="color: #0000ff;">4</span> = 3</span><br/>
+<span style="color: #000000;">12 : <span style="color: #0000ff;">6</span> = 2</span><br/>
+<span style="color: #000000;">12 : <span style="color: #0000ff;">12</span> = 1</span></p>
+<hr/>
+<h2 id="yak2" style="text-align: center;">Кратные числа</h2>
+<p>Если какое-нибудь число без остатка разделилось на другое, то его называют кратным этого числа. Например, 6 без остатка делится на 3. Поэтому 6 является кратным числа 3</p>
+<p style="text-align: center;"><span style="color: #000000;">6 : 3 = 2</span></p>
+<p style="text-align: left;"><span style="color: #333399;"><strong>Определение. Кратным числа <em>а</em> называется число, которое делится без остатка на <em>а</em></strong>.</span></p>
+<p style="text-align: left;">Данное определение содержит переменную <span style="color: #000000;"><em>a</em></span>. Подставим вместо этой переменной любое число, например число 5 и прочитаем определение:</p>
+<p style="text-align: left;"><span style="color: #333399;"><strong>Кратным числа <span style="color: #993300;">5</span> называется число, которое делится без остатка на <span style="color: #993300;">5</span><em>.</em></strong></span></p>
+<p style="text-align: left;">У любого числа бесконечно много кратных. Например, первыми кратными числа 5, являются числа 5, 10, 15, 20, 25. Все они кратны 5, поскольку делятся на 5 без остатка:</p>
+<p style="text-align: center;"><span style="color: #0000ff;">5</span> : 5 = 1<br/>
+<span style="color: #0000ff;">10</span> : 5 = 2<br/>
+<span style="color: #0000ff;">15</span> : 5 = 3<br/>
+<span style="color: #0000ff;">20</span> : 5 = 4<br/>
+<span style="color: #0000ff;">25</span> : 5 = 5</p>
+<hr/>
+<h2 id="yak3" style="text-align: center;">Признаки делимости чисел</h2>
+<p>Признаки делимости позволяют быстро определить, делится ли одно число на другое без остатка, не выполняя самого деления.</p>
+<p>Существует несколько признаков делимости, которые значительно упрощают вычисления и помогают быстрее решать задачи. Рассмотрим самые распространённые из них.</p>
+<p style="text-align: left;"><strong>Признак делимости на 10</strong></p>
+<p>Любое число, которое оканчивается нулем, делится без остатка на 10. Чтобы разделить такое число на 10, достаточно отбросить последнюю цифру — ноль.</p>
+<p>Например, 380 : 10 = 38. Мы просто отбросили последний ноль в числе 380.</p>
+<p>В случае, если мы имеем выражение такого вида 385 : 10, то получится 38 и 5 в остатке, поскольку 380 : 10 = 38, а пятерка это остаток, который не разделился.</p>
+<p>Таким образом, если число оканчивается цифрой 0, то оно делится на 10 без остатка.</p>
+<p>Если число оканчивается любой другой цифрой, то на 10 без остатка оно не делится. В этом случае остаток равен последней цифре числа.</p>
+<p>Например:</p>
+<p>385 : 10 = 38 (остаток 5)</p>
+<p>Остаток равен последней цифре числа 385, то есть цифре 5.</p>
+<p style="text-align: left;"><strong>Признак делимости на 5 и на 2</strong></p>
+<p>Любое число, которое оканчивается нулем, делится без остатка и на 5, и на 2.</p>
+<p>Примеры:</p>
+<p style="text-align: left;"><span style="color: #000000;">10 : 5 = 2</span></p>
+<p style="text-align: left;"><span style="color: #000000;">100 : 5 = 20</span></p>
+<p style="text-align: left;"><span style="color: #000000;">100 : 2 = 50</span></p>
+<p><strong>Признак делимости на 5</strong></p>
+<p>Если число оканчивается цифрой 0 или 5, то оно делится без остатка на 5.</p>
+<p>Примеры:</p>
+<p style="text-align: left;"><span style="color: #000000;">355 : 5 = 71</span></p>
+<p style="text-align: left;"><span style="color: #000000;">200 : 5 = 40</span></p>
+<p style="text-align: left;"><span style="color: #000000;">475 : 5 = 95</span></p>
+<p><strong>Признак делимости на 3<em><br/>
+</em></strong></p>
+<p>Число делится на 3, если сумма цифр этого числа делится на 3. Например, рассмотрим число 27, сумма его цифр 2 + 7 = 9. Девять, как мы знаем делится на 3, значит и 27 делится на 3:</p>
+<p style="text-align: center;">27 : 3 = 9</p>
+<p><strong>Признак делимости на 9<em><br/>
+</em></strong></p>
+<p>Число делится на 9, если сумма его цифр делится на 9. Например, рассмотрим число 18. Сумма его цифр 1 + 8 = 9. Девять делится на девять, значит и 18 делится на 9</p>
+<p style="text-align: center;">18 : 9 = 2</p>
+<p>Рассмотрим число 846. Сумма его цифр 8 + 4 + 6 = 18.  Восемнадцать делится на девять, значит и 846 делится на 9. Выполним это деление уголком:</p>
+<p><img alt="846994" class="size-full wp-image-762 aligncenter" decoding="async" height="169" loading="lazy" src="../media/208739aee0462edd570e3fd94f93cba7.png" width="141"/></p>
+<hr/>
+<h2 id="yak4" style="text-align: center;">Чётные и нечётные числа</h2>
+<p><strong>Чётное число</strong> — это число, которое делится на 2 без остатка.</p>
+<p>Например, число 20 является чётным, потому что оно делится на 2 без остатка:</p>
+<p style="text-align: center;">20 : 2 = 10</p>
+<p>Нечётное число — это число, которое при делении на 2 даёт остаток 1.</p>
+<p>Например, число 21 — нечётное:</p>
+<p style="text-align: center;">21 : 2 = 10 (остаток 1)</p>
+<p>Как определить, является число чётным или нечётным, не деля его на 2? Достаточно посмотреть на последнюю цифру числа.</p>
+<p>Если последняя цифра — 0, 2, 4, 6 или 8, то число чётное.</p>
+<p>Если последняя цифра — 1, 3, 5, 7 или 9, то число нечётное.</p>
+<p>Например, число 308 чётно, поскольку оно оканчивается чётной цифрой. Число 1024 тоже чётно, поскольку оканчивается чётной цифрой.</p>
+<p>А числа 305 и 1027 являются нечётными, поскольку они оканчиваются нечётными цифрами.</p>
+<hr/>
+<h2 id="yak5" style="text-align: center;">Простые и составные числа</h2>
+<p><strong>Простое число</strong> — это число, которое делится без остатка только на единицу и само на себя. Иными словами, у простого числа всего два делителя: 1 и само число.</p>
+<p>Например, число 5 делится без остатка на единицу и само на себя:</p>
+<p style="text-align: center;">5 : <span style="color: #0000ff;">1</span> = 5</p>
+<p style="text-align: center;">5 : <span style="color: #0000ff;">5</span> = 1</p>
+<p><strong>Составное число</strong> — это число, которое имеет более двух делителей.</p>
+<p>Например, число 4 является составным, потому что оно делится без остатка на 1, 2 и 4. Следовательно, у него три делителя.</p>
+<p style="text-align: center;">4 : <span style="color: #0000ff;">4</span> = 1</p>
+<p style="text-align: center;">4 : <span style="color: #0000ff;">2</span> = 2</p>
+<p style="text-align: center;">4 : <span style="color: #0000ff;">1</span> = 4</p>
+<hr/>
+<h2 id="razlojenie_chisla_na_mnojiteli" style="text-align: center;">Разложение составного числа на простые множители</h2>
+<p>Любое составное число можно разложить на простые множители, то есть представить в виде произведения простых чисел.</p>
+<p>Это похоже на <a data-lesson-id="preobrazovanie_virajeniy" href="preobrazovanie_virajeniy.html" rel="noopener" title="Перейти к уроку, где рассказывается об этом">замену в выражениях</a>, которую мы изучали ранее. Мы узнали, что любое число в выражении можно заменить равным ему выражением, записанным в другой форме, при этом значение выражения не изменится.</p>
+<p>Например, число 6 можно записать в виде суммы <span style="color: #000000;">4 + 2</span> или в виде частного <span style="color: #000000;">12 : 2</span> или в виде произведения <span style="color: #000000;">2 × 3</span>. Последнюю запись <span style="color: #000000;">2 × 3</span> называют разложением числа 6 на простые множители, потому что числа 2 и 3 являются простыми, а их произведение равно 6.</p>
+<p>Разложить число на простые множители — значит представить его в виде произведения простых чисел.</p>
+<p>Разложим число 4 на простые множители. Для этого представим его в виде произведения простых чисел. Число 4 можно записать как <span style="color: #000000;">2 × 2</span>. Число 2 является простым, поэтому множители 2 и 2 — простые множители числа 4. Следовательно, разложение числа 4 на простые множители имеет вид:</p>
+<p style="text-align: center;"><span style="color: #000000;">4 = 2 × 2</span></p>
+<hr/>
+<p>Разложим число 6 на простые множители. Число 6 состоит из множителей 2 и 3, так как <span style="color: #000000;">6 = 2 × 3</span>. Поскольку числа 2 и 3 простые, они являются простыми множителями числа 6</p>
+<p style="text-align: center;"><span style="color: #000000;">6 = 2 × 3</span></p>
+<hr/>
+<p>Разложим на множители число 8. Это число можно разложить на множители 2 и 4, при этом множитель 4 можно разложить на два множителя: <span style="color: #0000ff;">2</span> и <span style="color: #0000ff;">2</span>. Поэтому вместо четвёрки записываем её разложение:</p>
+<p style="text-align: center;"><img alt="разложение числа 8 на простые множители" class="wp-image-10021 size-full aligncenter" decoding="async" height="100" loading="lazy" src="../media/d245b73cfc4ed097258acf55c6026c5d.png" width="223"/></p>
+<p>Большие числа раскладывают на простые множители по тому же принципу. Сначала число представляют в виде произведения нескольких множителей. Затем каждый составной множитель раскладывают дальше. Этот процесс продолжают до тех пор, пока все множители не станут простыми числами.</p>
+<p>Например, разложим число 180 на простые множители. Число 180 это два множителя 18 и 10</p>
+<p style="text-align: center;"><span style="color: #000000;">180 = 18 × 10</span></p>
+<p>Множители 18 и 10 являются составными. Их тоже в свою очередь раскладываем на другие множители:</p>
+<p style="text-align: center;">18 = 3 × <span style="color: #0000ff;">6</span></p>
+<p style="text-align: center;"> 10 = 5 × 2</p>
+<p>Теперь раскладываем выделенную синюю шестерку. Это последний составной множитель, который можно разложить на простые множители:</p>
+<p style="text-align: center;"><span style="color: #0000ff;">6 </span>= 2 × 3</p>
+<p>Теперь собираем все простые множители вместе:</p>
+<p style="text-align: center;"><img alt="разложение числа 180 на простые множители" class="wp-image-10022 size-full aligncenter" decoding="async" height="155" loading="lazy" src="../media/6be98fbbfd6d9cea086cb538238f846e.png" width="400"/></p>
+<p style="text-align: left;">На множители можно разложить только составное число. Простое число на множители не раскладывается. Именно поэтому, когда разложение доходит до простых чисел, мы эти простые числа дальше не раскладываем.</p>
+<p style="text-align: left;">Существует и второй способ разложения на простые множители. Он проще и удобен для больших чисел. Суть этого способа заключается в том, что сначала проводят вертикальную линию. Слева от неё записывают делимое, а справа — делитель. В результате получаются простые множители.</p>
+<p style="text-align: left;">При разложении числа этим способом используют признаки делимости, например: на 2, на 3, на 5 и другие. Они помогают быстрее находить делители числа.</p>
+<p style="text-align: left;">Рассмотрим пример: разложим число 180 на простые множители с помощью этого способа.</p>
+<p style="text-align: left;">Проводим вертикальную линию и слева записываем первое делимое 180</p>
+<p style="text-align: left;"><img alt="11180" class="size-full wp-image-755 aligncenter" decoding="async" height="238" loading="lazy" src="../media/c99dd1251e5fcbebbb5991ce22a80614.png" width="140"/></p>
+<p style="text-align: left;">Теперь применяем признаки делимости. В первую очередь проверяем делится ли 180 на 2. Если делится, то нужно записать эту двойку справа от вертикальной линии.</p>
+<p style="text-align: left;">180 делится на 2, поскольку 180 оканчивается нулём. Записываем двойку справа от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="111802" class="size-full wp-image-756 aligncenter" decoding="async" height="239" loading="lazy" src="../media/0e3bff2522e2c96832b1baacfd7cb071.png" width="142"/></p>
+<p style="text-align: left;">Теперь делим 180 на 2 и получаем второе делимое 90. Записываем это делимое слева от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="111803" class="size-full wp-image-757 aligncenter" decoding="async" height="237" loading="lazy" src="../media/6b439ad7ec6c57bb0c6ae372212f3279.png" width="141"/></p>
+<p style="text-align: left;">Теперь делим 90. Снова применяем признаки делимости. Проверяем делится ли 90 на 2.</p>
+<p style="text-align: left;">90 делится на 2, поскольку 90 оканчивается нулём. Записываем двойку справа от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="111804" class="size-full wp-image-758 aligncenter" decoding="async" height="240" loading="lazy" src="../media/9cb40fe8600542b5db505036dec4644b.png" width="140"/></p>
+<p style="text-align: left;">Теперь делим 90 на 2, получаем третье делимое 45. Записываем это делимое слева от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="111805" class="size-full wp-image-759 aligncenter" decoding="async" height="238" loading="lazy" src="../media/04574724a4ffcee543aeaee7e965063c.png" width="141"/></p>
+<p style="text-align: left;">Теперь делим 45. Снова применяем признаки делимости. Проверяем делится ли 45 на 2.</p>
+<p style="text-align: left;">45 на 2 не делится. Тогда проверяем делится ли 45 на 3.</p>
+<p style="text-align: left;">45 делится на 3, поскольку сумма цифр 4 и 5 делится на 3. Записываем тройку справа от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="111806" class="size-full wp-image-763 aligncenter" decoding="async" height="241" loading="lazy" src="../media/2bff74e28fbcb90e1a83d537b3c1f2e1.png" width="139"/></p>
+<p style="text-align: left;">Делим 45 на 3, получаем четвёртое делимое 15. Записываем это делимое слева от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="111807" class="size-full wp-image-764 aligncenter" decoding="async" height="241" loading="lazy" src="../media/1fcc337c076b139a8bb3130f147c8361.png" width="140"/></p>
+<p style="text-align: left;">Теперь делим 15. Проверяем делится ли 15 на 2.</p>
+<p style="text-align: left;">15 не делится на 2. Тогда проверяем делится ли 15 на 3.</p>
+<p style="text-align: left;">15 на 3 делится, поскольку сумма цифр 1 и 5 делится на 3. Записываем тройку справа от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="111808" class="size-full wp-image-765 aligncenter" decoding="async" height="236" loading="lazy" src="../media/28645ce54abda48a5b0a60bfd2ee4101.png" width="139"/></p>
+<p style="text-align: left;">Делим 15 на 3, получаем пятое делимое 5. Записываем пятёрку слева от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="111809" class="size-full wp-image-766 aligncenter" decoding="async" height="236" loading="lazy" src="../media/6c5412f3c2c038778d655aa6d38698c8.png" width="140"/></p>
+<p style="text-align: left;">Теперь делим 5. Проверяем делится ли 5 на 2.</p>
+<p style="text-align: left;">5 не делится на 2. Тогда проверяем делится ли 5 на 3.</p>
+<p style="text-align: left;">5 не делится на 3. Тогда проверяем делится ли 5 на 5.</p>
+<p style="text-align: left;">5 делится на 5. Записываем эту пятёрку справа от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="1118010" class="size-full wp-image-767 aligncenter" decoding="async" height="237" loading="lazy" src="../media/f633018d723a92122f4a42e5ee5af192.png" width="141"/></p>
+<p style="text-align: left;">Делим 5 на 5, получаем шестое делимое 1. Записываем эту единицу слева от вертикальной линии:</p>
+<p style="text-align: left;"><img alt="1118011" class="size-full wp-image-768 aligncenter" decoding="async" height="235" loading="lazy" src="../media/1cf406fc4add09e709f261a0c5e4aae6.png" width="140"/></p>
+<p>Деление на этом завершается, потому что мы получили единицу. Делители, которые записывают справа от вертикальной линии, должны быть простыми числами. Поэтому, когда число 5 не разделилось на 2 и затем не разделилось на 3, мы попробовали разделить его на 5, не проверяя деление на 4, так как 4 — не простое, а составное число.</p>
+<p>Теперь переписываем в один ряд все делители, записанные справа от вертикальной линии. Это и будет разложением числа 180 на простые множители. Желательно записывать их, начиная с наименьших, чтобы расположить множители по возрастанию.</p>
+<p style="text-align: left;"><img alt="1118012" class="alignnone size-full wp-image-771" decoding="async" height="263" loading="lazy" src="../media/c63ca9bc129d8bd62f802dbbb86a8b48.png" width="621"/></p>
+<p style="text-align: left;">Не расстраивайтесь, если у вас будут трудности при разложении чисел на простые множители. Эта тема требует небольшой практики. Для тренировки попробуйте разложить на простые множители следующие числа: 256, 378, 512.</p>
+<hr/>
+<h2 id="yak7" style="text-align: center;">Нахождение делителей числа</h2>
+<p>В начале урока мы говорили, что делитель — это число, на которое другое число делится без остатка.</p>
+<p>Например, число <span style="color: #000080;"><strong>2</strong></span> является делителем числа 6, поскольку число 6 можно без остатка разделить на <span style="color: #000080;"><strong>2</strong></span></p>
+<p style="text-align: center;">6 : <span style="color: #000080;"><strong>2</strong></span> = 3</p>
+<p>Ещё делителем числа 6 является число <span style="color: #000080;"><strong>3</strong></span></p>
+<p style="text-align: center;">6 : <span style="color: #000080;"><strong>3</strong></span> = 2</p>
+<p>Ещё делителем числа 6 является число <span style="color: #000080;"><strong>1</strong></span></p>
+<p style="text-align: center;">6 : <span style="color: #000080;"><strong>1</strong></span> = 6</p>
+<p>Наконец, делителем числа 6 является само это число</p>
+<p style="text-align: center;">6 : <strong><span style="color: #000080;">6</span></strong> = 1</p>
+<p>Перечислим все делители числа 6</p>
+<p style="text-align: center;"><span style="color: #333399;"><strong>1, 2, 3, 6</strong></span></p>
+<p>Иногда возникает необходимость найти все делители числа. Чтобы понять, как это делается, рассмотрим несколько примеров.</p>
+<p><strong>Пример 1</strong>. Найти делители числа 12</p>
+<p>Во-первых, единица является делителем любого числа. Пусть и у нас первым делителем числа 12 будет единица</p>
+<p><img alt="делители числа 12 таблица рис 1" class="size-full wp-image-8529 aligncenter" decoding="async" height="70" loading="lazy" src="../media/5a70a51f1ebc7045355b30ac7c65dc71.png" width="204"/></p>
+<p>Теперь раскладываем число 12 на простые множители:</p>
+<p><img alt="разложение числа 12 на множители" class="size-full wp-image-8400 aligncenter" decoding="async" height="143" loading="lazy" src="../media/b39b88e30575162ac18e8b09fd50a0d6.png" width="147"/></p>
+<p>Получили разложение <span style="color: #000000;">2 × 2 × 3. </span></p>
+<p>В процессе разложения числа 12 на простые множители, мы делили его на числа 2 и 3. На них число 12 разделилось без остатка, значит они тоже являются делителями числа 12. Внесём эти два числа в нашу таблицу делителей:</p>
+<p><img alt="делители числа 12 таблица рис 2" class="size-full wp-image-8530 aligncenter" decoding="async" height="138" loading="lazy" src="../media/ea41048c0158f709bb05d4321b0199ff.png" width="204"/></p>
+<p>Чтобы получить остальные делители числа 12, нужно найти все возможные произведения его простых множителей между собой. Получаемые в результате ответы и будут остальными делителями числа 12.</p>
+<p>Число 12 мы разложили на простые множители <span style="color: #000000;">2 × 2 × 3. </span>Найдём все возможные произведения этих простых множителей между собой. Первое произведение это 2 × 2. Это произведение равно 4</p>
+<p style="text-align: center;"><span style="color: #000000;">2 × 2 = 4</span></p>
+<p>Занесём число 4 в нашу таблицу делителей</p>
+<p><img alt="делители числа 12 таблица рис 3" class="size-full wp-image-8531 aligncenter" decoding="async" height="171" loading="lazy" src="../media/5b50ce257b8a44484739541093218e68.png" width="204"/></p>
+<p>Следующее возможное произведение из простых множителей числа 12 это произведение <span style="color: #000000;">2 × 3. </span>Данное произведение равно 6. Занесём число 6 в нашу таблицу делителей:</p>
+<p><img alt="делители числа 12 таблица рис 4" class="size-full wp-image-8532 aligncenter" decoding="async" height="205" loading="lazy" src="../media/9b71b4751143abc373a5cae054ffff22.png" width="204"/></p>
+<p>Последнее возможное произведение из простых множителей числа 12 это произведение из всех его множителей, а именно <span style="color: #000000;">2 × 2 × 3. </span>Это произведение равно 12. Занесём число 12 в нашу таблицу делителей:</p>
+<p><img alt="делители числа 12 таблица рис 5" class="size-full wp-image-8533 aligncenter" decoding="async" height="239" loading="lazy" src="../media/c4fa591c96af294b259b6f53ae65bcea.png" width="204"/></p>
+<p>Таким образом, делителями числа 12 являются числа 1, 2, 3, 4, 6, 12.</p>
+<p>На основании приведённого примера можно сформировать правило для нахождения делителей числа:</p>
+<p><span style="color: #333399;"><strong>Чтобы найти делители числа, нужно:</strong></span></p>
+<ul>
+<li><span style="color: #333399;"><strong>записать в качестве первого делителя единицу;</strong></span></li>
+<li><span style="color: #333399;"><strong>разложить исходное число на простые множители и выписать из полученных простых множителей те множители, которые являются делителями исходного числа (если множитель повторяется, то выписать его нужно только один раз); </strong></span></li>
+<li><span style="color: #333399;"><span style="color: #333399;"><strong>найти все возможные произведения полученных простых множителей между собой. Получаемые в результате ответы будут остальными делителями исходного числа.</strong></span></span></li>
+</ul>
+<p><strong>Пример 2</strong>. Найти делители числа 6</p>
+<p>Первым делителем числа 6 запишем единицу:</p>
+<p style="text-align: center;"><strong><span style="color: #333399;">1</span></strong></p>
+<p>Теперь разложим число 6 на простые множители:</p>
+<p><img alt="разложение числа 6 на простые множители" class="size-full wp-image-8525 aligncenter" decoding="async" height="102" loading="lazy" src="../media/873ad617bf5701e499f76f79f78a75de.png" width="70"/></p>
+<p>Выпишем из полученного разложения те множители, которые являются делителями числа 6. Видим, что это множители 2 и 3. Они будут следующими делителями числа 6. Допишем их к нашим делителям:</p>
+<p style="text-align: center;"><strong><span style="color: #333399;">1, 2, 3</span></strong></p>
+<p>Теперь найдём все возможные произведения простых множителей числа 6. В данном случае имеется только одно произведение, а именно <span style="color: #000000;">2 × 3</span>. Это произведение равно 6. Допишем число 6 к нашим делителям:</p>
+<p style="text-align: center;"><strong><span style="color: #333399;">1, 2, 3, 6</span></strong></p>
+<p>Таким образом, делителями числа 6 являются числа <strong><span style="color: #333399;">1, 2, 3, 6</span></strong>.</p>
+<hr/>
+<h3 id="yak8" style="text-align: center;">Задания для самостоятельного решения</h3>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 1.</span> Разложите число 256 на простые множители</div>
+<div class="ex ex1" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/14707a7e9b372e8d0425c907f24b8379.png"/></div>
+</div>
+<div class="b-test-work-show-example" style="margin-top: 10px;"><a aria-expanded="false" class="show_hide" data-answer=".ex1" href="#" rel=".ex1">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 2.</span> Разложите число 52 на простые множители</div>
+<div class="ex ex2" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/c3b878b2212d40fef5476755f2954b6e.png"/></div>
+</div>
+<div class="b-test-work-show-example" style="margin-top: 10px;"><a aria-expanded="false" class="show_hide" data-answer=".ex2" href="#" rel=".ex2">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 3.</span> Разложите число 98 на простые множители</div>
+<div class="ex ex3" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/cd86a35d5ea9f2f6be3c257cb5474799.png"/></div>
+</div>
+<div class="b-test-work-show-example" style="margin-top: 10px;"><a aria-expanded="false" class="show_hide" data-answer=".ex3" href="#" rel=".ex3">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 4.</span> Разложите число 116 на простые множители</div>
+<div class="ex ex4" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/bb14df6f1c11b225a43b604b9460ecdb.png"/></div>
+</div>
+<div class="b-test-work-show-example" style="margin-top: 10px;"><a aria-expanded="false" class="show_hide" data-answer=".ex4" href="#" rel=".ex4">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 5.</span> Разложите число 228 на простые множители</div>
+<div class="ex ex5" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/9b673fb4b43ad91125cdccf7f22e0707.png"/></div>
+</div>
+<div class="b-test-work-show-example" style="margin-top: 10px;"><a aria-expanded="false" class="show_hide" data-answer=".ex5" href="#" rel=".ex5">Показать решение</a></div>
+</div>
+<hr/>
+</div></main></body></html>

@@ -1,0 +1,609 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>51. Системы линейных уравнений</title><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../lesson.css"><script src="../lesson.js" defer></script></head><body><main><h1>51. Системы линейных уравнений</h1><div class="entry-content">
+<nav id="before-themes"><b>Предварительные навыки</b>
+<ul class="before-themes_item">
+<li><a data-lesson-id="obshhie-svedeniya-ob-uravneniyah" href="obshhie-svedeniya-ob-uravneniyah.html" rel="noopener noreferrer">Общие сведения об уравнениях</a></li>
+<li><a data-lesson-id="reshenie-zadach-s-pomoshhyu-uravnenij" href="reshenie-zadach-s-pomoshhyu-uravnenij.html" rel="noopener noreferrer">Решение задач с помощью уравнений</a></li>
+</ul>
+</nav>
+<nav id="menu"><b>Содержание урока</b>
+<ul class="navless">
+<li><a href="#yak1">Линейные уравнения с двумя переменными</a></li>
+<li><a href="#yak2">Система двух линейных уравнений с двумя переменными</a></li>
+<li><a href="#yak3">Метод подстановки</a></li>
+<li><a href="#yak4">Метод сложения</a></li>
+<li><a href="#yak5">Система линейных уравнений с тремя переменными</a></li>
+<li><a href="#yak6">Задачи на составление систем линейных уравнений</a></li>
+<li><a href="#yak7">Задания для самостоятельного решения</a></li>
+</ul>
+</nav>
+<h2 id="yak1" style="text-align: center;">Линейные уравнения с двумя переменными</h2>
+<p>У школьника имеется 200 рублей, чтобы пообедать в школе. Пирожное стоит 25 рублей, а чашка кофе 10 рублей. Сколько пирожных и чашек кофе можно накупить на 200 рублей?</p>
+<p>Обозначим количество пирожных через <span style="color: #000000;"><em>x</em></span>, а количество чашек кофе через <span style="color: #000000;"><em>y</em></span>. Тогда стоимость пирожных будет обозначаться через выражение <span style="color: #000000;">25<em>x</em></span>, а стоимость чашек кофе через <span style="color: #000000;">10<em>y</em></span>.</p>
+<p style="text-align: center;"><span style="color: #000000;">25<em>x — </em>стоимость<em> x </em>пирожных</span><br/>
+<span style="color: #000000;">10<em>y — </em>стоимость<em> y </em>чашек кофе</span></p>
+<p>Итоговая сумма должна равняться 200 рублей. Тогда получится уравнение с двумя переменными <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span></p>
+<p>Сколько корней имеет данное уравнение?</p>
+<p>Всё зависит от аппетита школьника. Если он купит 6 пирожных и 5 чашек кофе, то корнями уравнения будут числа 6 и 5.</p>
+<p><img alt="pri x ravno 6 y ravno 5 25x plus 10y ravno 200" class="size-full wp-image-7427 aligncenter" decoding="async" height="79" loading="lazy" src="../media/138a9340ea298ae5d76a9a393057f70a.png" width="174"/></p>
+<p>Говорят, что пара значений 6 и 5 являются корнями уравнения <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span>. Записывается как <span style="color: #000000;">(6; 5)</span>, при этом первое число является значением переменной <span style="color: #000000;"><em>x</em></span>, а второе — значением переменной <span style="color: #000000;"><em>y</em></span>.</p>
+<p>6 и 5 не единственные корни, которые обращают уравнение <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200 </span>в тождество. При желании на те же 200 рублей школьник может купить 4 пирожных и 10 чашек кофе:</p>
+<p><img alt="pri x ravno 4 y ravno 10 25x plus 10y ravno 200" class="size-full wp-image-7428 aligncenter" decoding="async" height="79" loading="lazy" src="../media/34acbb64804af3ea738d034a8e12570a.png" width="185"/></p>
+<p>В этом случае корнями уравнения <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span> является пара значений <span style="color: #000000;">(4; 10)</span>.</p>
+<p>Более того, школьник может вообще не покупать кофе, а купить пирожные на все 200 рублей. Тогда корнями уравнения <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span> будут значения 8 и 0</p>
+<p><img alt="pri x ravno 8 y ravno 0 25x plus 10y ravno 200" class="size-full wp-image-7429 aligncenter" decoding="async" height="79" loading="lazy" src="../media/294fcd18d881a77447ec67681f1accf8.png" width="178"/></p>
+<p>Или наоборот, не покупать пирожные, а купить кофе на все 200 рублей. Тогда корнями уравнения <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200 </span>будут значения 0 и 20</p>
+<p><img alt="pri x ravno 0 y ravno 20 25x plus 10y ravno 200" class="size-full wp-image-7430 aligncenter" decoding="async" height="79" loading="lazy" src="../media/2d184f7d18c07e79adceb1ed4d43d4c4.png" width="186"/></p>
+<p>Попробуем перечислить все возможные корни уравнения <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span>. Условимся, что значения <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span> принадлежат множеству целых чисел. И пусть эти значения будут бóльшими или равными нулю:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x </em>∈<em> Z, y </em>∈ <em>Z;<br/>
+x ≥ </em>0<em>, y ≥ </em>0</span></p>
+<p>Так будет удобно и самому школьнику. Пирожные удобнее покупать целыми, чем к примеру несколько целых пирожных и половину пирожного. Кофе также удобнее брать целыми чашками, чем к примеру несколько целых чашек и половину чашки.</p>
+<p>Заметим, что при нечетном <em>x</em> невозможно достичь равенства ни при каком <span style="color: #000000;"><em>y</em></span>. Тогда значениями <span style="color: #000000;"><em>x</em></span> будут следующие числа 0, 2, 4, 6, 8. А зная <em>x</em> можно без труда определить <span style="color: #000000;"><em>y</em></span></p>
+<p><img alt="нахождение второго корня 25x plus 10y ravno 200" class="wp-image-7756 size-full aligncenter" decoding="async" height="742" loading="lazy" src="../media/3672303dd97f481541e3182fa2215dfe.png" width="310"/></p>
+<p>Таким образом, мы получили следующие пары значений <span style="color: #000000;">(0; 20), (2; 15), (4; 10), (6; 5), (8; 0). </span>Эти пары являются решениями или корнями уравнения <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span>.<span style="color: #000000;"> </span>Они обращают данное уравнение в тождество.</p>
+<p>Уравнение вида <span style="color: #000000;"><em>ax + by = c</em> </span>называют <strong>линейным уравнением с двумя переменными</strong>. Решением или корнями этого уравнения называют пару значений (<span style="color: #000000;"><em>x; y</em></span>), которая обращает его в тождество.</p>
+<p>Отметим также, что если линейное уравнение с двумя переменными записано в виде <em><span style="color: #000000;">ax + </span><span style="color: #000000;">b</span><span style="color: #000000;">y = c</span>,</em> то говорят, что оно записано в <strong>каноническом</strong> (нормальном) виде.</p>
+<p>Некоторые линейные уравнения с двумя переменными могут быть приведены к каноническому виду.</p>
+<p>Например, уравнение <span style="color: #000000;">2(16<em>x </em>+ 3<em>y − </em>4) = 2(12 + 8<em>x</em> − <em>y</em>)</span> можно привести к виду <span style="color: #000000;"><em>ax + by = c</em></span>. Раскроем скобки в обеих частях этого уравнения, получим <span style="color: #000000;">32<em>x</em> + 6<em>y</em> − 8 = 24 + 16<em>x</em> − 2<em>y</em></span>. Слагаемые, содержащие неизвестные сгруппируем в левой части уравнения, а слагаемые свободные от неизвестных — в правой. Тогда получим <span style="color: #000000;">32<em>x − </em>16<em>x </em>+ 6<em>y </em>+ 2<em>y</em> = 24 + 8</span>. Приведём подобные слагаемые в обеих частях, получим уравнение <span style="color: #000000;">16<em>x </em>+ 8<em>y </em>= 32. </span>Это уравнение приведено к виду <em><span style="color: #000000;">ax + by = c</span></em> и является каноническим.</p>
+<p>Рассмотренное ранее уравнение <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200 </span>также является линейным уравнением с двумя переменными в каноническом виде<span style="color: #000000;">. </span>В этом уравнении параметры <span style="color: #000000;"><em>a</em></span>, <span style="color: #000000;"><em>b</em></span> и <span style="color: #000000;"><em>c</em></span> равны значениям 25, 10 и 200 соответственно.</p>
+<p>На самом деле уравнение <span style="color: #000000;"><em>ax + by = c</em> </span>имеет бесчисленное множество решений. Решая уравнение <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200, </span>мы искали его корни только<span style="color: #000000;"> </span>на множестве целых чисел. В результате получили несколько пар значений, которые обращали данное уравнение в тождество. Но на множестве рациональных чисел уравнение <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span> будет иметь бесчисленное множество решений.</p>
+<p>Для получения новых пар значений, нужно взять произвольное значение для <span style="color: #000000;"><em>x</em></span>, затем выразить <span style="color: #000000;"><em>y</em></span>. К примеру, возьмем для переменной <span style="color: #000000;"><em>x</em></span> значение 7. Тогда получим уравнение с одной переменной <span style="color: #000000;">25 × 7<em> </em>+ 10<em>y </em>= 200 </span>в котором можно выразить <span style="color: #000000;"><em>y</em></span></p>
+<p><img alt="25на7 plus 10y ravno 200 решение" class="size-full wp-image-7432 aligncenter" decoding="async" height="114" loading="lazy" src="../media/ab6cfca85dfd58bcb92110e0ba618189.png" width="156"/></p>
+<p>Пусть<span style="color: #000000;"> <em>x</em> = 15</span>. Тогда уравнение <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200 примет вид 25 × 15<em> </em>+ 10<em>y </em>= 200. </span>Отсюда находим, что <span style="color: #000000;"><em>y</em> = −17,5</span></p>
+<p><img alt="25на15 plus 10y ravno 200 решение" class="size-full wp-image-7433 aligncenter" decoding="async" height="114" loading="lazy" src="../media/0f87155024847b68a9fc5fae157ae41b.png" width="179"/></p>
+<p>Пусть <span style="color: #000000;"><em>x</em> = −3</span>. Тогда уравнение <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200 примет вид 25 × (−3)<em> </em>+ 10<em>y </em>= 200. </span>Отсюда находим, что <span style="color: #000000;"><em>y</em> = 27,5</span></p>
+<p><img alt="25на-3 plus 10y ravno 200 решение" class="size-full wp-image-7434 aligncenter" decoding="async" height="116" loading="lazy" src="../media/2c07546a1d8afbaae6ce359b65789e11.png" width="182"/></p>
+<hr/>
+<h2 id="yak2" style="text-align: center;">Система двух линейных уравнений с двумя переменными</h2>
+<p>Для уравнения <em><span style="color: #000000;">ax + by = c</span></em> можно сколько угодно раз брать произвольные значение для <span style="color: #000000;"><em>x</em></span> и находить значения для <span style="color: #000000;"><em>y</em></span>. Отдельно взятое такое уравнение будет иметь бесчисленное множество решений.</p>
+<p>Но бывает и так, что переменные <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span> связаны не одним, а двумя уравнениями. В этом случае они образуют так называемую <strong>систему линейных уравнений с двумя переменными</strong>. Такая система уравнений может иметь одну пару значений (или по-другому: «одно решение»).</p>
+<p>Может случиться и так, что система вовсе не имеет решений. Бесчисленное множество решений система линейных уравнений может иметь в редких и в исключительных случаях.</p>
+<p>Два линейных уравнения образуют систему тогда, когда значения <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span> входят в каждое из этих уравнений.</p>
+<p>Вернемся к самому первому уравнению <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span>. Одной из пар значений для этого уравнения была пара <span style="color: #000000;">(6; 5)</span>. Это случай, когда на 200 рублей можно можно было купить 6 пирожных и 5 чашек кофе.</p>
+<p>Составим задачу так, чтобы пара <span style="color: #000000;">(6; 5)</span> стала единственным решением для уравнения <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span>. Для этого составим ещё одно уравнение, которое связывало бы те же <span style="color: #000000;"><em>x</em></span> пирожных и <span style="color: #000000;"><em>y</em></span> чашечек кофе.</p>
+<p>Поставим текст задачи следующим образом:</p>
+<p><em>«Школьник купил на 200 рублей несколько пирожных и несколько чашек кофе. Пирожное стоит 25 рублей, а чашка кофе 10 рублей. Сколько пирожных и чашек кофе купил школьник, если известно что количество пирожных на одну единицу больше количества чашек кофе?»</em></p>
+<p>Первое уравнение у нас уже есть. Это уравнение <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span>. Теперь составим уравнение к условию <span style="color: #000000;"><em>«количество пирожных на одну единицу больше количества чашек кофе»</em></span>.</p>
+<p>Количество пирожных это <span style="color: #000000;"><em>x</em></span>, а количество чашек кофе это <span style="color: #000000;"><em>y</em></span>. Можно записать эту фразу с помощью уравнения <span style="color: #000000;"><em>x − y</em> = 1. </span>Это уравнение будет означать, что разница между пирожными и кофе составляет 1.</p>
+<p>Либо второе уравнение можно записать как <span style="color: #000000;"><em>x = y</em> + 1</span>. Это уравнение означает, что количество пирожных на единицу больше, чем количество чашек кофе. Поэтому для получения равенства, к количеству чашек кофе прибавлена единица. Это легко можно понять, если воспользоваться моделью весов, которые мы рассматривали при изучении простейших задач:</p>
+<p><img alt="весы x пирожных и y чашек кофе" class="size-full wp-image-7435 aligncenter" decoding="async" height="164" loading="lazy" src="../media/7efb92a6e75c8d2d8c293eb7c50ab3a2.png" width="658"/></p>
+<p>Получили два уравнения: <span style="color: #000000;">25<em>x </em>+ 10<em>y </em>= 200</span> и <span style="color: #000000;"><em>x = y</em> + 1.</span> Поскольку значения<span style="color: #000000;"> <em>x</em></span> и <span style="color: #000000;"><em>y</em></span>, а именно 6 и 5 входят в каждое из этих уравнений<span style="color: #000000;">,</span> то вместе они образуют систему. Запишем эту систему. Если уравнения образуют систему, то они обрамляются знаком системы. Знак системы это фигурная скобка:</p>
+<p><img alt="system 25x plus 10y step 1" class="size-full wp-image-7436 aligncenter" decoding="async" height="59" loading="lazy" src="../media/3128b85974cb5d5021dcddc5adad746d.png" width="151"/></p>
+<p>Давайте решим данную систему. Это позволит увидеть, как мы придём к значениям 6 и 5. Существует много методов решения таких систем. Рассмотрим наиболее популярные из них.</p>
+<h2 id="yak3" style="text-align: center;">Метод подстановки</h2>
+<p>Название этого метода говорит само за себя. Суть его заключается в том, чтобы одно уравнение подставить в другое, предварительно выразив одну из переменных.</p>
+<p>В нашей системе ничего выражать не нужно. Во втором уравнении <span style="color: #000000;"><em>x</em> = <em>y</em> + 1</span> переменная <span style="color: #000000;"><em>x</em></span> уже выражена. Эта переменная равна выражению <span style="color: #000000;"><em>y </em>+ 1</span>. Тогда можно подставить это выражение в первое уравнение вместо переменной <span style="color: #000000;"><em>x</em></span></p>
+<p><img alt="system 25x plus 10y step 2" class="size-full wp-image-7437 aligncenter" decoding="async" height="208" loading="lazy" src="../media/db102ca3e3e8bff57580aa993d8ad421.png" width="481"/></p>
+<p>После подстановки выражения <span style="color: #000000;"><em>y</em> + 1</span> в первое уравнение вместо <span style="color: #000000;"><em>x</em></span>, получим уравнение <span style="color: #000000;">25(<em>y </em>+ 1) + 10<em>y </em>= 200</span>. Это линейное уравнение с одной переменной. Такое уравнение решить довольно просто:</p>
+<p><img alt="system 25x plus 10y step 3" class="size-full wp-image-7438 aligncenter" decoding="async" height="201" loading="lazy" src="../media/33efc1fcaba16c408220e38209d64c8b.png" width="224"/></p>
+<p>Мы нашли значение переменной <span style="color: #000000;"><em>y</em></span>. Теперь подставим это значение в одно из уравнений и найдём значение <span style="color: #000000;"><em>x</em></span>. Для этого удобно использовать второе уравнение <span style="color: #000000;"><em>x</em> = <em>y</em> + 1</span>. В него и подставим значение <span style="color: #000000;"><em>y</em></span></p>
+<p><img alt="x ravno y plus 1 решение" class="size-full wp-image-7439 aligncenter" decoding="async" height="79" loading="lazy" src="../media/6779fbe5e95152d2c0d39d1ad76b0051.png" width="74"/></p>
+<p>Значит пара <span style="color: #000000;">(6; 5)</span> является решением системы уравнений, как мы и задумывали. Выполняем проверку и убеждаемся, что пара <span style="color: #000000;">(6; 5)</span> удовлетворяет системе:</p>
+<p><img alt="system 25x plus 10y step 4" class="size-full wp-image-7440 aligncenter" decoding="async" height="144" loading="lazy" src="../media/a9c7f103540496f49af5ea7f0fa06d08.png" width="184"/></p>
+<hr/>
+<p><strong>Пример 2</strong>. Решить методом подстановки следующую систему уравнений:</p>
+<p><img alt="system x ravno 2 plus y step 1" class="size-full wp-image-7447 aligncenter" decoding="async" height="58" loading="lazy" src="../media/5513542de5fc7a4b2dceb872210a99b9.png" width="106"/></p>
+<p>Подставим первое уравнение <span style="color: #000000;"><em>x </em>= 2 + <em>y</em></span> во второе уравнение <span style="color: #000000;">3<em>x − </em>2<em>y </em>= 9</span>. В первом уравнении переменная <span style="color: #000000;"><em>x</em></span> равна выражению <span style="color: #000000;">2 + <em>y</em></span>. Это выражение и подставим во второе уравнение вместо <span style="color: #000000;"><em>x</em></span></p>
+<p><img alt="system x ravno 2 plus y step 2" class="size-full wp-image-7448 aligncenter" decoding="async" height="115" loading="lazy" src="../media/cbfc2a1223cae651578e33408ca892bc.png" width="171"/></p>
+<p>Теперь найдём значение <span style="color: #000000;"><em>x</em></span>. Для этого подставим значение <span style="color: #000000;"><em>y</em></span> в первое уравнение <span style="color: #000000;"><em>x </em>= 2 + <em>y</em></span></p>
+<p><img alt="system x ravno 2 plus y step 3" class="size-full wp-image-7449 aligncenter" decoding="async" height="47" loading="lazy" src="../media/de170a86cfc525ebdfb08a0cd860cbd9.png" width="74"/></p>
+<p>Значит решением системы <img alt="system x ravno 2 plus y step 1" class="size-full wp-image-7447 alignnone" decoding="async" height="58" loading="lazy" src="../media/5513542de5fc7a4b2dceb872210a99b9.png" width="106"/> является пара значение <span style="color: #000000;">(5; 3)</span></p>
+<hr/>
+<p><strong>Пример 3</strong>. Решить методом подстановки следующую систему уравнений:</p>
+<p><img alt="systemx plus 2y ravno 11 решение" class="size-full wp-image-7450 aligncenter" decoding="async" height="58" loading="lazy" src="../media/57cde1b1feff6621f0b8bf7787486c7a.png" width="105"/></p>
+<p>Здесь в отличие от предыдущих примеров, одна из переменных не выражена явно.</p>
+<p>Чтобы подставить одно уравнение в другое, сначала нужно <a data-lesson-id="obshhie-svedeniya-ob-uravneniyah" href="obshhie-svedeniya-ob-uravneniyah.html" rel="noopener noreferrer">выразить одну из переменных</a>.</p>
+<p>Выражать желательно ту переменную, которая имеет коэффициент единицу. Коэффициент единицу имеет переменная <span style="color: #000000;"><em>x</em></span>, которая содержится в первом уравнении <span style="color: #000000;"><em>x </em>+ 2<em>y </em>= 11</span>. Эту переменную и выразим.</p>
+<p>После выражения переменной <span style="color: #000000;"><em>x</em></span>, наша система примет следующий вид:</p>
+<p><img alt="systemx plus 2y ravno 11 step 2" class="size-full wp-image-7451 aligncenter" decoding="async" height="58" loading="lazy" src="../media/2477e261be1bd187bf6de1b3b8e55b47.png" width="103"/></p>
+<p>Теперь подставим первое уравнение во второе и найдем значение <span style="color: #000000;"><em>y</em></span></p>
+<p><img alt="systemx plus 2y ravno 11 step 3" class="size-full wp-image-7452 aligncenter" decoding="async" height="177" loading="lazy" src="../media/b7d3ff7fb244bc0d9238a153c3b64cae.png" width="244"/></p>
+<p>Подставим <span style="color: #000000;"><em>y</em></span> в первое уравнение и найдём <span style="color: #000000;"><em>x</em></span></p>
+<p><img alt="systemx plus 2y ravno 11 step 4" class="size-full wp-image-7453 aligncenter" decoding="async" height="110" loading="lazy" src="../media/b5e12e72535a14bd1c549269005bde3a.png" width="140"/></p>
+<p>Значит решением системы <img alt="systemx plus 2y ravno 11 решение" class="size-full wp-image-7450 alignnone" decoding="async" height="58" loading="lazy" src="../media/57cde1b1feff6621f0b8bf7787486c7a.png" width="105"/> является пара значений <span style="color: #000000;">(3; 4)</span></p>
+<p>Конечно, выражать можно и переменную <span style="color: #000000;"><em>y</em></span>. Корни от этого не изменятся. Но если выразить <em>y,</em> получится не очень-то и простое уравнение, на решение которого уйдет больше времени. Выглядеть это будет следующим образом:</p>
+<p><img alt="systemx plus 2y ravno 11 step 5" class="wp-image-7456 size-full aligncenter" decoding="async" height="268" loading="lazy" src="../media/6cfa7aee31401a1372300c3b8a4e4062.png" width="659"/></p>
+<p>Видим, что в данном примере выражать <span style="color: #000000;"><em>x</em></span> намного удобнее, чем выражать <span style="color: #000000;"><em>y</em></span>.</p>
+<hr/>
+<p><strong>Пример 4</strong>. Решить методом подстановки следующую систему уравнений:</p>
+<p><img alt="7x plus 9y ravno 8 step 1" class="size-full wp-image-7457 aligncenter" decoding="async" height="58" loading="lazy" src="../media/5a4f4e973a62171e916c02c83b3810ce.png" width="120"/></p>
+<p>Выразим в первом уравнении <span style="color: #000000;"><em>x</em></span>. Тогда система примет вид:</p>
+<p><img alt="7x plus 9y ravno 8 step 2" class="size-full wp-image-7458 aligncenter" decoding="async" height="78" loading="lazy" src="../media/273205c508ed69371ec37aeda1afd20c.png" width="120"/></p>
+<p>Подставим первое уравнение во второе и найдём <span style="color: #000000;"><em>y</em></span></p>
+<p><img alt="7x plus 9y ravno 8 step 3" class="size-full wp-image-7459 aligncenter" decoding="async" height="288" loading="lazy" src="../media/d5184dd1cb4ee0322a0e18fafa16c31e.png" width="207"/></p>
+<p>Подставим <span style="color: #000000;"><em>y</em></span> в первое уравнение и найдём <span style="color: #000000;"><em>x</em></span>. Можно воспользоваться изначальным уравнением <span style="color: #000000;">7<em>x </em>+ 9<em>y </em>= 8</span>, либо воспользоваться уравнением <img alt="7x plus 9y ravno 8 step 4" class="alignnone wp-image-7461 size-full" decoding="async" height="47" loading="lazy" src="../media/6dd5ba66105e1dca615310f2632b7ca5.png" width="86"/>, в котором выражена переменная <span style="color: #000000;"><em>x</em></span>. Этим уравнением и воспользуемся, поскольку это удобно:</p>
+<p><img alt="7x plus 9y ravno 8 step 5" class="size-full wp-image-7462 aligncenter" decoding="async" height="46" loading="lazy" src="../media/7f69e8e17e816deedac1a2bc408d5bae.png" width="209"/></p>
+<p>Значит решением системы <img alt="7x plus 9y ravno 8 step 1" class="size-full wp-image-7457 alignnone" decoding="async" height="58" loading="lazy" src="../media/5a4f4e973a62171e916c02c83b3810ce.png" width="120"/> является пара значений <span style="color: #000000;">(5; −3)</span></p>
+<hr/>
+<h2 id="yak4" style="text-align: center;">Метод сложения</h2>
+<p>Метод сложения заключается в том, чтобы почленно сложить уравнения, входящие в систему. Это сложение приводит к тому, что образуется новое уравнение с одной переменной. А решить такое уравнение довольно просто.</p>
+<p>Решим следующую систему уравнений:</p>
+<p><img alt="system 2x plus y ravno 24 step 1" class="size-full wp-image-7444 aligncenter" decoding="async" height="58" loading="lazy" src="../media/4964ce72db8f182b897c05e41f7a4775.png" width="110"/></p>
+<p>Сложим левую часть первого уравнения с левой частью второго уравнения. А правую часть первого уравнения с правой частью второго уравнения. Получим следующее равенство:</p>
+<p><img alt="system 2x plus y ravno 24 step 2" class="size-full wp-image-7445 aligncenter" decoding="async" height="20" loading="lazy" src="../media/462e7d629eadf8a25d4e08510955deca.png" width="188"/></p>
+<p>Приведем подобные слагаемые:</p>
+<p><img alt="system 2x plus y ravno 24 step 3" class="size-full wp-image-7446 aligncenter" decoding="async" height="51" loading="lazy" src="../media/000fe39799c16b826b952eda5cfa44cc.png" width="188"/></p>
+<p>В результате получили простейшее уравнение <span style="color: #000000;">3<em>x </em>= 27</span> корень которого равен 9. Зная значение <span style="color: #000000;"><em>x</em></span> можно найти значение <span style="color: #000000;"><em>y</em></span>. Подставим значение <em>x</em> во второе уравнение <span style="color: #000000;"><em>x − y </em>= 3</span>. Получим <span style="color: #000000;">9 − <em>y</em> = 3</span>. Отсюда <span style="color: #000000;"><em>y </em>= 6</span>.</p>
+<p>Значит решением системы <img alt="system 2x plus y ravno 24 step 1" class="size-full wp-image-7444 alignnone" decoding="async" height="58" loading="lazy" src="../media/4964ce72db8f182b897c05e41f7a4775.png" width="110"/> является пара значений (9; 6)</p>
+<hr/>
+<p><strong>Пример 2</strong>. Решить следующую систему уравнений методом сложения:</p>
+<p><img alt="2x plus ravno 11 step 1" class="size-full wp-image-7463 aligncenter" decoding="async" height="58" loading="lazy" src="../media/8295c3fc28811011307905f9b53ca391.png" width="108"/></p>
+<p>Сложим левую часть первого уравнения с левой частью второго уравнения. А правую часть первого уравнения с правой частью второго уравнения. В получившемся равенстве приведем подобные слагаемые:</p>
+<p><img alt="2x plus ravno 11 step 2" class="size-full wp-image-7464 aligncenter" decoding="async" height="50" loading="lazy" src="../media/c25a0c48ea9d71aca8d4851569458cb3.png" width="197"/></p>
+<p>В результате получили простейшее уравнение 5<span style="color: #000000;"><em>x </em>= 20,</span> корень которого равен 4. Зная значение <span style="color: #000000;"><em>x</em></span> можно найти значение <span style="color: #000000;"><em>y</em></span>. Подставим значение <em>x</em> в первое уравнение 2<span style="color: #000000;"><em>x + y </em>= 11</span>. Получим 8<span style="color: #000000;"> + <em>y</em> = 11</span>. Отсюда <span style="color: #000000;"><em>y </em>= 3</span>.</p>
+<p>Значит решением системы <img alt="2x plus ravno 11 step 1" class="size-full wp-image-7463 alignnone" decoding="async" height="58" loading="lazy" src="../media/8295c3fc28811011307905f9b53ca391.png" width="108"/> является пара значений (4;3)</p>
+<p>Процесс сложения подробно не расписывают. Его нужно выполнять в уме. При сложении оба уравнения должны быть приведены к каноническому виду. То есть к виду <span style="color: #000000;"><em>ax + by = c</em></span>.</p>
+<p>Из рассмотренных примеров видно, что основная цель сложения уравнений это избавление от одной из переменных. Но не всегда удаётся сразу решить систему уравнений методом сложения. Чаще всего систему предварительно приводят к виду, при котором можно сложить уравнения, входящие в эту систему.</p>
+<p>Например, систему <img alt="5x plus y ravno 15 step 1" class="alignnone size-full wp-image-7467" decoding="async" height="58" loading="lazy" src="../media/bf8fcc33b3697ccfd387039dd6ca4be6.png" width="107"/> можно сразу решить методом сложения. При сложении обоих уравнений, слагаемые <span style="color: #000000;"><em>y</em></span> и <span style="color: #000000;"><em>−y</em></span> исчезнут, поскольку их сумма равна нулю. В результате образуется простейшее уравнение <span style="color: #000000;">11<em>x </em>= 22</span>, корень которого равен 2. Затем можно будет определить <span style="color: #000000;"><em>y</em></span> равный 5.</p>
+<p>А систему уравнений <img alt="2x plus 3y ravno 18 step 1" class="alignnone size-full wp-image-7468" decoding="async" height="58" loading="lazy" src="../media/dda0686e973b45bef1c8a3983e26d8cb.png" width="118"/> методом сложения сразу решить нельзя, поскольку это не приведёт к исчезновению одной из переменных. Сложение приведет к тому, что образуется уравнение <span style="color: #000000;">8<em>x </em>+ <em>y </em>= 28</span>, имеющее бесчисленное множество решений.</p>
+<p>Если обе части уравнения умножить или разделить на одно и то же число, не равное нулю, то получится уравнение равносильное данному. Это правило справедливо и для системы линейных уравнений с двумя переменными. Одно из уравнений (или оба уравнения) можно умножить на какое-нибудь число. В результате получится равносильная система, корни которой будут совпадать с предыдущей.</p>
+<p>Вернемся к самой первой системе <img alt="system 25x plus 10y step 1" class="size-full wp-image-7436 alignnone" decoding="async" height="59" loading="lazy" src="../media/3128b85974cb5d5021dcddc5adad746d.png" width="151"/>, которая описывала сколько пирожных и чашек кофе купил школьник. Решением этой системы являлась пара значений <span style="color: #000000;">(6; 5)</span>.</p>
+<p>Умножим оба уравнения, входящие в эту систему на какие-нибудь числа. Скажем первое уравнение умножим на 2, а второе на 3</p>
+<p><img alt="system 25x plus 10y method summ step 1" class="size-full wp-image-7441 aligncenter" decoding="async" height="153" loading="lazy" src="../media/d242257f6875985f5ca114c36b3a76fe.png" width="193"/></p>
+<p>В результате получили систему <img alt="system 25x plus 10y method summ step 2" class="alignnone size-full wp-image-7442" decoding="async" height="58" loading="lazy" src="../media/71666199386c463ee0f7e3176d135581.png" width="155"/><br/>
+Решением этой системы по-прежнему является пара значений <span style="color: #000000;">(6; 5)</span></p>
+<p><img alt="system 25x plus 10y method summ step 3" class="size-full wp-image-7443 aligncenter" decoding="async" height="317" loading="lazy" src="../media/7d6d23a57f2de27b48aaddd7c87b2707.png" width="183"/></p>
+<p>Это значит, что уравнения входящие в систему можно привести к виду, пригодному для применения метода сложения.</p>
+<p>Вернемся к системе <img alt="2x plus 3y ravno 18 step 1" class="alignnone size-full wp-image-7468" decoding="async" height="58" loading="lazy" src="../media/dda0686e973b45bef1c8a3983e26d8cb.png" width="118"/>, которую мы не смогли решить методом сложения.</p>
+<p>Умножим первое уравнение на 6, а второе на −2</p>
+<p><img alt="2x plus 3y ravno 18 step 2" class="size-full wp-image-7469 aligncenter" decoding="async" height="60" loading="lazy" src="../media/f7eb6dd3e53551a3f0d9e32da2cb5436.png" width="191"/></p>
+<p>Тогда получим следующую систему:</p>
+<p><img alt="2x plus 3y ravno 18 step 3" class="size-full wp-image-7470 aligncenter" decoding="async" height="58" loading="lazy" src="../media/9a5394483d4dddced856ee3c6d8a2034.png" width="155"/></p>
+<p>Сложим уравнения, входящие в эту систему. Сложение компонентов <span style="color: #000000;">12<em>x</em></span> и <span style="color: #000000;">−12<em>x</em></span> даст в результате 0, сложение <span style="color: #000000;">18<em>y</em></span> и <span style="color: #000000;">4<em>y</em></span> даст <span style="color: #000000;">22<em>y</em></span>, а сложение 108 и −20 даст 88. Тогда получится уравнение <span style="color: #000000;">22<em>y</em> = 88</span>, отсюда <span style="color: #000000;"><em>y</em> = 4</span>.</p>
+<p>Если первое время тяжело складывать уравнения в уме, то можно записывать как складывается левая часть первого уравнения с левой частью второго уравнения, а правая часть первого уравнения с правой частью второго уравнения:</p>
+<p><img alt="12x plus 18y ravno 108 второе решение" class="size-full wp-image-7757 aligncenter" decoding="async" height="96" loading="lazy" src="../media/657a34cc66f5f41a8cd24fd96c9dcb14.png" width="339"/></p>
+<p>Зная, что значение переменной <em>y</em> равно 4, можно найти значение <em>x</em>. Подставим <span style="color: #000000;"><em>y</em></span> в одно из уравнений, например в первое уравнение <span style="color: #000000;">2<em>x </em>+ 3<em>y </em>= 18</span>. Тогда получим уравнение с одной переменной <span style="color: #000000;">2<em>x </em>+ 12 = 18</span>. Перенесем 12 в правую часть, изменив знак, получим <span style="color: #000000;">2<em>x </em>= 6</span>, отсюда <span style="color: #000000;"><em>x</em> = 3</span>.</p>
+<hr/>
+<p><strong>Пример 4</strong>. Решить следующую систему уравнений методом сложения:</p>
+<p><img alt="x plus 5y ravno 7 step 1" class="size-full wp-image-7472 aligncenter" decoding="async" height="62" loading="lazy" src="../media/b50085df623a90671d064ce227e78c96.png" width="116"/></p>
+<p>Умножим второе уравнение на −1. Тогда система примет следующий вид:</p>
+<p><img alt="x plus 5y ravno 7 step 2" class="size-full wp-image-7473 aligncenter" decoding="async" height="62" loading="lazy" src="../media/f32ce7edc446c4316fde443d4f634be7.png" width="114"/></p>
+<p>Сложим оба уравнения. Сложение компонентов <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>−x</em></span> даст в результате 0, сложение <span style="color: #000000;">5<em>y</em></span> и <span style="color: #000000;">3<em>y</em></span> даст <span style="color: #000000;">8<em>y</em></span>, а сложение 7 и 1 даст 8. В результате получится уравнение <span style="color: #000000;">8<em>y </em>= 8</span>, корень которого равен 1. Зная, что значение <span style="color: #000000;"><em>y</em></span> равно 1, можно найти значение <span style="color: #000000;"><em>x</em></span>.</p>
+<p>Подставим <span style="color: #000000;"><em>y</em> </span>в первое уравнение, получим <span style="color: #000000;"><em>x </em>+ 5 = 7</span>, отсюда <span style="color: #000000;"><em>x </em>= 2</span></p>
+<hr/>
+<p><strong>Пример 5</strong>. Решить следующую систему уравнений методом сложения:</p>
+<p><img alt="6x minus 7y ravno 40 step 1" class="size-full wp-image-7474 aligncenter" decoding="async" height="58" loading="lazy" src="../media/06a7501353a39f292115f7e3a1af4cff.png" width="119"/></p>
+<p>Желательно, чтобы слагаемые содержащие одинаковые переменные, располагались друг под другом. Поэтому во втором уравнении слагаемые <span style="color: #000000;">5<em>y</em> </span>и <span style="color: #000000;">−2<em>x</em></span> поменяем местами. В результате система примет вид:</p>
+<p><img alt="6x minus 7y ravno 40" class="size-full wp-image-7477 aligncenter" decoding="async" height="58" loading="lazy" src="../media/fa95a98f471f4cb77a408836726703ab.png" width="137"/></p>
+<p>Умножим второе уравнение на 3. Тогда система примет вид:</p>
+<p><img alt="6x minus 7y ravno 40 step 4" class="wp-image-7479 size-full aligncenter" decoding="async" height="58" loading="lazy" src="../media/bd92aae58c03efd0a432a8e3c054c753.png" width="161"/></p>
+<p>Теперь сложим оба уравнения. В результате сложения получим уравнение <span style="color: #000000;">8<em>y </em>= 16</span>, корень которого равен 2.</p>
+<p>Подставим <span style="color: #000000;"><em>y</em></span> в первое уравнение, получим <span style="color: #000000;">6<em>x </em>− 14 = 40</span>. Перенесем слагаемое <span style="color: #000000;">−14</span> в правую часть, изменив знак, получим <span style="color: #000000;">6<em>x </em>= 54</span>. Отсюда <span style="color: #000000;"><em>x </em>= 9.</span></p>
+<hr/>
+<p><strong>Пример 6</strong>. Решить следующую систему уравнений методом сложения:</p>
+<p><img alt="2xna9 plus yna4 ravno 11 step 1" class="size-full wp-image-7480 aligncenter" decoding="async" height="107" loading="lazy" src="../media/f709515329c1b14322c38a1671232cca.png" width="115"/></p>
+<p>Избавимся от дробей. Умножим первое уравнение на 36, а второе на 12</p>
+<p><img alt="2xna9 plus yna4 ravno 11 step 2" class="wp-image-7483 size-full aligncenter" decoding="async" height="526" loading="lazy" src="../media/bdd2bc3887801012507142313e1c85ad.png" width="209"/></p>
+<p>В получившейся системе <img alt="2xna9 plus yna4 ravno 11 step 3" class="alignnone size-full wp-image-7482" decoding="async" height="57" loading="lazy" src="../media/d713a6050782b8cc45cebce01e8a7446.png" width="129"/>  первое уравнение можно умножить на −5, а второе на 8</p>
+<p><img alt="2xna9 plus yna4 ravno 11 step 4" class="size-full wp-image-7484 aligncenter" decoding="async" height="155" loading="lazy" src="../media/af4b60c7e4b3924c199d75a38d4d422a.png" width="211"/></p>
+<p>Сложим уравнения в получившейся системе. Тогда получим простейшее уравнение <span style="color: #000000;">−13<em>y </em>= −156</span>. Отсюда <span style="color: #000000;"><em>y </em>= 12</span>. Подставим <span style="color: #000000;"><em>y</em></span> в первое уравнение и найдем <span style="color: #000000;"><em>x</em></span></p>
+<p><img alt="2xna9 plus yna4 ravno 11 step 5" class="size-full wp-image-7485 aligncenter" decoding="async" height="215" loading="lazy" src="../media/3bc3b51c94c9e192335961e0981fd856.png" width="110"/></p>
+<hr/>
+<p><strong>Пример 7</strong>. Решить следующую систему уравнений методом сложения:</p>
+<p><img alt="x-y na 4 ravno step 1" class="size-full wp-image-7486 aligncenter" decoding="async" height="106" loading="lazy" src="../media/4ba31e92452af87a30b8e4750e203e87.png" width="114"/></p>
+<p>Приведем оба уравнения к нормальному виду. Здесь удобно применить правило пропорции в обоих уравнениях. Если в первом уравнении правую часть представить как  <img alt="1na1" class="alignnone size-full wp-image-7487" decoding="async" height="45" loading="lazy" src="../media/754fc24dca123f47b22665d0ba2d9e48.png" width="9"/> , а правую часть второго уравнения как <img alt="3na1" class="alignnone size-full wp-image-7488" decoding="async" height="45" loading="lazy" src="../media/f1a9c726f4193bd840c076c23fda2a0e.png" width="10"/>, то система примет вид:</p>
+<p><img alt="x-y na 4 ravno step 2" class="wp-image-7491 size-full aligncenter" decoding="async" height="106" loading="lazy" src="../media/6778a32e9cf617ce01dd41c0e0a9e7cf.png" width="118"/></p>
+<p>У нас получилась пропорция. Перемножим её крайние и средние члены. Тогда система примет вид:</p>
+<p><img alt="x-y na 4 ravno step 3" class="wp-image-7492 size-full aligncenter" decoding="async" height="58" loading="lazy" src="../media/57c86fa5dea91c5f5450fa918703dfc9.png" width="181"/></p>
+<p>Первое уравнение умножим на −3, а во втором раскроем скобки:</p>
+<p><img alt="" class="size-full wp-image-7493 aligncenter" decoding="async" height="58" loading="lazy" src="../media/69aa1182471685509fb7ed74fd1b3ded.png" width="147"/></p>
+<p>Теперь сложим оба уравнения. В результате сложения этих уравнений, мы получим равенство, в обеих частях которого будет ноль:</p>
+<p><img alt="x-y na 4 ravno step 5" class="size-full wp-image-7494 aligncenter" decoding="async" height="50" loading="lazy" src="../media/f82bd030f2315925422114c835c43502.png" width="263"/></p>
+<p>Получается, что система <img alt="x-y na 4 ravno step 1" class="size-full wp-image-7486 alignnone" decoding="async" height="106" loading="lazy" src="../media/4ba31e92452af87a30b8e4750e203e87.png" width="114"/> имеет бесчисленное множество решений.</p>
+<p>Но мы не можем просто так взять с неба произвольные значения для <span style="color: #000000;"><em>x</em></span> и<span style="color: #000000;"> <em>y</em></span>. Мы можем указать одно из значений, а другое определится в зависимости от значения, указанного нами. Например, пусть <span style="color: #000000;"><em>x </em>= 2</span>. Подставим это значение в систему:</p>
+<p><img alt="x-y na 4 ravno step 6" class="size-full wp-image-7497 aligncenter" decoding="async" height="106" loading="lazy" src="../media/78f0be88263fa3e2ae70f80f74b46c76.png" width="114"/></p>
+<p>В результате решения одного из уравнений, определится значение для <span style="color: #000000;"><em>y</em></span>, которое будет удовлетворять обоим уравнениям:</p>
+<p><img alt="x-y na 4 ravno step 7" class="size-full wp-image-7498 aligncenter" decoding="async" height="169" loading="lazy" src="../media/cb4f2bf7fcfa06ef255524d5c5ed5544.png" width="148"/></p>
+<p>Получившаяся пара значений <span style="color: #000000;">(2; −2)</span> будет удовлетворять системе:</p>
+<p><img alt="x-y na 4 ravno step 8" class="wp-image-7555 size-full aligncenter" decoding="async" height="475" loading="lazy" src="../media/0c7913d1b2a84e2d84d08da229a6ec5c.png" width="138"/></p>
+<p>Найдём еще одну пару значений. Пусть <em>x </em>= 4. Подставим это значение в систему:</p>
+<p><img alt="" class="wp-image-7496 size-full aligncenter" decoding="async" height="106" loading="lazy" src="../media/2fabf190a3a2909895d91049670dab4c.png" width="114"/></p>
+<p>На глаз можно определить, что значение <span style="color: #000000;"><em>y</em></span> равно нулю. Тогда получим пару значений <span style="color: #000000;">(4; 0), которая</span> удовлетворяет нашей системе:</p>
+<p><img alt="x-y na 4 ravno step 10" class="size-full wp-image-7500 aligncenter" decoding="async" height="106" loading="lazy" src="../media/5442ff80b9660209ede1711968539564.png" width="350"/></p>
+<hr/>
+<p><strong>Пример 8</strong>. Решить следующую систему уравнений методом сложения:</p>
+<p><img alt="a plus 3 na 2 minus b minus 2 na 3 ravno 2 step 1" class="size-full wp-image-7501 aligncenter" decoding="async" height="107" loading="lazy" src="../media/f4047c15cc6ac5eea1017b1e413c41fd.png" width="155"/></p>
+<p>Умножим первое уравнение на 6, а второе на 12</p>
+<p><img alt="a plus 3 na 2 minus b minus 2 na 3 ravno 2 step 2" class="size-full wp-image-7502 aligncenter" decoding="async" height="262" loading="lazy" src="../media/e41b1e23a985d3594b3417a53acc62ca.png" width="257"/></p>
+<p>Перепишем то, что осталось:</p>
+<p><img alt="a plus 3 na 2 minus b minus 2 na 3 ravno 2 step 3" class="size-full wp-image-7503 aligncenter" decoding="async" height="58" loading="lazy" src="../media/47f76cb08157450d318c889964976a88.png" width="201"/></p>
+<p>Раскроем скобки в обоих уравнениях и приведём подобные слагаемые:</p>
+<p><img alt="a plus 3 na 2 minus b minus 2 na 3 ravno 2 step 4" class="size-full wp-image-7504 aligncenter" decoding="async" height="158" loading="lazy" src="../media/c80a923fb0912e018393283dc7d73e13.png" width="174"/></p>
+<p>Первое уравнение умножим на −1. Тогда система примет вид:</p>
+<p><img alt="a plus 3 na 2 minus b minus 2 na 3 ravno 2 step 5" class="size-full wp-image-7505 aligncenter" decoding="async" height="58" loading="lazy" src="../media/4f59a013d02f2c78d8d8c664ca94e360.png" width="119"/></p>
+<p>Теперь сложим оба уравнения. В результате сложения образуется уравнение <span style="color: #000000;">6<em>b </em>= 48</span>, корень которого равен 8. Подставим <span style="color: #000000;"><em>b</em></span> в первое уравнение и найдём <span style="color: #000000;"><em>a</em></span></p>
+<p><img alt="a plus 3 na 2 minus b minus 2 na 3 ravno 2 step 6" class="size-full wp-image-7506 aligncenter" decoding="async" height="189" loading="lazy" src="../media/3dc607a2796c5522f3a7ac20477e23bf.png" width="141"/></p>
+<hr/>
+<h2 id="yak5" style="text-align: center;">Система линейных уравнений с тремя переменными</h2>
+<p>В линейное уравнение с тремя переменными входит три переменные с коэффициентами, а также свободный член. В каноническом виде его можно записать следующим образом:</p>
+<p style="text-align: center;"><em><span style="color: #000000;">ax + by + cz = d</span></em></p>
+<p>Данное уравнение имеет бесчисленное множество решений. Придавая двум переменным различные значения, можно найти третье значение. Решением в этом случае является тройка значений <span style="color: #000000;">(<em>x; y; z</em>)</span> которая обращает уравнение в тождество.</p>
+<p>Если переменные <span style="color: #000000;"><em>x, y, z</em></span> связаны между собой тремя уравнениями, то образуется система трех линейных уравнений с тремя переменными. Для решения такой системы можно применять те же методы, которые применяются к линейным уравнениям с двумя переменными: метод подстановки и метод сложения.</p>
+<p><strong>Пример 1</strong>. Решить следующую систему уравнений методом подстановки:</p>
+<p><img alt="2x plus 3y plus 5z ravno 10 step 1" class="size-full wp-image-7588 aligncenter" decoding="async" height="90" loading="lazy" src="../media/076876f7afaf3ec7a4665b15990de3d2.png" width="158"/></p>
+<p>Выразим в третьем уравнении <span style="color: #000000;"><em>x</em></span>. Тогда система примет вид:</p>
+<p><img alt="2x plus 3y plus 5z ravno 10 step 2" class="size-full wp-image-7589 aligncenter" decoding="async" height="90" loading="lazy" src="../media/5b657b55ecef6a1c5d39ee32b0849556.png" width="157"/></p>
+<p>Теперь выполним подстановку. Переменная <span style="color: #000000;"><em>x</em></span> равна выражению <span style="color: #000000;">3 − 2<em>y</em> − 2<em>z</em></span>. Подставим это выражение в первое и второе уравнение:</p>
+<p><img alt="2x plus 3y plus 5z ravno 10 step 3" class="size-full wp-image-7590 aligncenter" decoding="async" height="58" loading="lazy" src="../media/af278440fc441ccdba797a88ce994b6e.png" width="252"/></p>
+<p>Раскроем скобки в обоих уравнениях и приведём подобные слагаемые:</p>
+<p><img alt="2x plus 3y plus 5z ravno 10 step 4" class="size-full wp-image-7591 aligncenter" decoding="async" height="144" loading="lazy" src="../media/0bb0246507598c67e10685918e4628ea.png" width="231"/></p>
+<p>Мы пришли к системе линейных уравнений с двумя переменными. В данном случае удобно применить метод сложения. В результате переменная <span style="color: #000000;"><em>y</em></span> исчезнет, и мы сможем найти значение переменной <span style="color: #000000;"><em>z</em></span></p>
+<p><img alt="2x plus 3y plus 5z ravno 10 step 5" class="size-full wp-image-7592 aligncenter" decoding="async" height="49" loading="lazy" src="../media/731067ab05d76f443daf132b1fddba09.png" width="132"/></p>
+<p>Теперь найдём значение <span style="color: #000000;"><em>y</em></span>. Для этого удобно воспользоваться уравнением −<em>y </em>+ <em>z </em>= 4. Подставим в него значение <span style="color: #000000;"><em>z</em></span></p>
+<p><img alt="2x plus 3y plus 5z ravno 10 step 6" class="size-full wp-image-7593 aligncenter" decoding="async" height="145" loading="lazy" src="../media/812184535dccdfead1bcd7664d0e9b8b.png" width="152"/></p>
+<p>Теперь найдём значение <span style="color: #000000;"><em>x</em></span>. Для этого удобно воспользоваться уравнением <span style="color: #000000;"><em>x </em>= 3 − 2<em>y</em> − 2<em>z</em></span>. Подставим в него значения <em><span style="color: #000000;">y</span></em> и <span style="color: #000000;"><em>z</em></span></p>
+<p><img alt="2x plus 3y plus 5z ravno 10 step 7" class="size-full wp-image-7594 aligncenter" decoding="async" height="110" loading="lazy" src="../media/435e96c0550f669b2a51476959e2a5c6.png" width="190"/></p>
+<p>Таким образом, тройка значений <span style="color: #000000;">(3; −2; 2)</span> является решением нашей системы. Проверкой убеждаемся, что эти значения удовлетворяют системе:</p>
+<p><img alt="2x plus 3y plus 5z ravno 10 step 8" class="size-full wp-image-7595 aligncenter" decoding="async" height="472" loading="lazy" src="../media/80b655a1a2363bbafa5ed96bca90a010.png" width="232"/></p>
+<hr/>
+<p><strong>Пример 2</strong>. Решить систему методом сложения</p>
+<p><img alt="5x minus 6y plus 4z ravno 3 step 1" class="size-full wp-image-7596 aligncenter" decoding="async" height="90" loading="lazy" src="../media/77d9b702c5230c18450c62010a774a42.png" width="148"/></p>
+<p>Сложим первое уравнение со вторым, умноженным на −2.</p>
+<p>Если второе уравнение умножить на −2, то оно примет вид <span style="color: #000000;">−6<em>x </em>+ 6<em>y − </em>4<em>z</em> = −4</span>. Теперь сложим его с первым уравнением:</p>
+<p><img alt="5x minus 6y plus 4z ravno 3 step 3" class="wp-image-7758 size-full aligncenter" decoding="async" height="111" loading="lazy" src="../media/6bdc034b9bfb9ecdd273ae4a17e1a41d.png" width="344"/></p>
+<p>Видим, что в результате элементарных преобразований, определилось значение переменной <span style="color: #000000;"><em>x</em></span>. Оно равно единице.</p>
+<p>Вернемся к главной системе. Сложим второе уравнение с третьим, умноженным на −1. Если третье уравнение умножить на −1, то оно примет вид <span style="color: #000000;">−4<em>x</em> + 5<em>y</em> − 2<em>z</em> = −1</span>. Теперь сложим его со вторым уравнением:</p>
+<p><img alt="5x minus 6y plus 4z ravno 3 step 4" class="wp-image-7759 size-full aligncenter" decoding="async" height="83" loading="lazy" src="../media/3d60aa4207f6afc7783bcb70265791cf.png" width="349"/></p>
+<p>Получили уравнение <span style="color: #000000;"><em>x − </em>2<em>y </em>= −1</span>. Подставим в него значение <span style="color: #000000;"><em>x</em></span>, которое мы находили ранее. Тогда мы сможем определить значение <span style="color: #000000;"><em>y</em></span></p>
+<p><img alt="5x minus 6y plus 4z ravno 3 step 5" class="size-full wp-image-7600 aligncenter" decoding="async" height="145" loading="lazy" src="../media/4cf2fe048ad2907e6876b40c9657f365.png" width="126"/></p>
+<p>Теперь нам известны значения <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span>. Это позволяет определить значение <span style="color: #000000;"><em>z</em></span>. Воспользуемся одним из уравнений, входящим в систему:</p>
+<p><img alt="5x minus 6y plus 4z ravno 3 step 6" class="size-full wp-image-7601 aligncenter" decoding="async" height="142" loading="lazy" src="../media/8408f83da85c984dac53d4345cfbd78d.png" width="193"/></p>
+<p>Таким образом, тройка значений <span style="color: #000000;">(1; 1; 1)</span> является решением нашей системы. Проверкой убеждаемся, что эти значения удовлетворяют системе:</p>
+<p><img alt="5x minus 6y plus 4z ravno 3 step 7" class="size-full wp-image-7602 aligncenter" decoding="async" height="348" loading="lazy" src="../media/528a71b920e0880e78aa617d16dee7d9.png" width="148"/></p>
+<hr/>
+<h2 id="yak6" style="text-align: center;">Задачи на составление систем линейных уравнений</h2>
+<p>Задача на составление систем уравнений решается путем ввода нескольких переменных. Далее составляются уравнения на основании условий задачи. Из составленных уравнений образуют систему и решают её. Решив систему, необходимо выполнить проверку на то, удовлетворяет ли её решение условиям задачи.</p>
+<p><strong>Задача 1</strong>. Из города в колхоз выехала машина «Волга». Обратно она возвращалась по другой дороге, которая была на 5 км короче первой. Всего в оба конца машина проехала 35 км. Сколько километров составляет длина каждой дороги?</p>
+<p><strong>Решение</strong></p>
+<p>Пусть <span style="color: #000000;"><em>x —</em></span> длина первой дороги, <span style="color: #000000;"><em>y</em></span> — длина второй. Если в оба конца машина проехала 35 км, то первое уравнение можно записать как <span style="color: #000000;"><em>x </em>+ <em>y </em>= 35. </span>Это уравнение описывает сумму длин обеих дорог.</p>
+<p>Сказано, что обратно машина возвращалась по дороге которая была короче первой на 5 км. Тогда второе уравнение можно записать как <span style="color: #000000;"><em>x </em>− <em>y </em>= 5.</span> Это уравнение показывает, что разница между длинами дорог составляет 5 км.</p>
+<p>Либо второе уравнение можно записать как <span style="color: #000000;"><em>x </em>= <em>y </em>+ 5</span>. Этим уравнением и воспользуемся.</p>
+<p>Поскольку переменные <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span> в обоих уравнениях обозначают одно и то же число, то мы можем образовать из них систему:</p>
+<p><img alt="x plus y ravno 35 step 1" class="size-full wp-image-7604 aligncenter" decoding="async" height="58" loading="lazy" src="../media/fe37f9b4876482d5ae87e02912009ccf.png" width="97"/></p>
+<p>Решим эту систему каким-нибудь из изученных ранее методов. В данном случае удобно воспользоваться методом подстановки, поскольку во втором уравнении переменная <span style="color: #000000;"><em>x</em></span> уже выражена.</p>
+<p>Подставим второе уравнение в первое и найдём <span style="color: #000000;"><em>y</em></span></p>
+<p><img alt="x plus y ravno 35 step 2" class="size-full wp-image-7605 aligncenter" decoding="async" height="145" loading="lazy" src="../media/38ebcbd4f39b39821502c61e0fa678f6.png" width="145"/></p>
+<p>Подставим найденное значение <span style="color: #000000;"><em>y</em></span> в во второе уравнение <span style="color: #000000;"><em>x </em>= <em>y </em>+ 5</span> и найдём <em><span style="color: #000000;">x</span></em></p>
+<p><img alt="x plus y ravno 35 step 3" class="size-full wp-image-7606 aligncenter" decoding="async" height="79" loading="lazy" src="../media/a9fcc557cb21c045433f2001ea5ef525.png" width="82"/></p>
+<p>Длина первой дороги была обозначена через переменную <span style="color: #000000;"><em>x</em></span>. Теперь мы нашли её значение. Переменная <em><span style="color: #000000;">x</span></em> равна 20. Значит длина первой дороги составляет 20 км.</p>
+<p>А длина второй дороги была обозначена через <span style="color: #000000;"><em>y</em></span>. Значение этой переменной равно 15. Значит длина второй дороги составляет 15 км.</p>
+<p>Выполним проверку. Для начала убедимся, что система решена правильно:</p>
+<p><img alt="x plus y ravno 35 step 4" class="size-full wp-image-7607 aligncenter" decoding="async" height="230" loading="lazy" src="../media/c28f253e12331a2d6938d6987c7691f9.png" width="113"/></p>
+<p>Теперь проверим удовлетворяет ли решение <span style="color: #000000;">(20; 15)</span> условиям задачи.</p>
+<p>Было сказано, что всего в оба конца машина проехала 35 км. Складываем длины обеих дорог и убеждаемся, что решение <span style="color: #000000;">(20; 15)</span> удовлетворяет данному условию: <span style="color: #000000;"><em>20 км + 15 км = 35 км</em></span></p>
+<p>Следующее условие: <span style="color: #000000;"><em>обратно машина возвращалась по другой дороге, которая была на 5 км короче первой</em></span>. Видим, что решение <span style="color: #000000;">(20; 15)</span> удовлетворяет и этому условию, поскольку 15 км короче, чем 20 км на 5 км: <span style="color: #000000;"><em>20 км − 15 км = 5 км</em></span></p>
+<p>При составлении системы важно, чтобы переменные обозначали одни и те же числа во всех уравнениях, входящих в эту систему.</p>
+<p>Так наша система <img alt="x plus y ravno 35 step 1" class="size-full wp-image-7604 alignnone" decoding="async" height="58" loading="lazy" src="../media/fe37f9b4876482d5ae87e02912009ccf.png" width="97"/> содержит два уравнения. Эти уравнения в свою очередь содержат переменные <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span>, которые обозначают одни и те же числа в обоих уравнениях, а именно длины дорог, равных 20 км и 15 км.</p>
+<hr/>
+<p><strong>Задача 2</strong>. На платформу были погружены дубовые и сосновые шпалы, всего 300 шпал. Известно, что все дубовые шпалы весили на 1 т меньше, чем все сосновые. Определить, сколько было дубовых и сосновых шпал отдельно, если каждая дубовая шпала весила 46 кг, а каждая сосновая 28 кг.</p>
+<p><strong>Решение</strong></p>
+<p>Пусть <span style="color: #000000;"><em>x</em></span> дубовых и <span style="color: #000000;"><em>y</em></span> сосновых шпал было погружено на платформу. Если всего шпал было 300, то первое уравнение можно записать как <span style="color: #000000;"><em>x + y</em> = 300</span>.</p>
+<p>Все дубовые шпалы весили <span style="color: #000000;">46<em>x</em></span> кг, а сосновые весили <span style="color: #000000;">28<em>y</em></span> кг. Поскольку дубовые шпалы весили на 1 т меньше, чем сосновые, то второе уравнение можно записать, как <span style="color: #000000;">28<em>y − </em>46<em>x </em>= 1000</span>. Это уравнение показывает, что разница масс между дубовыми и сосновыми шпалами, составляет 1000 кг.</p>
+<pre>Тонны были переведены в килограммы, поскольку масса дубовых и сосновых шпал измерена в килограммах.</pre>
+<p>В результате получаем два уравнения, которые образуют систему</p>
+<p><img alt="x plus y ravno 300 step 1" class="size-full wp-image-7608 aligncenter" decoding="async" height="58" loading="lazy" src="../media/15c391943a07fd81486b21ee7221b7f0.png" width="160"/></p>
+<p>Решим данную систему. Выразим в первом уравнении <span style="color: #000000;"><em>x</em></span>. Тогда система примет вид:</p>
+<p><img alt="x plus y ravno 300 step 2" class="size-full wp-image-7609 aligncenter" decoding="async" height="58" loading="lazy" src="../media/22c626a94bd0e2d6984b75e9a3246049.png" width="161"/></p>
+<p>Подставим первое уравнение во второе и найдём <span style="color: #000000;"><em>y</em></span></p>
+<p><img alt="x plus y ravno 300 step 3" class="size-full wp-image-7610 aligncenter" decoding="async" height="146" loading="lazy" src="../media/949d6ceff3fa3839d02de4b101a7a71b.png" width="236"/></p>
+<p>Подставим <span style="color: #000000;"><em>y</em></span> в уравнение <span style="color: #000000;"><em>x </em>= 300 − <em>y</em></span> и узнаем чему равно <span style="color: #000000;"><em>x</em></span></p>
+<p><img alt="x plus y ravno 300 step 4" class="size-full wp-image-7611 aligncenter" decoding="async" height="79" loading="lazy" src="../media/f5a2814b2d6fbdd91cee75832328b16f.png" width="120"/></p>
+<p>Значит на платформу было погружено 100 дубовых и 200 сосновых шпал.</p>
+<p>Проверим удовлетворяет ли решение <span style="color: #000000;">(100; 200)</span> условиям задачи. Для начала убедимся, что система решена правильно:</p>
+<p><img alt="x plus y ravno 300 step 5" class="size-full wp-image-7612 aligncenter" decoding="async" height="316" loading="lazy" src="../media/4a6cc81bac6354e23e252ab984c1f713.png" width="232"/></p>
+<p>Было сказано, что всего было 300 шпал. Складываем количество дубовых и сосновых шпал и убеждаемся, что решение <span style="color: #000000;">(100; 200)</span> удовлетворяет данному условию: <span style="color: #000000;"><em>100 + 200 = 300.</em></span></p>
+<p>Следующее условие: <span style="color: #000000;"><em>все дубовые шпалы весили на 1 т меньше, чем все сосновые</em></span>. Видим, что решение <span style="color: #000000;">(100; 200)</span> удовлетворяет и этому условию, поскольку <span style="color: #000000;">46 × 100 кг</span> дубовых шпал легче, чем <span style="color: #000000;">28 × 200 кг</span> сосновых шпал: <span style="color: #000000;"><em>5600 кг − 4600 кг = 1000 кг.</em></span></p>
+<hr/>
+<p><strong>Задача 3</strong>. Взяли три куска сплава меди с никелем в отношениях <span style="color: #000000;">2 : 1</span>, <span style="color: #000000;">3 : 1</span> и <span style="color: #000000;">5 : 1</span> по массе. Из них сплавлен кусок массой 12 кг с отношением содержания меди и никеля <span style="color: #000000;">4 : 1</span>. Найдите массу каждого исходного куска, если масса первого из них вдвое больше массы второго.</p>
+<p><strong>Решение</strong></p>
+<p>Пусть <span style="color: #000000;"><em>x</em></span> — масса первого куска, <span style="color: #000000;"><em>y</em></span> — масса второго куска, <em><span style="color: #000000;">z</span></em> — масса третьего куска. Если из этих кусков сплавлен кусок массой 12 кг, то первое уравнение можно записать как <span style="color: #000000;"><em>x </em>+ <em>y </em>+ <em>z </em>= 12</span>.</p>
+<p>Масса первого куска вдвое больше массы второго куска. Тогда второе уравнение можно записать как <em><span style="color: #000000;">x</span> </em>= <span style="color: #000000;">2<em>y</em></span>.</p>
+<p>Полученных двух уравнений недостаточно для решения данной задачи. Если второе уравнение подставить в первое, то мы получим уравнение <span style="color: #000000;">2<em>y </em>+ <em>y </em>+ <em>z </em>= 12</span>, откуда <span style="color: #000000;">3<em>y </em>+ <em>z </em>= 12</span>. Это уравнение имеет бесчисленное множество решений.</p>
+<p>Составим ещё одно уравнение. Пусть это уравнение будет описывать количество меди, взятого с каждого сплава и сколько меди оказалось в получившемся сплаве.</p>
+<p>Если первый сплав имеет массу <span style="color: #000000;"><em>x</em></span>, а медь и никель находится нём в отношении <span style="color: #000000;">2 : 1</span>, то можно записать, что в новом сплаве содержится <img alt="2ns3x" class="alignnone size-full wp-image-7614" decoding="async" height="45" loading="lazy" src="../media/5883192ebbb179516bd9139f1490cd45.png" width="26"/> меди от первого куска.</p>
+<p>Если второй сплав имеет массу <span style="color: #000000;"><em>y</em></span>, а медь и никель находится в нём в отношении <span style="color: #000000;">3 : 1</span>, то можно записать, что в новом сплаве содержится <img alt="3na4y" class="alignnone size-full wp-image-7615" decoding="async" height="45" loading="lazy" src="../media/156fad7ffd758dc5f0a392a419885d31.png" width="28"/> меди от второго куска.</p>
+<p>Если третий сплав имеет массу <span style="color: #000000;"><em>z</em></span>, а медь и никель находится в отношении <span style="color: #000000;">5 : 1</span>, то можно записать, что в новом сплаве содержится <img alt="5na6z" class="alignnone size-full wp-image-7616" decoding="async" height="45" loading="lazy" src="../media/5349be3b042f25dc7065cd9e1313f8d1.png" width="25"/> меди от третьего куска.</p>
+<p>Полученный сплав имеет имеет массу 12 кг, а медь и никель находится в нём в отношении <span style="color: #000000;">4 : 1</span>. Тогда можно записать, что в полученном сплаве содержится <img alt="4na5na12 ravno 96" class="alignnone wp-image-7618 size-full" decoding="async" height="46" loading="lazy" src="../media/ac9fcb2347da77dfbf270d6007c53854.png" width="101"/> меди.</p>
+<p>Сложим  <img alt="2ns3x" class="alignnone size-full wp-image-7614" decoding="async" height="45" loading="lazy" src="../media/5883192ebbb179516bd9139f1490cd45.png" width="26"/>, <img alt="3na4y" class="alignnone size-full wp-image-7615" decoding="async" height="45" loading="lazy" src="../media/156fad7ffd758dc5f0a392a419885d31.png" width="28"/>, <img alt="5na6z" class="alignnone size-full wp-image-7616" decoding="async" height="45" loading="lazy" src="../media/5349be3b042f25dc7065cd9e1313f8d1.png" width="25"/> и приравняем эту сумму к 9,6. Это и будет нашим третьим уравнением:</p>
+<p><img alt="x plus y plus z ravno 12 step 1" class="size-full wp-image-7619 aligncenter" decoding="async" height="111" loading="lazy" src="../media/0300eddf72f28f62c70d20986a4929e6.png" width="197"/></p>
+<p>Попробуем решить данную систему.</p>
+<p>Для начала упростим третье уравнение. Подставим в него второе уравнение и посмотрим, что из этого выйдет:</p>
+<p><img alt="x plus y plus z ravno 12 step 3" class="size-full wp-image-7620 aligncenter" decoding="async" height="361" loading="lazy" src="../media/719035740d27a883fb962537af170c02.png" width="330"/></p>
+<p>Теперь в главной системе вместо уравнения <img alt="x plus y plus z ravno 12 step 4" class="alignnone size-full wp-image-7621" decoding="async" height="46" loading="lazy" src="../media/804bfa957e1fb179bb95ced8ac0582e5.png" width="178"/> запишем уравнение, которое мы сейчас получили, а именно уравнение <span style="color: #000000;">25<em>y </em>+ 10<em>z </em>= 115,2</span></p>
+<p><img alt="x plus y plus z ravno 12 step 5" class="size-full wp-image-7622 aligncenter" decoding="async" height="89" loading="lazy" src="../media/a713e18f307ebae212313b7b0c192f49.png" width="163"/></p>
+<p>Подставим второе уравнение в первое:</p>
+<p><img alt="x plus y plus z ravno 12 step 6" class="size-full wp-image-7623 aligncenter" decoding="async" height="146" loading="lazy" src="../media/7458f7ae35a139b4878e65833231b733.png" width="161"/></p>
+<p>Умножим первое уравнение на <span style="color: #000000;">−10</span>. Тогда система примет вид:</p>
+<p><img alt="x plus y plus z ravno 12 step 7" class="size-full wp-image-7624 aligncenter" decoding="async" height="58" loading="lazy" src="../media/235c9f078af423a64cb0d88525410c8c.png" width="176"/></p>
+<p>Сложим оба уравнения. Тогда получим простейшее уравнение <span style="color: #000000;">−5<em>y </em>= −4,8</span> откуда найдём <span style="color: #000000;"><em>y</em></span> равный <span style="color: #000000;">0,96</span>. Значит масса второго сплава составляет <span style="color: #000000;">0,96 кг</span>.</p>
+<p>Теперь найдём <span style="color: #000000;"><em>x</em></span>. Для этого удобно воспользоваться уравнением <span style="color: #000000;"><em>x </em>= 2<em>y. </em></span>Значение <span style="color: #000000;"><em>y </em></span>уже известно. Осталось только подставить его:</p>
+<p><img alt="x plus y plus z ravno 12 step 8" class="size-full wp-image-7625 aligncenter" decoding="async" height="82" loading="lazy" src="../media/5018a10b78c621a41b50514aecc26611.png" width="99"/></p>
+<p>Значит масса первого сплава составляет <span style="color: #000000;">1,92 кг</span>.</p>
+<p>Теперь найдём <span style="color: #000000;"><em>z</em></span>. Для этого удобно воспользоваться уравнением <span style="color: #000000;"><em>x </em>+ <em>y </em>+ <em>z </em>= 12</span>. Значения <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span> уже известны. Подставим их куда нужно:</p>
+<p><img alt="x plus y plus z ravno 12 step 9" class="size-full wp-image-7626 aligncenter" decoding="async" height="113" loading="lazy" src="../media/3a1ce08841f6e95911a49afd98fad943.png" width="272"/></p>
+<p>Значит масса третьего сплава составляет 9,12 кг.</p>
+<hr/>
+<h2 id="yak7" style="text-align: center;">Задания для самостоятельного решения</h2>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 1.</span> Приведите следующее уравнение к каноническому (нормальному) виду:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/054e222bd8244235858ea47aaee1b80f.png"/></div>
+<div class="ex ex1" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f2c2c6f871ff81d8c5a1a32c11a888aa.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex1" href="#" rel=".ex1">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 2.</span> Приведите следующее уравнение к каноническому (нормальному) виду:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/2ba7b77284a43e298cd567df0eb3204a.png"/></div>
+<div class="ex ex2" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/26f7d4df3ad32e8cf355d8ce0c6ae29f.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex2" href="#" rel=".ex2">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 3.</span> Приведите следующее уравнение к каноническому (нормальному) виду:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/baea874357e374ecc2cc2519ec781608.png"/></div>
+<div class="ex ex3" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/a7709b27936b5d677b7bb1cbaa778d93.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex3" href="#" rel=".ex3">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 4.</span> Приведите следующее уравнение к каноническому (нормальному) виду:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/7d203ccb4375cbfab7ab94c4ade27d7f.png"/></div>
+<div class="ex ex4" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/6d5d6c8b725d5501a17d84b27469da8e.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex4" href="#" rel=".ex4">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 5.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/8c7c7e8af85b7fd0afc29df4fe77ef0d.png"/></div>
+<div class="ex ex5" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/bfaa747c675ae0a5cd274ccdd1b7c4ad.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex5" href="#" rel=".ex5">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 6.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/a426b57605761e706f250b364cdc30dd.png"/></div>
+<div class="ex ex6" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/610aafad43c787d073b57d7f4f7a7c4a.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex6" href="#" rel=".ex6">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 7.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/1d04a0d27ba6492433c245cb3ed055ee.png"/></div>
+<div class="ex ex7" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/059d05b20c5a83e5f9da2d35e8eb613d.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex7" href="#" rel=".ex7">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 8.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/de53a1e79dda6b6cbc6f75fdbb6ec603.png"/></div>
+<div class="ex ex8" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/8bc556c7827fcef141c7c22a25b1c20b.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex8" href="#" rel=".ex8">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 9.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/28cbd0d6127b07c3871896412a24707e.png"/></div>
+<div class="ex ex9" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/b4636681ed6faf53a44f9c16c450f6db.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex9" href="#" rel=".ex9">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 10.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/c2b4865a2afac9e5c6b854cb896a1681.png"/></div>
+<div class="ex ex10" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f20923ab195d8bbc3a161cd53e16dc42.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex10" href="#" rel=".ex10">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 11.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/d741ad58baf0070717c7ea02508b62de.png"/></div>
+<div class="ex ex11" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/7797629c9cb16f5d9adad25b99ae3962.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex11" href="#" rel=".ex11">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 12.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/64506a65afa51283b55d1163c3064b43.png"/></div>
+<div class="ex ex12" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/92176428d36a67c9ed50dbec1ef182d0.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex12" href="#" rel=".ex12">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 13.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/97b1465ee98deb7b18b8e7540d61a0c1.png"/></div>
+<div class="ex ex13" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/cebb6d36fa559b12ea87084f98fcc824.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex13" href="#" rel=".ex13">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 14.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/2e9699cad206a69362e5ef0b1b9f3ef8.png"/></div>
+<div class="ex ex14" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/83db4442bdf3f6669c5c305a13ba157b.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex14" href="#" rel=".ex14">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 15.</span> Решите следующую систему уравнений методом сложения:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/4ab89e08591fafd245bf17aa694505ab.png"/></div>
+<div class="ex ex15" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/5392498f97a25c1d1eeff417c9235aa3.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex15" href="#" rel=".ex15">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 16.</span> Решите следующую систему уравнений методом сложения:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/0d6a118115f44746d30c1bdfd022a758.png"/></div>
+<div class="ex ex16" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/e98038eeb0c0146072e3077e60fe03f1.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex16" href="#" rel=".ex16">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 17.</span> Решите следующую систему уравнений методом сложения:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/8aa734db9405e50bf3dd052a490235f9.png"/></div>
+<div class="ex ex17" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/3bf3b325302491a9a815b26a0aa7ddd4.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex17" href="#" rel=".ex17">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 18.</span> Решите следующую систему уравнений методом сложения:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/12f8548efed162292255b245e15d3893.png"/></div>
+<div class="ex ex18" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/33e51150ec474e281f27ba165b533c40.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex18" href="#" rel=".ex18">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 19.</span> Решите следующую систему уравнений методом сложения:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/a136d567848bbf9e4627b99936db2c93.png"/></div>
+<div class="ex ex19" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/c55218225b1113cfad6a8c23335d0ef1.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex19" href="#" rel=".ex19">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 20.</span> Решите следующую систему уравнений методом сложения:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/2e2a2dba736e16887775beff6ea4ec63.png"/></div>
+<div class="ex ex20" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/03c92faca940364a700eadc300eae43c.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex20" href="#" rel=".ex20">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 21.</span> Решите следующую систему уравнений методом сложения:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/5dd3bcb8a87b8257960c156e5425594d.png"/></div>
+<div class="ex ex21" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/1317b034170df885620d4e6df618f934.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex21" href="#" rel=".ex21">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 22.</span> Решите следующую систему уравнений методом сложения:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/25ce5ce88129d07746201817543d166f.png"/></div>
+<div class="ex ex22" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/06a2b2d63d59efa9d0e97dbf02b1f39f.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex22" href="#" rel=".ex22">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 23.</span> Решите следующую систему уравнений методом подстановки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/0deed5a6da5392f22667b9ef29158534.png"/></div>
+<div class="ex ex23" data-solution="true">
+<div class="decision-text">Решение</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/0c16daa1e6b83ccb297576d3b99b19ff.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex23" href="#" rel=".ex23">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задача 24. </span>На прокормление 8 лошадей и 15 коров отпускали ежедневно 162 кг сéна. Сколько сéна ежедневно выдавали каждой лошади и каждой корове, если известно, что 5 лошадей получали сéна на 3 кг больше, чем 7 коров?</div>
+<div class="ex ex24" data-solution="true">
+<div class="decision-img" style="text-align: left;">
+<p><strong>Решение</strong></p>
+<p>Пусть <span style="color: #000000;"><em>x</em></span> кг сена выдавали каждой лошади, и <span style="color: #000000;"><em>y</em></span> кг каждой корове. Лошадей было 8, а коров 15. Это значит, что сена всем лошадям выдавали <span style="color: #000000;">8<em>x</em></span> кг, а всем коровам <span style="color: #000000;">15<em>y</em> кг</span>. Вместе лошадям и коровам сена выдавали 162 кг. Тогда первое уравнение можно записать как <span style="color: #000000;">8<em>x </em>+ 15<em>y </em>= 162</span></p>
+<p>Известно, что 5 лошадей получали <span style="color: #000000;">5<em>x</em> кг</span> сена, а 7 коров <span style="color: #000000;">7<em>y</em></span> кг. Если 5 лошадей получали на 3 кг больше сена, чем 7 коров, то второе уравнение можно записать как <span style="color: #000000;">5<em>x − </em>7<em>y</em> = 3</span>.</p>
+<p>Поскольку в обоих уравнениях переменные <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span> обозначают одно и то же число, то можно образовать из них систему и решить её</p>
+<p><img class="aligncenter" decoding="async" loading="lazy" src="../media/8df01d40316337eb080f2cdadabaa0e4.png"/></p>
+<p><strong>Ответ: </strong> ежедневно сена каждой лошади выдавали 9 кг, а каждой корове 6 кг.</p>
+</div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex24" href="#" rel=".ex24">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задача 25. </span>Для отправки груза было подано несколько вагонов. Если грузить по 15,5 т в вагон, то 4 т груза останутся непогруженными; если же грузить по 16,5 т в вагон, то для полной загрузки вагонов не хватит 8 т груза. Сколько было подано вагонов и сколько тонн было груза?</div>
+<div class="ex ex25" data-solution="true">
+<div class="decision-img" style="text-align: left;">
+<p><strong>Решение</strong></p>
+<p>Пусть <span style="color: #000000;"><em>x</em></span> вагонов было подано для отправки <span style="color: #000000;"><em>y</em></span> тонн груза. Погрузку груза в вагоны можно описать с помощью отношения <img decoding="async" loading="lazy" src="../media/9e556f7051813a40d10f1a5f69cc4161.png"/>. Это отношение показывает сколько тонн груза приходится на один вагон.</p>
+<p>В первом случае в каждый вагон грузится 15,5 т. Тогда первое уравнение можно записать как  <img decoding="async" loading="lazy" src="../media/b57c4bb2e6eb36156de17e0db19d2b4e.png"/>. Но в условии сказано, что если грузить по 15,5 т в вагон, то 4 т груза останутся непогруженными. Это означает, что будет погружен не весь груз, а только <span style="color: #000000;"><em>y</em> − 4</span> тонн груза. Поэтому первое уравнение перепишем как <img decoding="async" loading="lazy" src="../media/50e9da1f8248149ddab83d633e632391.png"/></p>
+<p>Во втором случае в каждый вагон грузится 16,5 т. Тогда второе уравнение можно записать как  <img decoding="async" loading="lazy" src="../media/042c41773f6e4009bacce121da1da38f.png"/>. Но в задаче сказано, что если грузить по 16,5 т в вагон, то для полной загрузки вагонов не хватит 8 т груза. Это означает, что будет погружен весь груз, плюс останется места для погрузки ещё восьми тонн груза. Иными словами, при таком раскладе можно погрузить в вагоны <span style="color: #000000;"><em>y</em> + 8</span> тонн груза. Поэтому второе уравнение перепишем как <img decoding="async" loading="lazy" src="../media/7cfca86404106b31809316ed49325eee.png"/></p>
+<p>Поскольку в обоих уравнениях переменные<span style="color: #000000;"> <em>x</em></span> и <span style="color: #000000;"><em>y</em></span> обозначают одно и то же число, то можно образовать из них систему и решить её:</p>
+<p><img class="aligncenter" decoding="async" loading="lazy" src="../media/032eba91ddb8667df5a0bc3d642ea41d.png"/></p>
+<p><strong>Ответ: </strong> вагонов было 12, а груза 190 тонн.</p>
+</div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex25" href="#" rel=".ex25">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задача 26. </span>В школьном зале поставлены скамейки. Если на каждую скамью посадить по 5 учеников, то не хватит 8 скамеек; если же на каждую скамью посадить по 6 учеников, то 2 скамьи останутся свободными. Сколько скамеек было поставлено в зале и сколько было учеников?</div>
+<div class="ex ex26" data-solution="true">
+<div class="decision-img" style="text-align: left;">
+<p><strong>Решение</strong></p>
+<p>Пусть <span style="color: #000000;"><em>x</em></span> скамеек было поставлено в зале, а учеников было <span style="color: #000000;"><em>y</em></span>.</p>
+<p>В первом случае на каждую скамейку сажается 5 учеников. Разделим <span style="color: #000000;"><em>y</em></span> учеников по 5 человек и посадим их на <span style="color: #000000;"><em>x</em></span> скамеек:</p>
+<p><img alt="y-na-5-ravno-x" class="aligncenter" decoding="async" loading="lazy" src="../media/390dfa08800ae6eea14aba1123665eba.png"/></p>
+<p>Но в условии сказано, что если посадить по 5 учеников на скамейку, то не хватит 8 скамеек. У нас имеется только <span style="color: #000000;"><em>x</em></span> скамеек. Чтобы все <span style="color: #000000;"><em>y</em></span> учеников смогли сесть на скамейки, добавим к <em><span style="color: #000000;">x</span></em> скамейкам ещё 8 скамеек</p>
+<p><img class="aligncenter" decoding="async" loading="lazy" src="../media/453734374e4cc1e8d3307ade22127dfa.png"/></p>
+<p>Во втором случае на каждую скамейку сажается 6 учеников. Разделим <span style="color: #000000;"><em>y</em></span> учеников по 6 человек и посадим их на <span style="color: #000000;"><em>x</em></span> скамеек:</p>
+<p><img alt="y-na-6-ravno-x.png" class="aligncenter" decoding="async" loading="lazy" src="../media/1e73251a7de995d9aa1b85b52af86c54.png"/></p>
+<p>Но в условии сказано, что если посадить по 6 учеников на скамейку, то 2 скамейки останутся свободными. В этом случае ученики сядут не на <span style="color: #000000;"><em>x</em></span>, а на <span style="color: #000000;"><em>x</em> − 2</span> скамейки. Перепишем второе уравнение в следующем виде:</p>
+<p><img class="aligncenter" decoding="async" loading="lazy" src="../media/24076ad7b0b711090fecbd257944e939.png"/></p>
+<p>Поскольку в обоих уравнениях переменные <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span> обозначают одно и то же число, то можно образовать из них систему и решить её:</p>
+<p><img class="aligncenter" decoding="async" loading="lazy" src="../media/daf7661e8655ed2635f219d4f7e60aaf.png"/></p>
+<p><strong>Ответ: </strong> скамеек было 52, а учеников 300.</p>
+</div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex26" href="#" rel=".ex26">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задача 27. </span>Несколько человек отправляются на экскурсию. Если при этом каждый внесёт на расходы по 12 руб. 50 коп., то для оплаты расходов не хватит 100 руб.; если же каждый внесёт по 16 руб., то останется излишек 12 руб. Сколько человек участвует в экскурсии?</div>
+<div class="ex ex27" data-solution="true">
+<div class="decision-img" style="text-align: left;">
+<p><strong>Решение</strong></p>
+<p>Пусть <span style="color: #000000;"><em>x</em></span> человек участвует в экскурсии, а расходы на эту экскурсию составляют <span style="color: #000000;"><em>y </em></span>рублей.</p>
+<p>Если каждый участник экскурсии внесет по <span style="color: #000000;">12 руб. 50 коп.</span>, то расходы составят <span style="color: #000000;">12,50<em>x</em></span> руб. При этом сказано, что в таком случае для покрытия расходов не хватит 100 руб. Чтобы покрыть расходы прибавим к расходам <span style="color: #000000;">12,50<em>x</em></span> еще 100 рублей</p>
+<p style="text-align: center;"><span style="color: #000000;">12,50<em>x</em> + 100</span></p>
+<p>Выражение <span style="color: #000000;">12,50<em>x </em>+ 100</span>, как и переменная <em><span style="color: #000000;">y</span> </em>описывает одну и ту же величину — расходы на экскурсию. Поэтому можно соединить эти два выражения знаком равенства, образуя тем самым первое уравнение для системы:</p>
+<p style="text-align: center;"><span style="color: #000000;">12,50<em>x</em> + 100 = <em>y</em></span></p>
+<p>Далее в задаче сказано, что если каждый участник внесёт по 16 руб., то останется излишек 12 руб. Поскольку количество участников это <span style="color: #000000;"><em>x</em></span>, то расходы при таком раскладе составят <span style="color: #000000;">16<em>x</em></span>. Расходы в 16<span style="color: #000000;"><em>x</em></span> рублей больше планируемых <em>y</em> рублей на 12 руб. Чтобы получить второе уравнение вычтем из <span style="color: #000000;">16<em>x</em></span> руб излишек 12 руб.</p>
+<p style="text-align: center;"><span style="color: #000000;">16<em>x </em>− 12</span></p>
+<p>Как и предыдущее выражение <span style="color: #000000;">12,50<em>x </em>+ 100</span>, выражение <span style="color: #000000;">16<em>x </em>− 12</span> описывает расходы на экскурсию и его можно приравнять к переменной <em><span style="color: #000000;">y</span></em>. Это будет вторым уравнением для системы:</p>
+<p style="text-align: center;"><span style="color: #000000;">16<em>x </em>− 12 = <em>y</em></span></p>
+<p>Получили два уравнения: <span style="color: #000000;">12,50<em>x</em> + 100 = <em>y </em></span>и<span style="color: #000000;"><em> </em>16<em>x − </em>12<em> = y. </em></span>Переменные <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span> обозначают одно и то же число, поэтому можно образовать из них систему и решить её:</p>
+<p><img class="aligncenter" decoding="async" loading="lazy" src="../media/5aa912deb3fb3ea6709323ea299477b5.png"/></p>
+<p>Значит в экскурсии участвует 32 человека.</p>
+<p>В данной задаче не стоял  вопрос какими будут расходы на экскурсию. Но для интереса можно вычислить и их:</p>
+<p><img class="aligncenter" decoding="async" loading="lazy" src="../media/8b3ae38fdba3bebda7c3c4c432cecbda.png"/></p>
+<p><strong>Ответ: </strong> в экскурсии участвует 32 человека.</p>
+</div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex27" href="#" rel=".ex27">Показать решение</a></div>
+</div>
+<hr/>
+</div></main></body></html>

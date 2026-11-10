@@ -1,5 +1,6 @@
 package ru.begunok.ui
 
+import android.net.Uri
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -21,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonitorHeart
@@ -85,6 +87,9 @@ import ru.begunok.ui.lol.LolScreen
 import ru.begunok.ui.lol.LolViewModel
 import ru.begunok.ui.mental.MentalScreen
 import ru.begunok.ui.mental.MentalViewModel
+import ru.begunok.ui.math.MathReaderScreen
+import ru.begunok.ui.math.MathScreen
+import ru.begunok.ui.math.MathViewModel
 import ru.begunok.ui.plan.PlanEditorScreen
 import ru.begunok.ui.plan.PlanEditorViewModel
 import ru.begunok.ui.reading.ReadingScreen
@@ -106,6 +111,7 @@ private enum class Group(val label: String?) {
     Training("Тренировки"),
     Habits("Привычки"),
     Health("Здоровье"),
+    Learning("Обучение"),
     Games("Игры"),
     Money("Личное"),
     App(null),
@@ -117,6 +123,7 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
     Analytics("Аналитика", Icons.Filled.Insights, Group.Training),
     Shower("Холодный душ", Icons.Filled.Shower, Group.Habits),
     Reading("Чтение", Icons.AutoMirrored.Filled.MenuBook, Group.Habits),
+    Math("Математика", Icons.Filled.Calculate, Group.Learning),
     Health("Браслет и показатели", Icons.Filled.MonitorHeart, Group.Health),
     Weight("Вес", Icons.Filled.MonitorWeight, Group.Health),
     Mental("Психологическое состояние", Icons.Filled.Psychology, Group.Health),
@@ -127,6 +134,7 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
 
 private const val TABS = "tabs"
 private const val SENSOR = "sensor"
+private const val MATH_READER = "math/{lessonId}"
 
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -276,6 +284,21 @@ private fun AppNavHost(
             )
         }
         screen(
+            route = MATH_READER,
+            arguments = listOf(navArgument("lessonId") { type = NavType.StringType }),
+        ) { entry ->
+            MathReaderScreen(
+                viewModel = viewModel { MathViewModel(container.math) },
+                lessonId = entry.arguments?.getString("lessonId").orEmpty(),
+                onBack = { navController.popBackStack() },
+                onOpenLesson = { id ->
+                    navController.navigate("math/${Uri.encode(id)}") {
+                        popUpTo(MATH_READER) { inclusive = true }
+                    }
+                },
+            )
+        }
+        screen(
             route = "plan/{type}",
             arguments = listOf(navArgument("type") { type = NavType.StringType }),
         ) { entry ->
@@ -343,6 +366,10 @@ private fun SectionContent(
             viewModel { ShowerViewModel(container.appContext, container.showers, container.settings, container.voicePack) },
         )
         Section.Reading -> ReadingScreen(viewModel { ReadingViewModel(container.reading, container.settings) })
+        Section.Math -> MathScreen(
+            viewModel = viewModel { MathViewModel(container.math) },
+            onOpenLesson = { id -> navController.navigate("math/${Uri.encode(id)}") },
+        )
         Section.Health -> HealthScreen(viewModel { HealthViewModel(container.health) })
         Section.Weight -> WeightScreen(viewModel { WeightViewModel(container.weight, container.settings) })
         Section.Mental -> MentalScreen(viewModel { MentalViewModel(container.mental) })

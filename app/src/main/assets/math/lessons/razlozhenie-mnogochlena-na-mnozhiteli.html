@@ -1,0 +1,819 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>61. Разложение многочлена на множители</title><link rel="icon" href="../favicon.svg"><link rel="stylesheet" href="../lesson.css"><script src="../lesson.js" defer></script></head><body><main><h1>61. Разложение многочлена на множители</h1><div class="entry-content">
+<p>Разложить многочлен на множители означает представить его в виде произведения двух или нескольких многочленов.</p>
+<p>Примером разложения многочлена на множители является вынесение общего множителя за скобки, поскольку исходный многочлен обращается в произведение двух сомножителей, один из которых является одночленом, а другой многочленом.</p>
+<nav id="before-themes"><b>Предварительные навыки</b>
+<ul class="before-themes_item">
+<li style="list-style-type: none;">
+<ul class="before-themes_item">
+<li><a data-lesson-id="stepen-s-naturalnym-pokazatelem" href="stepen-s-naturalnym-pokazatelem.html" rel="noopener noreferrer">Степень с натуральным показателем</a></li>
+<li><a data-lesson-id="perimetr-ploshhad-i-obyom" href="perimetr-ploshhad-i-obyom.html" rel="noopener noreferrer">Периметр, площадь и объём</a></li>
+<li><a data-lesson-id="mnogochleny" href="mnogochleny.html" rel="noopener noreferrer">Многочлены</a></li>
+<li><a data-lesson-id="formuly-sokrashhennogo-umnozheniya" href="formuly-sokrashhennogo-umnozheniya.html" rel="noopener noreferrer">Формулы сокращённого умножения</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+<nav id="menu"><b>Содержание урока</b>
+<ul class="navless">
+<li style="list-style-type: none;">
+<ul class="navless">
+<li><a href="#sposob_vyneseniya_obshchego_mnozhitelya_za_skobki">Разложение способом вынесения общего множителя за скобки</a></li>
+<li><a href="#razlozhenie_sposobom_gruppirovki">Разложение способом группировки</a></li>
+<li><a href="#razlozhenie_po_formule_kvadrata_summy_dvuh_vyrazhenij">Разложение по формуле квадрата суммы двух выражений</a></li>
+<li><a href="#razlozhenie_po_formule_kvadrata_raznosti_dvuh_vyrazhenij">Разложение по формуле квадрата разности двух выражений</a></li>
+<li><a href="#razlozhenie_po_formule_kuba_summy_dvuh_vyrazhenij">Разложение по формуле куба суммы двух выражений</a></li>
+<li><a href="#razlozhenie_po_formule_kuba_raznosti_dvuh_vyrazhenij">Разложение по формуле куба разности двух выражений</a></li>
+<li><a href="#razlozhenie_po_formule_raznosti_kvadratov_dvuh_vyrazhenij">Разложение по формуле разности квадратов двух выражений</a></li>
+<li><a href="#razlozhenie_po_formule_summe_kubov_dvuh_vyrazhenij">Разложение по формуле сумме кубов двух выражений</a></li>
+<li><a href="#razlozhenie_po_formule_raznosti_kubov_dvuh_vyrazhenij">Разложение по формуле разности кубов двух выражений</a></li>
+<li><a href="#razlozhenie_razlichnymi_sposobami">Разложение различными способами</a></li>
+<li><a href="#zadaniya_dlya_samostoyatelnogo_resheniya">Задания для самостоятельного решения</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+<h3 id="sposob_vyneseniya_obshchego_mnozhitelya_za_skobki" style="text-align: center;">Разложение многочлена на множители способом вынесения общего множителя за скобки</h3>
+<p>При вынесении общего множителя за скобки образуется произведение из двух сомножителей, один из которых является одночленом, а другой многочленом. Например:</p>
+<p style="text-align: center;"><span style="color: #000000;">6<em>x</em> + 3<em>xy</em> = 3<em>x</em>(2 + <em>y</em>)</span></p>
+<p>В рамках изучения многочленов, одночлен принято считать многочленом, состоящим из одного члена. Поэтому, когда в многочлене выносится за скобки общий множитель, то говорят что исходный многочлен представлен в виде произведения многочленов.</p>
+<p>В нашем примере многочлен <span style="color: #000000;">6<em>x</em> + 3<em>xy</em></span> был представлен в виде произведения многочленов <span style="color: #000000;">3<em>x</em></span> и <span style="color: #000000;">(2 + <em>y</em>)</span>. По-другому говорят, что многочлен <span style="color: #000000;">6<em>x</em> + 3<em>xy </em></span><strong>разложен на множители</strong> <span style="color: #000000;">3<em>x</em></span> и <span style="color: #000000;">(2 + <em>y</em>)</span></p>
+<p>Существуют также многочлены, в которых можно вынести за скобки такой общий множитель, который является двучленом. Например, рассмотрим многочлен <span style="color: #000000;">5<em>a</em>(<em>x + y</em>) + 7<em>a</em>(<em>x + y</em>)</span>. В этом многочлене общим множителем является двучлен <span style="color: #000000;">(<em>x + y</em>)</span>. Вынесем его за скобки:</p>
+<p><img alt="рмм рисунок 1" class="size-full wp-image-10134 aligncenter" decoding="async" height="58" loading="lazy" src="../media/650ca2b57c6777b9732cd1e4eb9930e6.png" width="623"/></p>
+<hr/>
+<h3 id="razlozhenie_sposobom_gruppirovki" style="text-align: center;">Разложение многочлена на множители способом группировки</h3>
+<p>Некоторые многочлены содержат группу членов, имеющих общий множитель. Такие группы можно заключать в скобки и далее выносить общий множитель за эти скобки. В результате получается разложение исходного многочлена на множители, которое называют <strong>разложением на множители способом группировки</strong>.</p>
+<p>Рассмотрим следующий многочлен:</p>
+<p style="text-align: center;"><em><span style="color: #000000;">ax + ay + </span></em><span style="color: #000000;">3</span><em><span style="color: #000000;">x + </span></em><span style="color: #000000;">3</span><em><span style="color: #000000;">y</span></em></p>
+<p>Члены <span style="color: #000000;"><em>ax</em></span> и <span style="color: #000000;"><em>ay</em></span> имеют общий множитель <span style="color: #000000;"><em>a</em></span>. Выпишем эти члены и заключим их в скобки:</p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>ax</em> + <em>ay</em>)</span></p>
+<p>Далее в многочлене <em><span style="color: #000000;">ax + ay + </span></em><span style="color: #000000;">3</span><em><span style="color: #000000;">x + </span></em><span style="color: #000000;">3</span><em><span style="color: #000000;">y</span></em> члены <span style="color: #000000;">3<em>x </em></span>и <span style="color: #000000;">3<em>y</em></span> имеют общий множитель 3. Выпишем эти члены и тоже заключим их в скобки:</p>
+<p style="text-align: center;"><span style="color: #000000;">(3<em>x + </em>3<em>y</em>)</span></p>
+<p>Теперь соединим выражения <span style="color: #000000;">(<em>ax</em> + <em>ay</em>)</span> и <span style="color: #000000;">(3<em>x + </em>3<em>y</em>)</span> знаком <span style="color: #000000;">«плюс»</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>ax</em> + <em>ay</em>) + (3<em>x</em> + 3<em>y</em>)</span></p>
+<p>В многочлене <span style="color: #000000;">(<em>ax </em>+ <em>ay</em>)</span> вынесем за скобки общий множитель <span style="color: #000000;"><em>a</em></span>, а в многочлене <span style="color: #000000;">(3<em>x </em>+ 3<em>y</em>)</span> вынесем за скобки общий множитель 3. Делать это нужно в исходном выражении:</p>
+<p><img alt="axnay na 3xnay step 1" class="wp-image-9643 size-full aligncenter" decoding="async" height="54" loading="lazy" src="../media/3d94469e5a95aa94f600e557970f9def.png" width="597"/></p>
+<p>Далее замечаем, что двучлен <span style="color: #000000;">(<em>x + y</em>)</span> является общим множителем. Вынесем его за скобки. Продолжаем решение в исходном примере. В результате получим:</p>
+<p><img alt="axnay na 3xnay step 2" class="wp-image-9644 size-full aligncenter" decoding="async" height="142" loading="lazy" src="../media/794f10cd094d1ad9eede0689ca974842.png" width="616"/></p>
+<p>Запишем решение покороче, не расписывая подробно, как каждый член был разделен на общий множитель. Тогда решение получится более компактным:</p>
+<p><img alt="axnay na 3xnay step 3" class="size-full wp-image-9642 aligncenter" decoding="async" height="21" loading="lazy" src="../media/cab7348d8505878ee236b748f1e5d1a6.png" width="480"/></p>
+<p>Чтобы проверить правильно ли мы разложили многочлен на множители, выполним умножение <span style="color: #000000;">(<em>x + y</em>)(<em>a </em>+ 3)</span>. Если мы всё сделали правильно, то получим многочлен <span style="color: #000000;"><em>ax + ay + </em>3<em>x + </em>3<em>y</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>x + y</em>)(<em>a </em>+ 3) = <em>ax + ay + </em>3<em>x + </em>3<em>y</em></span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить многочлен <span style="color: #000000;">9<em>x + ax </em>− 9<em>y − ay</em></span> на множители способом группировки.</p>
+<p>Члены <span style="color: #000000;">9<em>x</em></span> и <span style="color: #000000;">−9<em>y</em></span> имеют общий множитель 9. А члены <span style="color: #000000;"><em>ax</em></span> и <span style="color: #000000;"><em>−ay</em></span> имеют общий множитель <span style="color: #000000;"><em>a</em></span>. Сгруппируем их с помощью скобок, и объединим с помощью знака «плюс»</p>
+<p style="text-align: center;"><span style="color: #000000;">(9<em>x</em> − 9<em>y</em>) + (<em>ax − ay</em>)</span></p>
+<p>В первой группе <span style="color: #000000;">(9<em>x</em>  − 9<em>y</em>)</span> вынесем за скобки общий множитель 9. Во второй группе <span style="color: #000000;">(<em>ax − ay</em>)</span> вынесем за скобки за скобки общий множитель <span style="color: #000000;"><em>a</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(9<em>x</em> − 9<em>y</em>) + (<em>ax − ay</em>) = 9(<em>x − y</em>) + <em>a</em>(<em>x − y</em>)</span></p>
+<p>Далее вынесем за скобки двучлен <span style="color: #000000;">(<em>x − y</em>)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(9<em>x</em> − 9<em>y</em>) + (<em>ax − ay</em>) = 9(<em>x − y</em>) + <em>a</em>(<em>x − y</em>) = (<em>x − y</em>)(9 + <em>a</em>)</span></p>
+<hr/>
+<p><strong>Пример 3</strong>. Разложить многочлен <span style="color: #000000;"><em>ab</em> − 3<em>b</em> + <em>b</em><sup>2 </sup>− 3<em>a</em></span> на множители способом группировки.</p>
+<p>Сгруппируем первый член <span style="color: #000000;"><em>ab</em></span> с четвёртым членом <span style="color: #000000;">−3<em>a</em></span>. А второй член <span style="color: #000000;">−3<em>b</em></span> сгруппируем с третьим членом <span style="color: #000000;"><em>b</em><sup>2</sup></span>. Не забываем, что объединять группы нужно с помощью знака <span style="color: #000000;">«плюс»</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>ab</em> − 3<em>a</em>) + (−3<em>b</em> + <em>b</em><sup>2</sup>)</span></p>
+<p>В первой группе вынесем за скобки общий множитель <span style="color: #000000;"><em>a</em></span>, во второй группе — общий множитель <span style="color: #000000;"><em>b</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>ab</em> − 3<em>a</em>) + (−3<em>b</em> + <em>b</em><sup>2</sup>) = <em>a</em>(<em>b</em> − 3) + <em>b</em>(−3 + <em>b</em>)</span></p>
+<p>Во втором произведении <span style="color: #000000;"><em>b</em>(−3 + <em>b</em>)</span> в сомножителе <span style="color: #000000;">(−3 + <em>b</em>)</span> изменим порядок следования членов. Тогда получим <span style="color: #000000;"><em>b</em>(<em>b</em> − 3)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>ab</em> − 3<em>a</em>) + (−3<em>b</em> + <em>b</em><sup>2</sup>) = <em>a</em>(<em>b</em> − 3) + <em>b</em>(<em>b</em> − 3)</span></p>
+<p>Теперь вынесем за скобки общий множитель <span style="color: #000000;">(<em>b</em> − 3)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(<em>ab</em> − 3<em>a</em>) + (−3<em>b</em> + <em>b</em><sup>2</sup>) = <em>a</em>(<em>b</em> − 3) + <em>b</em>(<em>b</em> − 3) = (<em>b</em> − 3)(<em>a + b</em>)</span></p>
+<hr/>
+<p><strong>Пример 4</strong>. Разложить многочлен <span style="color: #000000;"><em>x</em><sup>2</sup><em>y + x + xy</em><sup>2</sup><em> + y + </em>2<em>xy + </em>2</span> на множители способом группировки.</p>
+<p>Сгруппируем первый член многочлена со вторым, третий с четвёртым, пятый с шестым:</p>
+<p><img alt="x2ynax na xy2 na y na 2xy na 2 step 1" class="size-full wp-image-9645 aligncenter" decoding="async" height="25" loading="lazy" src="../media/3bf3d496b2256621a518b8e72f7df4c6.png" width="269"/></p>
+<p>В первой группе вынесем за скобки общий множитель <span style="color: #000000;"><em>x</em></span>, во второй группе — общий множитель <span style="color: #000000;"><em>y</em></span>, в третьей группе — общий множитель 2</p>
+<p><img alt="x2ynax na xy2 na y na 2xy na 2 step 2" class="size-full wp-image-9646 aligncenter" decoding="async" height="25" loading="lazy" src="../media/f7e37ecd1c5336b09712c28073598fd8.png" width="544"/></p>
+<p>Далее замечаем, что многочлен <span style="color: #000000;">(<em>xy </em>+ 1)</span> является общим множителем. Вынесем его за скобки:</p>
+<p><img alt="x2ynax na xy2 na y na 2xy na 2 step 3" class="size-full wp-image-9647 aligncenter" decoding="async" height="62" loading="lazy" src="../media/44547577a7a754308075be17e7d0c5ca.png" width="560"/></p>
+<hr/>
+<h3 id="razlozhenie_po_formule_kvadrata_summy_dvuh_vyrazhenij" style="text-align: center;">Разложение многочлена на множители по формуле квадрата суммы двух выражений</h3>
+<p>Формулы сокращённого умножения, которые мы рассматривали в прошлом уроке, можно применять для разложения многочленов на множители.</p>
+<p>Вспомним, как выглядит формула квадрата суммы двух выражений:</p>
+<p style="text-align: center;"><strong>(<em>a + b</em>)<sup>2</sup> = <em>a</em><sup>2 </sup>+ 2<em>ab</em> + <em>b</em><sup>2</sup></strong></p>
+<p>Поменяем местами левую и правую часть, получим:</p>
+<p style="text-align: center;"><strong><em>a</em><sup>2 </sup>+ 2<em>ab</em> + <em>b</em><sup>2</sup> = (<em>a + b</em>)<sup>2</sup> </strong></p>
+<p>Левая часть этого равенства является многочленом, а правая часть — произведением многочленов, поскольку выражение <span style="color: #000000;">(<em>a + b</em>)<sup>2</sup></span> представляет собой перемножение двух сомножителей, каждый из которых равен многочлену <span style="color: #000000;">(<em>a + b</em>).</span></p>
+<p>Стало быть, если нам встретится выражение вида <span style="color: #000000;"><em>a</em><sup>2 </sup>+ 2<em>ab</em> + <em>b</em><sup>2</sup></span>, то мы можем представить его в виде произведения <span style="color: #000000;">(<em>a + b</em>)</span><span style="color: #000000;">(<em>a + b</em>)</span>. Иными словами, разложить на множители <span style="color: #000000;">(<em>a + b</em>) </span>и <span style="color: #000000;">(<em>a + b</em>).</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em><sup>2 </sup>+ 2<em>ab</em> + <em>b</em><sup>2 </sup>= (<em>a + b</em>)(<em>a + b</em>) </span></p>
+<p><strong>Пример 1</strong>. Разложить на множители многочлен <span style="color: #000000;">4<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup></span></p>
+<p>Чтобы воспользоваться формулой <span style="color: #000000;"><em>a</em><sup>2 </sup>+ 2<em>ab</em> + <em>b</em><sup>2</sup> = (<em>a + b</em>)<sup>2</sup></span>, нужно узнать чему в данном случае равна переменная <span style="color: #000000;"><em>a</em></span> и чему равна переменная <span style="color: #000000;"><em>b</em></span>.</p>
+<p>Первый член многочлена <span style="color: #000000;">4<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup></span> является результатом возведения в квадрат одночлена <span style="color: #000000;">2<em>x</em></span>, поскольку <span style="color: #000000;">(2<em>x</em>)<sup>2</sup> = 4<em>x</em><sup>2</sup></span>. Третий член <span style="color: #000000;">9<em>y</em><sup>2</sup></span> является результатом возведения в квадрат одночлена <span style="color: #000000;">3<em>y</em></span>, поскольку <span style="color: #000000;">(3<em>y</em>)<sup>2</sup> = 9<em>y</em><sup>2</sup></span>, а член <span style="color: #000000;">12<em>xy</em></span> это есть удвоенное произведение членов <span style="color: #000000;">2<em>x</em> </span>и <span style="color: #000000;">3<em>y</em></span>, то есть <span style="color: #000000;">2 × 2<em>x</em> × 3<em>y = </em>12<em>xy</em></span>.</p>
+<p>Очевидно, что переменная <span style="color: #000000;"><em>a</em></span> в данном случае равна <span style="color: #000000;">2<em>x</em></span>, а переменная <span style="color: #000000;"><em>b</em></span> равна <span style="color: #000000;">3<em>y</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em> = 2<em>x</em></span><br/>
+<span style="color: #000000;"><em>b</em> = 3<em>y</em></span></p>
+<p>Тогда можно сделать вывод, что когда-то выражение <span style="color: #000000;">4<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup></span> выглядело в виде квадрата суммы <span style="color: #000000;">(2<em>x</em> + 3<em>y</em>)<sup>2</sup></span>, но в результате применения формулы квадрата суммы оно обратилось в многочлен <span style="color: #000000;">4<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup></span>. Наша задача — вернуть ему былую форму, то есть представить в виде <span style="color: #000000;">(2<em>x </em>+ 3<em>y</em>)<sup>2</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;">4<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup> = (2<em>x</em> + 3<em>y</em>)<sup>2</sup></span></p>
+<p>А поскольку <span style="color: #000000;">(2<em>x</em> + 3<em>y</em>)<sup>2</sup></span> это произведение двух сомножителей, каждый из которых равен многочлену <span style="color: #000000;">(2<em>x</em> + 3<em>y</em>)</span>, то исходный многочлен <span style="color: #000000;">4<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup></span> можно представить в виде разложения на множители <span style="color: #000000;">(2<em>x</em> + 3<em>y</em>)</span> и <span style="color: #000000;">(2<em>x</em> + 3<em>y</em>)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">4<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup> = (2<em>x</em> + 3<em>y</em>)(2<em>x</em> + 3<em>y</em>)</span></p>
+<p>Полностью решение можно записать так:</p>
+<p style="text-align: center;"><span style="color: #000000;">4<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup> = (2<em>x</em>)<sup>2</sup> + 2 × 2<em>x</em> × 3<em>y + </em>(3<em>y</em>)<sup>2</sup> = (2<em>x</em> + 3<em>y</em>)<sup>2</sup> = (2<em>x</em> + 3<em>y</em>)(2<em>x</em> + 3<em>y</em>)</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить на множители многочлен <span style="color: #000000;"><em>x</em><sup>2</sup> + 12<em>x</em> + 36</span></p>
+<p>Первый член данного многочлена является результатом возведения в квадрат одночлена <em>x</em>, поскольку <span style="color: #000000;"><em>x</em><sup>2</sup> = <em>x</em><sup>2</sup></span>, третий член — результатом возведения в квадрат числа 6, поскольку <span style="color: #000000;">6<sup>2</sup> = 36</span>, а член <span style="color: #000000;">12<em>x</em></span> это удвоенное произведение членов <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;">6</span>, поскольку <span style="color: #000000;">2 × <em>x</em> × 6 = 12<em>x</em></span>.</p>
+<p>Воспользуемся формулой <span style="color: #000000;"><em>a</em><sup>2 </sup>+ 2<em>ab</em> + <em>b</em><sup>2</sup> = (<em>a + b</em>)<sup>2</sup></span>. Роль переменной <span style="color: #000000;"><em>a</em></span> играет одночлен <span style="color: #000000;"><em>x</em></span>, а роль переменной <span style="color: #000000;"><em>b</em></span> играет одночлен <span style="color: #000000;">6</span>. Отсюда:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em><sup>2</sup> + 12<em>x</em> + 36 = (<em>x</em> + 6)<sup>2</sup></span></p>
+<p>А поскольку <span style="color: #000000;">(<em>x</em> + 6)<sup>2</sup></span> это произведение двух сомножителей, каждый из которых равен многочлену <span style="color: #000000;">(<em>x</em> + 6)</span>, то исходный многочлен <span style="color: #000000;"><em>x</em><sup>2</sup> + 12<em>x</em> + 36</span> можно представить в виде разложения на множители <span style="color: #000000;">(<em>x</em> + 6)</span> и <span style="color: #000000;">(<em>x</em> + 6)</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em><sup>2</sup> + 12<em>x</em> + 36 = (<em>x</em> + 6)(<em>x</em> + 6)</span></p>
+<hr/>
+<h3 id="razlozhenie_po_formule_kvadrata_raznosti_dvuh_vyrazhenij" style="text-align: center;">Разложение многочлена на множители по формуле квадрата разности двух выражений</h3>
+<p>Как и по формуле квадрата суммы двух выражений, многочлен можно разложить на множители по формуле квадрата разности двух выражений.</p>
+<p>Формула квадрата разности двух выражений выглядит так:</p>
+<p style="text-align: center;"><strong>(<em>a − b</em>)<sup>2</sup> = <em>a</em><sup>2 </sup>− 2<em>ab</em> + <em>b</em><sup>2</sup></strong></p>
+<p>Если в этой формуле поменять местами левую и правую часть, то получим:</p>
+<p style="text-align: center;"><strong><em>a</em><sup>2 </sup>− 2<em>ab</em> + <em>b</em><sup>2</sup> = (<em>a − b</em>)<sup>2</sup></strong></p>
+<p>Поскольку правая часть это произведение двух сомножителей, каждый из которых равен <span style="color: #000000;">(<em>a − b</em>), то </span>многочлен вида <span style="color: #000000;"><em>a</em><sup>2 </sup>− 2<em>ab</em> + <em>b</em><sup>2</sup></span> можно разложить на множители <span style="color: #000000;">(<em>a − b</em>) </span>и <span style="color: #000000;">(<em>a − b</em>).</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em><sup>2 </sup>− 2<em>ab</em> + <em>b</em><sup>2</sup> = (<em>a − b</em>)(<em>a − b</em>)</span></p>
+<p><strong>Пример 1</strong>. Разложить на множители многочлен <span style="color: #000000;">9<em>x</em><sup>2</sup> − 12<em>xy</em> + 4<em>y</em><sup>2</sup></span></p>
+<p>Чтобы воспользоваться формулой <span style="color: #000000;"><em>a</em><sup>2 </sup>− 2<em>ab</em> + <em>b</em><sup>2</sup> = (<em>a − b</em>)<sup>2</sup></span>, нужно узнать чему в данном случае равна переменная <span style="color: #000000;"><em>a</em></span> и чему равна переменная <span style="color: #000000;"><em>b</em></span>.</p>
+<p>Первый член данного многочлена является результатом возведения в квадрат одночлена <span style="color: #000000;">3<em>x</em></span>, поскольку <span style="color: #000000;">(3<em>x</em>)<sup>2</sup> = 9<em>x</em><sup>2</sup></span>. Третий член <span style="color: #000000;">4<em>y</em><sup>2</sup> </span>является результатом возведения в квадрат одночлена <span style="color: #000000;">2<em>y</em></span>, поскольку <span style="color: #000000;">(2<em>y</em>)<sup>2</sup> = 4<em>y</em><sup>2</sup></span>, а член <span style="color: #000000;">12<em>xy</em> </span>это удвоенное произведение членов <span style="color: #000000;">3<em>x</em> </span>и <span style="color: #000000;">2<em>y</em></span>, то есть <span style="color: #000000;">2 × 3<em>x </em>× 2<em>y = </em>12<em>xy</em></span>.</p>
+<p>Очевидно, что переменная <span style="color: #000000;"><em>a</em></span> в данном случае равна <span style="color: #000000;">3<em>x</em></span>, а переменная <span style="color: #000000;"><em>b</em></span> равна <span style="color: #000000;">2<em>y</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em> = 3<em>x</em></span><br/>
+<span style="color: #000000;"><em>b</em> = 2<em>y</em></span></p>
+<p>Тогда можно сделать вывод, что когда-то выражение <span style="color: #000000;">9<em>x</em><sup>2</sup> − 12<em>xy</em> + 4<em>y</em><sup>2</sup></span> выглядело в виде квадрата разности <span style="color: #000000;">(3<em>x − </em>2<em>y</em>)<sup>2</sup></span>, но в результате применения формулы квадрата разности оно обратилось в многочлен <span style="color: #000000;">9<em>x</em><sup>2</sup> − 12<em>xy</em> + 4<em>y</em><sup>2</sup></span>. Наша задача — вернуть ему былую форму, то есть представить в виде <span style="color: #000000;">(3<em>x − </em>2<em>y</em>)</span><span style="color: #000000;"><sup>2</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;">9<em>x</em><sup>2</sup> − 12<em>xy</em> + 4<em>y</em><sup>2</sup> = (3<em>x − </em>2<em>y</em>)<sup>2</sup></span></p>
+<p>А поскольку <span style="color: #000000;">(3<em>x − </em>2<em>y</em>)</span><span style="color: #000000;"><sup>2</sup></span> это произведение двух сомножителей, каждый из которых равен многочлену <span style="color: #000000;">(3<em>x − </em>2<em>y</em>)</span>, то исходный многочлен <span style="color: #000000;">9<em>x</em><sup>2 </sup>− 12<em>xy </em>+ 4<em>y</em><sup>2</sup></span> можно представить в виде разложения на множители <span style="color: #000000;">(3<em>x − </em>2<em>y</em>)</span> и <span style="color: #000000;">(3<em>x − </em>2<em>y</em>)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">9<em>x</em><sup>2 </sup>− 12<em>xy </em>+ 4<em>y</em><sup>2</sup> = (3<em>x − </em>2<em>y</em>)(3<em>x − </em>2<em>y</em>)</span></p>
+<p>Полностью решение можно записать так:</p>
+<p style="text-align: center;"><span style="color: #000000;">9<em>x</em><sup>2 </sup>− 12<em>xy </em>+ 4<em>y</em><sup>2</sup> = (3<em>x</em>)<sup>2</sup> − 2 × 3<em>x </em>× 2<em>y + </em>(2<em>y</em>)<sup>2</sup> = (3<em>x − </em>2<em>y</em>)<sup>2</sup> = (3<em>x − </em>2<em>y</em>)(3<em>x − </em>2<em>y</em>)</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить на множители многочлен <span style="color: #000000;"><em>x</em><sup>2</sup> − 4<em>x</em> + 4</span></p>
+<p>Воспользуемся формулой квадрата разности двух выражений:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em><sup>2</sup> − 4<em>x</em> + 4 = <em>x</em><sup>2</sup> − 2 × <em>x</em> × 2 + 2<sup>2</sup> = (<em>x</em> − 2)<sup>2</sup> = (<em>x</em> − 2)(<em>x</em> − 2)</span></p>
+<hr/>
+<h3 id="razlozhenie_po_formule_kuba_summy_dvuh_vyrazhenij" style="text-align: center;">Разложение многочлена на множители по формуле куба суммы двух выражений</h3>
+<p>Вспомним, как выглядит формула куба суммы двух выражений:</p>
+<p style="text-align: center;"><strong>(<em>a</em> + <em>b</em>)<sup>3</sup> = <em>a</em><sup>3 </sup>+ 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>+ <em>b</em><sup>3</sup></strong></p>
+<p>Поменяем местами левую и правую часть, получим:</p>
+<p style="text-align: center;"><strong><em>a</em><sup>3 </sup>+ 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>+ <em>b</em><sup>3</sup> = (<em>a</em> + <em>b</em>)<sup>3</sup> </strong></p>
+<p>Левая часть этого равенства является многочленом, а правая часть — произведением многочленов, поскольку выражение <span style="color: #000000;">(<em>a + b</em>)<sup>3</sup></span> представляет собой перемножение трёх сомножителей, каждый из которых равен многочлену <span style="color: #000000;">(<em>a + b</em>).</span></p>
+<p>Стало быть, если нам встретится выражение вида <span style="color: #000000;"><em>a</em><sup>3 </sup>+ 3<em>a</em><sup>2</sup><em>b </em>+3<em>ab</em><sup>2 </sup>+ <em>b</em><sup>3</sup></span>, то мы можем представить его в виде произведения <span style="color: #000000;">(<em>a + b</em>)(<em>a + b</em>)(<em>a + b</em>)</span>. Иными словами, разложить на множители <span style="color: #000000;">(<em>a + b</em>),</span> <span style="color: #000000;">(<em>a + b</em>) и (<em>a + b</em>).</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em><sup>3 </sup>+ 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>+ <em>b</em><sup>3</sup> = (<em>a</em> + <em>b</em>)(<em>a</em> + <em>b</em>)(<em>a</em> + <em>b</em>)</span></p>
+<p><strong>Пример 1</strong>. Разложить на множители многочлен <span style="color: #000000;"><em>m</em><sup>3</sup> + 6<em>m</em><sup>2</sup><em>n</em> + 12<em>mn</em><sup>2</sup> + 8<em>n</em><sup>3</sup></span></p>
+<p>Прежде чем применять формулу куба суммы, следует проанализировать данный многочлен. А именно, убедиться что перед нами действительно куб суммы двух выражений.</p>
+<p>Чтобы убедиться, что исходное выражение является кубом суммы двух выражений, следует узнать чему в данном случае равна переменная <span style="color: #000000;"><em>a</em></span> и чему равна переменная <span style="color: #000000;"><em>b</em></span>.</p>
+<p>Первый член данного многочлена является результатом возведения в куб одночлена <span style="color: #000000;"><em>m</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>m</em><sup>3</sup> = <em>m</em><sup>3</sup></span></p>
+<p>Последний член <span style="color: #000000;">8<em>n</em><sup>3</sup></span> является результатом возведения в куб одночлена <span style="color: #000000;">2<em>n</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(2<em>n</em>)<sup>3</sup> = 8<em>n</em><sup>3</sup></span></p>
+<p>Второй член <span style="color: #000000;">6<em>m</em><sup>2</sup><em>n</em></span> является утроенным произведением квадрата первого выражения <span style="color: #000000;"><em>m</em></span> и последнего <span style="color: #000000;">2<em>n</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">3 × <em>m</em><sup>2</sup> × 2<em>n</em> = 6<em>m</em><sup>2</sup><em>n</em></span></p>
+<p>Третий член <span style="color: #000000;">12<em>mn</em><sup>2</sup></span> является утроенным произведением первого выражения <span style="color: #000000;"><em>m</em></span> и квадрата последнего выражения <span style="color: #000000;">2<em>n</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">3 × <em>m</em> × (2<em>n</em>)<sup>2</sup> = 3 × <em>m</em> × 4<em>n</em><sup>2</sup> = 12<em>mn</em><sup>2</sup></span></p>
+<p>То есть исходный многочлен <span style="color: #000000;"><em>m</em><sup>3</sup> + 6<em>m</em><sup>2</sup><em>n</em> + 12<em>mn</em><sup>2</sup> + 8<em>n</em><sup>3</sup></span> по всем параметрам соответствует кубу суммы двух выражений. Переменной <span style="color: #000000;"><em>a</em></span> в данном многочлене соответствует <span style="color: #000000;"><em>m</em></span>, а переменной <span style="color: #000000;"><em>b</em></span> соответствует <span style="color: #000000;">2<i>n</i></span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em> = <em>m</em></span><br/>
+<span style="color: #000000;"><em>b</em> = 2<em>n</em></span></p>
+<p>Тогда можно сделать вывод, что когда-то выражение <span style="color: #000000;"><em>m</em><sup>3 </sup>+ 6<em>m</em><sup>2</sup><em>n </em>+ 12<em>mn</em><sup>2</sup> + 8<em>n</em><sup>3</sup></span> выглядело в виде куба суммы <span style="color: #000000;">(<em>m</em> + 2<em>n</em>)<sup>3</sup></span>, но в результате применения формулы куба суммы оно обратилось в многочлен <span style="color: #000000;"><em>m</em><sup>3</sup> + 6<em>m</em><sup>2</sup><em>n</em> + 12<em>mn</em><sup>2</sup> + 8<em>n</em><sup>3</sup></span>. Наша задача — вернуть ему былую форму, то есть представить в виде <span style="color: #000000;">(<em>m</em> + 2<em>n</em>)<sup>3</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>m</em><sup>3</sup> + 6<em>m</em><sup>2</sup><em>n</em> + 12<em>mn</em><sup>2</sup> + 8<em>n</em><sup>3</sup> = (<em>m</em> + 2<em>n</em>)<sup>3</sup></span></p>
+<p>А поскольку <span style="color: #000000;">(<em>m</em> + 2<em>n</em>)<sup>3</sup></span> это произведение трёх сомножителей, каждый из которых равен многочлену <span style="color: #000000;">(<em>m</em> + 2<em>n</em>)</span>, то исходный многочлен <span style="color: #000000;"><em>m</em><sup>3 </sup>+ 6<em>m</em><sup>2</sup><em>n </em>+ 12<em>mn</em><sup>2</sup> + 8<em>n</em><sup>3</sup></span> можно представить в виде разложения на множители <span style="color: #000000;">(<em>m</em> + 2<em>n</em>), (<em>m</em> + 2<em>n</em>)</span> и <span style="color: #000000;">(<em>m</em> + 2<em>n</em>)</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>m</em><sup>3</sup> + 6<em>m</em><sup>2</sup><em>n</em> + 12<em>mn</em><sup>2</sup> + 8<em>n</em><sup>3</sup> = (<em>m</em> + 2<em>n</em>)(<em>m</em> + 2<em>n</em>)(<em>m</em> + 2<em>n</em>)</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить на множители многочлен <span style="color: #000000;">125<em>x</em><sup>3</sup> + 75<em>x</em><sup>2</sup> + 15<em>x</em> + 1</span></p>
+<p>Первый член данного многочлена является результатом возведения в куб одночлена <span style="color: #000000;">5<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(5<em>x</em>)<sup>3</sup> = 125<em>x</em><sup>3</sup></span></p>
+<p>Последний член <span style="color: #000000;">1</span> является результатом возведения в куб одночлена<span style="color: #000000;"> 1</span></p>
+<p style="text-align: center;"><span style="color: #000000;">1<sup>3</sup> = 1</span></p>
+<p>Второй член <span style="color: #000000;">75<em>x</em><sup>2</sup></span> является утроенным произведением квадрата первого выражения <span style="color: #000000;">5<em>x</em></span> и последнего <span style="color: #000000;">1</span></p>
+<p style="text-align: center;"><span style="color: #000000;">3 × (5<em>x</em>)<sup>2</sup> × 1 = 3 × 25<em>x</em><sup>2</sup> = 75<em>x</em><sup>2</sup></span></p>
+<p>Третий член <span style="color: #000000;">15<em>x</em></span> является утроенным произведением первого выражения 5<em>x</em> и квадрата второго выражения 1</p>
+<p style="text-align: center;"><span style="color: #000000;">3 × 5<em>x</em> × 1<sup>2</sup> = 15<em>x</em></span></p>
+<p>Воспользуемся формулой <span style="color: #000000;"><em>a</em><sup>3 </sup>+ 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>+ <em>b</em><sup>3</sup> = (<em>a</em> + <em>b</em>)<sup>3</sup></span>. Роль переменной <span style="color: #000000;"><em>a</em></span> играет одночлен <span style="color: #000000;">5<em>x</em></span>, а роль переменной <span style="color: #000000;"><em>b</em></span> играет одночлен <span style="color: #000000;">1</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em> = 5<em>x</em></span><br/>
+<span style="color: #000000;"><em>b</em> = 1</span></p>
+<p>Поэтому,</p>
+<p style="text-align: center;"><span style="color: #000000;">125<em>x</em><sup>3</sup> + 75<em>x</em><sup>2</sup> + 15<em>x</em> + 1 = (5<em>x</em> + 1)<sup>3</sup></span></p>
+<p>А поскольку <span style="color: #000000;">(5<em>x</em> + 1)<sup>3</sup></span> это произведение трёх сомножителей, каждый из которых равен многочлену <span style="color: #000000;">(5<em>x</em> + 1)</span>, то исходный многочлен <span style="color: #000000;">125<em>x</em><sup>3 </sup>+ 75<em>x</em><sup>2 </sup>+ 15<em>x </em>+ 1</span> можно представить в виде разложения на множители <span style="color: #000000;">(5<em>x</em> + 1), (5<em>x</em> + 1)</span> и <span style="color: #000000;">(5<em>x</em> + 1)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">125<em>x</em><sup>3</sup> + 75<em>x</em><sup>2</sup> + 15<em>x</em> + 1 = (5<em>x</em> + 1)(5<em>x</em> + 1)(5<em>x</em> + 1)</span></p>
+<hr/>
+<h3 id="razlozhenie_po_formule_kuba_raznosti_dvuh_vyrazhenij" style="text-align: center;">Разложение многочлена на множители по формуле куба разности двух выражений</h3>
+<p>Как и по формуле куба суммы двух выражений, многочлен можно разложить на множители по формуле куба разности двух выражений.</p>
+<p>Вспомним, как выглядит формула куба разности двух выражений:</p>
+<p style="text-align: center;"><strong>(<em>a − b</em>)<sup>3</sup> = <em>a</em><sup>3 </sup>− 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>− <em>b</em><sup>3</sup></strong></p>
+<p>Если в этой формуле поменять местами левую и правую часть, то получим:</p>
+<p style="text-align: center;"><strong><em>a</em><sup>3 </sup>− 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>− <em>b</em><sup>3</sup> = (<em>a − b</em>)<sup>3</sup></strong></p>
+<p>Поскольку правая часть это произведение трёх сомножителей, каждый из которых равен <span style="color: #000000;">(<em>a − b</em>), то </span>многочлен вида <span style="color: #000000;"><em>a</em><sup>3 </sup>− 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>− <em>b</em><sup>3</sup></span> можно разложить на множители <span style="color: #000000;">(<em>a − b</em>),</span> <span style="color: #000000;">(<em>a − b</em>) и (<em>a − b</em>).</span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em><sup>3 </sup>− 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>− <em>b</em><sup>3</sup> = (<em>a − b</em>)(<em>a − b</em>)(<em>a − b</em>)</span></p>
+<p><strong>Пример 1</strong>. Разложить на множители многочлен <span style="color: #000000;">64 − 96<em>x</em> + 48<em>x</em><sup>2</sup> − 8<em>x</em><sup>3</sup></span></p>
+<p>Прежде чем применять формулу куба разности, следует проанализировать данный многочлен. А именно, убедиться что перед нами действительно куб разности двух выражений.</p>
+<p>Чтобы убедиться, что исходное выражение является кубом разности двух выражений, следует узнать чему в данном случае равна переменная <span style="color: #000000;"><em>a</em></span> и чему равна переменная <span style="color: #000000;"><em>b</em></span>.</p>
+<p>Первый член данного многочлена является результатом возведения в куб одночлена <span style="color: #000000;">4</span></p>
+<p style="text-align: center;"><span style="color: #000000;">4<sup>3</sup> = 64</span></p>
+<p>Последний член <span style="color: #000000;">8<em>x</em><sup>3</sup></span> является результатом возведения в куб одночлена <span style="color: #000000;">2<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(2<em>x</em>)<sup>3</sup> = 8<em>x</em><sup>3</sup></span></p>
+<p>Второй член <span style="color: #000000;">96<em>x</em></span> является утроенным произведением квадрата первого выражения <span style="color: #000000;">4</span> и последнего <span style="color: #000000;">2<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">3 × 4<sup>2</sup> × 2<em>x</em> = 3 × 16 × 2<em>x</em> = 96<em>x</em></span></p>
+<p>Третий член <span style="color: #000000;">48<em>x</em><sup>2</sup></span> является утроенным произведением первого выражения <span style="color: #000000;">4</span> и квадрата второго выражения <span style="color: #000000;">2<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">3 × 4 × (2<em>x</em>)<sup>2</sup> = 3 × 4 × 4<em>x</em><sup>2</sup> = 48<em>x</em><sup>2</sup></span></p>
+<p>Видим, что исходный многочлен <span style="color: #000000;">64 − 96<em>x</em> + 48<em>x</em><sup>2</sup> − 8<em>x</em><sup>3</sup></span> по всем параметрам соответствует кубу разности двух выражений. Переменной <span style="color: #000000;"><em>a</em></span> в данном многочлене соответствует <span style="color: #000000;">4</span>, а переменной <span style="color: #000000;"><em>b</em></span> соответствует <span style="color: #000000;">2<i>x</i></span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em> = 4</span><br/>
+<span style="color: #000000;"><em>b</em> = 2<em>x</em></span></p>
+<p>Тогда можно сделать вывод, что когда-то выражение <span style="color: #000000;">64 − 96<em>x </em>+ 48<em>x</em><sup>2 </sup>− 8<em>x</em><sup>3</sup></span> выглядело в виде куба разности <span style="color: #000000;">(4 − 2<em>x</em>)<sup>3</sup></span>, но в результате применения формулы куба разности оно обратилось в многочлен <span style="color: #000000;">64 − 96<em>x </em>+ 48<em>x</em><sup>2 </sup>− 8<em>x</em><sup>3</sup></span>. Наша задача — вернуть ему былую форму, то есть представить в виде <span style="color: #000000;">(4 − 2<em>x</em>)</span><span style="color: #000000;"><sup>3</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;">64 − 96<em>x </em>+ 48<em>x</em><sup>2 </sup>− 8<em>x</em><sup>3</sup> = (4 − 2<em>x</em>)<sup>3</sup></span></p>
+<p>А поскольку <span style="color: #000000;">(4 − 2<em>x</em>)</span><span style="color: #000000;"><sup>3</sup></span> это произведение трёх сомножителей, каждый из которых равен <span style="color: #000000;">(4 − 2<em>x</em>)</span>, то исходный многочлен <span style="color: #000000;">64 − 96<em>x </em>+ 48<em>x</em><sup>2 </sup>− 8<em>x</em><sup>3</sup></span> можно представить в виде разложения на множители <span style="color: #000000;">(4 − 2<em>x</em>)</span><span style="color: #000000;">, (4 − 2<em>x</em>)</span> и <span style="color: #000000;">(4 − 2<em>x</em>)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">64 − 96<em>x </em>+ 48<em>x</em><sup>2 </sup>− 8<em>x</em><sup>3</sup> = (4 − 2<em>x</em>)(4 − 2<em>x</em>)(4 − 2<em>x</em>)</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить на множители многочлен <span style="color: #000000;">27 − 135<em>x</em> + 225<em>x</em><sup>2</sup> − 125<em>x</em><sup>3</sup></span></p>
+<p>Первый член данного многочлена является результатом возведения в куб одночлена <span style="color: #000000;">3</span></p>
+<p style="text-align: center;"><span style="color: #000000;">3<sup>3</sup> = 27</span></p>
+<p>Последний член <span style="color: #000000;">125</span> является результатом возведения в куб одночлена<span style="color: #000000;"> 5<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(5<em>x</em>)<sup>3</sup> = 125<em>x</em><sup>3</sup></span></p>
+<p>Второй член <span style="color: #000000;">135<em>x</em></span> является утроенным произведением квадрата первого выражения <span style="color: #000000;">3</span> и последнего <span style="color: #000000;">5<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">3 × 3<sup>2</sup> × 5<em>x</em> = 3 × 9 × 5<em>x</em> = 135<em>x</em></span></p>
+<p>Третий член <span style="color: #000000;">225<em>x</em><sup>2</sup></span> является утроенным произведением первого выражения <span style="color: #000000;">3</span> и квадрата второго выражения <span style="color: #000000;">5<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">3 × 3 × (5<em>x</em>)<sup>2</sup> = 3 × 3 × 25<em>x</em><sup>2</sup> = 225<em>x</em><sup>2</sup></span></p>
+<p>Воспользуемся формулой <span style="color: #000000;"><em>a</em><sup>3 </sup>− 3<em>a</em><sup>2</sup><em>b</em> + 3<em>ab</em><sup>2 </sup>− <em>b</em><sup>3</sup> = (<em>a</em> − <em>b</em>)<sup>3</sup></span>. Роль переменной <span style="color: #000000;"><em>a</em></span> играет одночлен <span style="color: #000000;">3</span>, а роль переменной <span style="color: #000000;"><em>b</em></span> играет одночлен <span style="color: #000000;">5<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em> = 3</span><br/>
+<span style="color: #000000;"><em>b</em> = 5<em>x</em></span></p>
+<p>Поэтому,</p>
+<p style="text-align: center;"><span style="color: #000000;">27 − 135<em>x</em> + 225<em>x</em><sup>2</sup> − 125<em>x</em><sup>3</sup> = (3 − 5<em>x</em>)<sup>3</sup></span></p>
+<p>А поскольку <span style="color: #000000;">(3 − 5<em>x</em>)</span><span style="color: #000000;"><sup>3</sup></span> это произведение трёх сомножителей, каждый из которых равен многочлену <span style="color: #000000;">(3 − 5<em>x</em>)</span>, то исходный многочлен <span style="color: #000000;">27 − 135<em>x </em>+ 225<em>x</em><sup>2 </sup>− 125<em>x</em><sup>3</sup></span> можно представить в виде разложения на множители <span style="color: #000000;">(3 − 5<em>x</em>)</span><span style="color: #000000;">, (3 − 5<em>x</em>)</span> и <span style="color: #000000;">(3 − 5<em>x</em>)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">125<em>x</em><sup>3</sup> + 75<em>x</em><sup>2</sup> + 15<em>x</em> + 1 = (3 − 5<em>x</em>)(3 − 5<em>x</em>)(3 − 5<em>x</em>)</span></p>
+<hr/>
+<h3 id="razlozhenie_po_formule_raznosti_kvadratov_dvuh_vyrazhenij" style="text-align: center;">Разложение многочлена на множители по формуле разности квадратов двух выражений</h3>
+<p>Вспомним, как выглядит формула умножения разности двух выражений на их сумму:</p>
+<p style="text-align: center;"><strong>(<em>a − b</em>)(<em>a + b</em>) = <em>a</em><sup>2</sup> − <em>b</em><sup>2</sup></strong></p>
+<p>Если в этой формуле поменять местами левую и правую часть, то получим:</p>
+<p style="text-align: center;"><strong> <em>a</em><sup>2</sup> − <em>b</em><sup>2</sup> = (<em>a − b</em>)(<em>a + b</em>)</strong></p>
+<p>Эту формулу называют <strong>разностью квадратов</strong>. Она позволяет разложить выражение вида <span style="color: #000000;"><em>a</em><sup>2</sup> − <em>b</em><sup>2</sup></span> на множители <span style="color: #000000;">(<em>a − b</em>) и (<em>a + b</em>).</span></p>
+<p><strong>Пример 1</strong>. Разложить на множители многочлен <span style="color: #000000;">16<em>x</em><sup>2</sup> − 25<em>y</em><sup>2</sup></span></p>
+<p>Чтобы воспользоваться формулой <span style="color: #000000;"><em>a</em><sup>2</sup> − <em>b</em><sup>2</sup> = (<em>a − b</em>)(<em>a + b</em>), </span>следует узнать чему в данном случае равна переменная <span style="color: #000000;"><em>a</em></span> и чему равна переменная <span style="color: #000000;"><em>b</em></span>.</p>
+<p>Первый член <span style="color: #000000;">16<em>x</em><sup>2</sup></span> является результатом возведения в квадрат одночлена <span style="color: #000000;">4<em>x</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(4<em>x</em>)<sup>2</sup> = 16<em>x</em><sup>2</sup></span></p>
+<p>Второй член <span style="color: #000000;">25<em>y</em><sup>2</sup></span> является результатом возведения в квадрат одночлена <span style="color: #000000;">5<em>y</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(5<em>y</em>)<sup>2</sup> = 25<em>y</em><sup>2</sup></span></p>
+<p>То есть в данном случае переменной <span style="color: #000000;"><em>a</em></span> соответствует одночлен <span style="color: #000000;">4<em>x</em></span>, а переменной <span style="color: #000000;"><em>b</em></span> соответствует одночлен <span style="color: #000000;">5<em>y</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;"><em>a</em> = 4<em>x</em></span><br/>
+<span style="color: #000000;"><em>b</em> = 5<em>y</em></span></p>
+<p>Теперь можно воспользоваться формулой <span style="color: #000000;"><em>a</em><sup>2</sup> − <em>b</em><sup>2</sup> = (<em>a − b</em>)(<em>a + b</em>)</span>. Подставим в неё наши значения <span style="color: #000000;"><em>a</em></span> и <span style="color: #000000;"><em>b</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(4<em>x</em>)<sup>2</sup> − (5<em>y</em>)<sup>2</sup> = (4<em>x </em>− 5<em>y</em>)(4<em>x </em>+ 5<em>y</em>)</span></p>
+<p>Полностью решение можно записать так:</p>
+<p style="text-align: center;"><span style="color: #000000;">16<em>x</em><sup>2</sup> − 25<em>y</em><sup>2 </sup>= (4<em>x</em>)<sup>2</sup> − (5<em>y</em>)<sup>2</sup> = (4<em>x </em>− 5<em>y</em>)(4<em>x </em>+ 5<em>y</em>)</span></p>
+<p>Для проверки можно выполнить умножение <span style="color: #000000;">(4<em>x </em>− 5<em>y</em>)(4<em>x </em>+ 5<em>y</em>)</span>. Если мы всё сделали правильно, то должны получить <span style="color: #000000;">16<em>x</em><sup>2</sup> − 25<em>y</em><sup>2</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(4<em>x </em>− 5<em>y</em>)(4<em>x </em>+ 5<em>y</em>) = 16<em>x</em><sup>2</sup> − 20<em>xy</em> + 20<em>xy</em> − 25<em>y</em><sup>2</sup> = 16<em>x</em><sup>2</sup> − 25<em>y</em><sup>2</sup></span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить на множители многочлен <span style="color: #000000;"><em>x</em><sup>2</sup> − <em>y</em><sup>2</sup></span></p>
+<p>В данном случае переменной <span style="color: #000000;"><em>a</em></span> соответствует <span style="color: #000000;"><em>x</em></span>, а переменной <span style="color: #000000;"><em>b</em></span> соответствует <span style="color: #000000;"><em>y</em></span>. Тогда по формуле квадрата разности имеем:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>x</em><sup>2</sup> − <em>y</em><sup>2</sup> = (<em>x − y</em>)(<em>x + y</em>)</span></p>
+<p>Случай как в данном примере является наиболее простым, поскольку здесь сразу видно чему равно <span style="color: #000000;"><em>a</em></span> и чему равно <em><span style="color: #000000;">b</span></em>.</p>
+<p>Чаще всего члены, из которых состоит исходная разность, являются результатами возведения во вторую степень каких-нибудь одночленов. Чтобы узнать чему в таком случае равны <span style="color: #000000;"><em>a</em></span> и <span style="color: #000000;"><em>b,</em></span> нужно как в первом примере представить члены исходной разности в виде одночленов возведённых в квадрат.</p>
+<p>Например, чтобы разложить многочлен <span style="color: #000000;">4<em>x</em><sup>4 </sup>− 9<em>y</em><sup>6</sup></span> на множители, нужно исходные члены представить в виде одночленов возведённых в квадрат. Первый член в виде одночлена, возведенного в квадрат, можно записать как <span style="color: #000000;">(2<em>x</em><sup>2</sup>)<sup>2</sup></span>, поскольку вычисление этого выражение даёт в результате <span style="color: #000000;">4<em>x</em><sup>4</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(2<em>x</em><sup>2</sup>)<sup>2</sup> = 4<em>x</em><sup>4</sup></span></p>
+<p>А член <span style="color: #000000;">9<em>y</em><sup>6</sup></span> в виде одночлена, возведенного в квадрат, можно записать как (3<span style="color: #000000;"><em>y</em><sup>3</sup></span>)<span style="color: #000000;"><sup>2</sup></span>, поскольку вычисление этого выражение даёт в результате 9<em>y</em><span style="color: #000000;"><sup>6</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(3<em>y</em><sup>3</sup>)<sup>2</sup> = 9<em>y</em><sup>6</sup></span></p>
+<p>Теперь мы знаем, чему равны <span style="color: #000000;"><em>a</em></span> и <span style="color: #000000;"><em>b</em></span>. Они равны <span style="color: #000000;">2<em>x</em><sup>2</sup></span> и <span style="color: #000000;">3<em>y</em><sup>3</sup></span> соответственно. Подставим их в формулу <span style="color: #000000;"><em>a</em><sup>2</sup> − <em>b</em><sup>2</sup> = (<em>a − b</em>)(<em>a + b</em>)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">(2<em>x</em><sup>2</sup>)<sup>2</sup> − (3<em>y</em><sup>3</sup>)<sup>2</sup> = (2<em>x</em><sup>2</sup><em> − </em>3<em>y</em><sup>3</sup>)(2<em>x</em><sup>2</sup><em> + </em>3<em>y</em><sup>3</sup>)</span></p>
+<p>Полностью решение можно записать так:</p>
+<p style="text-align: center;"><span style="color: #000000;">4<em>x</em><sup>4 </sup>− 9<em>y</em><sup>6</sup> = (2<em>x</em><sup>2</sup>)<sup>2</sup> − (3<em>y</em><sup>3</sup>)<sup>2</sup> = (2<em>x</em><sup>2</sup><em> − </em>3<em>y</em><sup>3</sup>)(2<em>x</em><sup>2</sup><em> + </em>3<em>y</em><sup>3</sup>)</span></p>
+<p>Несмотря на простоту разложения по формуле разности квадратов, частые ошибки приходятся именно на эти задачи. Чтобы убедиться, что задача решена правильно, не мешает выполнить умножение в получившемся разложении. Если задача решена правильно, то должен получиться изначальный многочлен.</p>
+<p>Проверим умножением данный пример. У нас должен получиться многочлен <span style="color: #000000;">4<em>x</em><sup>4 </sup>− 9<em>y</em><sup>6</sup></span></p>
+<p style="text-align: center;"><span style="color: #000000;">(2<em>x</em><sup>2</sup><em> − </em>3<em>y</em><sup>3</sup>)(2<em>x</em><sup>2</sup><em> + </em>3<em>y</em><sup>3</sup>) = 2<em>x</em><sup>2</sup>(2<em>x</em><sup>2</sup><em> + </em>3<em>y</em><sup>3</sup>) − 3<em>y</em><sup>3</sup>(2<em>x</em><sup>2</sup><em> + </em>3<em>y</em><sup>3</sup>) </span><br/>
+<span style="color: #000000;">= 4<em>x</em><sup>4 </sup>+ 6<em>x</em><sup>2</sup><em>y</em><sup>3</sup> − 6<em>x</em><sup>2</sup><em>y</em><sup>3</sup> − 9<em>y</em><sup>6</sup></span> = <span style="color: #000000;">4<em>x</em><sup>4 </sup>− 9<em>y</em><sup>6</sup></span></p>
+<hr/>
+<p><strong>Пример 4</strong>. Разложить на множители многочлен <span style="color: #000000;">81 − 64</span></p>
+<p>Представим члены исходной разности в виде одночленов возведенных в квадрат. Далее воспользуемся формулой разности квадратов:</p>
+<p style="text-align: center;"><span style="color: #000000;">81 − 64 = 9<sup>2</sup> − 8<sup>2</sup> = (9 − 8)(9 + 8)</span></p>
+<hr/>
+<h3 id="razlozhenie_po_formule_summe_kubov_dvuh_vyrazhenij" style="text-align: center;">Разложение многочлена на множители по формуле сумме кубов двух выражений</h3>
+<p>Мы помним, что произведение суммы двух выражений и неполного квадрата их разности равно сумме кубов этих выражений:</p>
+<p style="text-align: center;"><strong>(<em>a + b</em>)(<em>a</em><sup>2</sup> − <em>ab</em> + <em>b</em><sup>2</sup>) = <em>a</em><sup>3</sup> + <em>b</em><sup>3</sup></strong></p>
+<p>Если в этой формуле поменять местами левую и правую часть, то получим формулу, называемую <strong>суммой кубов двух выражений</strong>:</p>
+<p style="text-align: center;"><strong><em>a</em><sup>3</sup> + <em>b</em><sup>3</sup> = (<em>a + b</em>)(<em>a</em><sup>2</sup> − <em>ab</em> + <em>b</em><sup>2</sup>)</strong></p>
+<p>Эта формула позволяет разложить выражение вида <span style="color: #000000;"><em>a</em><sup>3</sup> + <em>b</em><sup>3</sup></span> на множители <span style="color: #000000;">(<em>a + b</em>) </span>и<span style="color: #000000;"> (<em>a</em><sup>2</sup> − <em>ab</em> + <em>b</em><sup>2</sup>)</span><span style="color: #000000;">.</span></p>
+<p><strong>Пример 1</strong>. Разложить на множители многочлен <span style="color: #000000;">27<em>x</em><sup>3</sup> + 64<em>y</em><sup>3</sup></span></p>
+<p>Представим члены <span style="color: #000000;">27<em>x</em><sup>3</sup></span> и <span style="color: #000000;">64<em>y</em><sup>3</sup></span> в виде одночленов, возведённых в куб</p>
+<p style="text-align: center;"><span style="color: #000000;">27<em>x</em><sup>3</sup> + 64<em>y</em><sup>3</sup> = (3<em>x</em>)<sup>3</sup> + (4<em>y</em>)<sup>3</sup></span></p>
+<p>Теперь воспользуемся формулой суммы кубов. Переменная <span style="color: #000000;"><em>a</em></span> в данном случае равна <span style="color: #000000;">3<em>x</em></span>, переменная <span style="color: #000000;"><em>b</em></span> равна <span style="color: #000000;">4<em>y</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">27<em>x</em><sup>3</sup> + 64<em>y</em><sup>3</sup> = (3<em>x</em>)<sup>3</sup> + (4<em>y</em>)<sup>3</sup> = (3<em>x</em> + 4<em>y</em>)((3<em>x</em>)<sup>2</sup> − 3<em>x</em> × 4<em>y</em> + (4<em>y</em>)<sup>2</sup>) =</span><br/>
+<span style="color: #000000;">(3<em>x</em> + 4<em>y</em>)(9<em>x</em><sup>2</sup> − 12<em>xy</em> + 16<em>y</em><sup>2</sup>)</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить на множители многочлен <span style="color: #000000;">125 + 8</span></p>
+<p>Представим члены 125 и 8 в виде одночленов, возведённых в куб:</p>
+<p style="text-align: center;"><span style="color: #000000;">125 + 8 = 5<sup>3</sup> + 2<sup>3</sup> </span></p>
+<p>Далее воспользуемся формулой суммы кубов:</p>
+<p style="text-align: center;"><span style="color: #000000;">125 + 8 = 5<sup>3</sup> + 2<sup>3</sup> = (5 + 2)(25 − 10 + 4)</span></p>
+<hr/>
+<h3 id="razlozhenie_po_formule_raznosti_kubov_dvuh_vyrazhenij" style="text-align: center;">Разложение многочлена на множители по формуле разности кубов двух выражений</h3>
+<p>Произведение разности двух выражений и неполного квадрата их суммы равно разности кубов этих выражений:</p>
+<p style="text-align: center;"><strong>(<em>a − b</em>)(<em>a</em><sup>2</sup> + <em>ab</em> + <em>b</em><sup>2</sup>) = <em>a</em><sup>3</sup> − <em>b</em><sup>3</sup></strong></p>
+<p>Если в этой формуле поменять местами левую и правую часть, то получим формулу, называемую <strong>разностью кубов двух выражений</strong>:</p>
+<p style="text-align: center;"><strong><em>a</em><sup>3</sup> − <em>b</em><sup>3</sup> = (<em>a − b</em>)(<em>a</em><sup>2</sup> + <em>ab</em> + <em>b</em><sup>2</sup>)</strong></p>
+<p>Эта формула позволяет разложить выражение вида <span style="color: #000000;"><em>a</em><sup>3</sup> − <em>b</em><sup>3</sup></span> на множители <span style="color: #000000;">(<em>a − b</em>) </span>и<span style="color: #000000;"> (<em>a</em><sup>2</sup> + <em>ab</em> + <em>b</em><sup>2</sup>)</span><span style="color: #000000;">.</span></p>
+<p><strong>Пример 1</strong>. Разложить на множители многочлен <span style="color: #000000;">64<em>x</em><sup>3</sup> − 27<em>y</em><sup>3</sup></span></p>
+<p>Представим члены <span style="color: #000000;">64<em>x</em><sup>3</sup></span> и <span style="color: #000000;">27<em>y</em><sup>3</sup></span> в виде одночленов, возведённых в куб:</p>
+<p style="text-align: center;"><span style="color: #000000;">64<em>x</em><sup>3</sup> − 27<em>y</em><sup>3</sup> = (4<em>x</em>)<sup>3</sup> − (3<em>y</em>)<sup>3</sup></span></p>
+<p>Теперь воспользуемся формулой разности кубов. Переменная <span style="color: #000000;"><em>a</em></span> в данном случае равна <span style="color: #000000;">4<em>x</em></span>, переменная <span style="color: #000000;"><em>b</em></span> равна <span style="color: #000000;">3<em>y</em></span></p>
+<p style="text-align: center;"><span style="color: #000000;">64<em>x</em><sup>3</sup> − 27<em>y</em><sup>3</sup> = (4<em>x</em>)<sup>3</sup> − (3<em>y</em>)<sup>3</sup> = (4<em>x</em> − 3<em>y</em>)((4<em>x</em>)<sup>2</sup> + 4<em>x</em> × 3<em>y</em> + (3<em>y</em>)<sup>2</sup>) =</span><br/>
+<span style="color: #000000;">(4<em>x</em> − 3<em>y</em>)(16<em>x</em><sup>2</sup> + 12<em>xy</em> + 9<em>y</em><sup>2</sup>)</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить на множители многочлен <span style="color: #000000;">64 − 27</span></p>
+<p>Представим члены 64 и 27 в виде одночленов, возведённых в куб:</p>
+<p style="text-align: center;"><span style="color: #000000;">64 − 27 = 4<sup>3</sup> − 3<sup>3</sup> = (4 − 3)(16 + 12 + 9)</span></p>
+<hr/>
+<p><strong>Пример 3</strong>. Разложить на множители многочлен <span style="color: #000000;">125<em>x</em><sup>3</sup> − 1</span></p>
+<p>Представим члены <span style="color: #000000;">125<em>x</em><sup>3</sup></span> и <span style="color: #000000;">1</span> в виде одночленов, возведённых в куб:</p>
+<p style="text-align: center;"><span style="color: #000000;">125<em>x</em><sup>3</sup> − 1 = (5<em>x</em>)<sup>3</sup> − 1<sup>3</sup></span></p>
+<p>Теперь воспользуемся формулой разности кубов. Переменная <span style="color: #000000;"><em>a</em></span> в данном случае равна <span style="color: #000000;">5<em>x</em></span>, переменная <span style="color: #000000;"><em>b</em></span> равна <span style="color: #000000;">1</span></p>
+<p style="text-align: center;"><span style="color: #000000;">125<em>x</em><sup>3</sup> − 1 = (5<em>x</em>)<sup>3</sup> − 1<sup>3</sup> = (5<em>x</em> − 1)((5<em>x</em>)<sup>2</sup> + 5<em>x</em> × 1 + 1<sup>2</sup>) =</span><br/>
+<span style="color: #000000;">(5<em>x</em> − 1)(25<em>x</em><sup>2</sup> + 5<em>x</em> + 1)</span></p>
+<hr/>
+<h3 id="razlozhenie_razlichnymi_sposobami" style="text-align: center;">Разложение многочлена на множители различными способами</h3>
+<p>К некоторым многочленам можно применять различные способы разложения на множители. Например, к одному многочлену можно применить способ вынесения общего за скобки, а затем воспользоваться одной из формул сокращённого умножения.</p>
+<p><strong>Пример 1</strong>. Разложить на множители многочлен <span style="color: #000000;"><em>ax</em><sup>2</sup> − <em>ay</em><sup>2</sup> </span></p>
+<p>В данном многочлене содержится общий множитель <span style="color: #000000;"><em>a</em></span>. Вынесем его за скобки:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>ax</em><sup>2</sup> − <em>ay</em><sup>2</sup> = <em>a</em>(<em>x</em><sup>2</sup> − <em>y</em><sup>2</sup>)</span></p>
+<p>При этом в скобках образовался многочлен, который является разностью квадратов. Применив формулу разности квадратов. Тогда получим:</p>
+<p style="text-align: center;"><span style="color: #000000;"><em>ax</em><sup>2</sup> − <em>ay</em><sup>2</sup> = <em>a</em>(<em>x</em><sup>2</sup> − <em>y</em><sup>2</sup>) = <em>a</em>(<em>x − y</em>)(<em>x + y</em>)</span></p>
+<hr/>
+<p><strong>Пример 2</strong>. Разложить на множители многочлен <span style="color: #000000;">3<em>x</em><sup>2</sup> + 6<em>xy</em> + 3<em>y</em><sup>2</sup></span></p>
+<p>Вынесем за скобки общий множитель 3</p>
+<p style="text-align: center;"><span style="color: #000000;">3<em>x</em><sup>2</sup> + 6<em>xy</em> + 3<em>y</em><sup>2</sup> = 3(<em>x</em><sup>2</sup> + 2<em>xy</em> + <em>y</em><sup>2</sup>)</span></p>
+<p>В скобках образовался многочлен, который является квадратом суммы двух выражений, а именно выражений <span style="color: #000000;"><em>x</em></span> и <span style="color: #000000;"><em>y</em></span>. Тогда этот квадрат суммы можно представить как <span style="color: #000000;">(<em>x + y</em>)<sup>2</sup></span> и далее записать в виде двух сомножителей, каждый из которых равен <span style="color: #000000;">(<em>x + y</em>)</span></p>
+<p style="text-align: center;"><span style="color: #000000;">3<em>x</em><sup>2</sup> + 6<em>xy</em> + 3<em>y</em><sup>2</sup> = 3(<em>x</em><sup>2</sup> + 2<em>xy</em> + <em>y</em><sup>2</sup>) = 3(<em>x + y</em>)<sup>2</sup> = 3(<em>x + y</em>)(<em>x + y</em>)</span></p>
+<hr/>
+<h3 id="zadaniya_dlya_samostoyatelnogo_resheniya" style="text-align: center;">Задания для самостоятельного решения</h3>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 1.</span> Следующий многочлен разложите на множители способом группировки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/103e7d87c1caef50dd73479f86c87174.png"/></div>
+<div class="ex ex1" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/4f987175fab2c1bebe8789cd3fc54ac0.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex1" href="#" rel=".ex1">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 2.</span> Следующий многочлен разложите на множители способом группировки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/21d14d23a7bc03712041c4a923ee89ef.png"/></div>
+<div class="ex ex2" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/78bbac9eaa8619b0bbfad7b866803171.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex2" href="#" rel=".ex2">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 3.</span> Следующий многочлен разложите на множители способом группировки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/2157ae81930de4cb42a841beb56f916a.png"/></div>
+<div class="ex ex3" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/b5bb4715bf8e4ff26aef162310d23efd.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex3" href="#" rel=".ex3">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 4.</span> Следующий многочлен разложите на множители способом группировки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/32385b62cf237afa6368b8ddb568bc10.png"/></div>
+<div class="ex ex4" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/dc6db919081078e658364b5c1a712881.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex4" href="#" rel=".ex4">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 5.</span> Следующий многочлен разложите на множители способом группировки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/090e3a823325c4bbe75aeb89b4d876bf.png"/></div>
+<div class="ex ex5" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/4ed3b068db41407ad0911b0d609b6a2f.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex5" href="#" rel=".ex5">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 6.</span> Следующий многочлен разложите на множители способом группировки:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/aa9e2a56149a8ed5390641fa74eaadf8.png"/></div>
+<div class="ex ex6" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/000eb997124275706a31267cf8241828.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex6" href="#" rel=".ex6">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 7.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><span style="color: #000000;"><em>x</em><sup>2</sup> + 12<em>x</em> + 36</span></div>
+<div class="ex ex7" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><span style="color: #000000;"><em>x</em><sup>2</sup> + 12<em>x</em> + 36 = <em>x</em><sup>2</sup> + 2 × <em>x</em> × 6 + 6<sup>2</sup> = (<em>x</em> + 6)<sup>2</sup> = (<em>x</em> + 6)(<em>x</em> + 6)</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex7" href="#" rel=".ex7">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 8.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><span style="color: #000000;">8<em>xy</em> + <em>y</em><sup>2</sup> + 16<em>x</em><sup>2</sup></span></div>
+<div class="ex ex8" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><span style="color: #000000;">8<em>xy</em> + <em>y</em><sup>2</sup> + 16<em>x</em><sup>2</sup> = 16<em>x</em><sup>2</sup> + 8<em>xy</em> + <em>y</em><sup>2</sup> = (4<em>x</em>)<sup>2</sup> + 2 × 4<em>x</em> × <em>y</em> + <em>y</em><sup>2</sup> = (4<em>x + y</em>)<sup>2</sup> = (4<em>x + y</em>)(4<em>x + y</em>)</span></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex8" href="#" rel=".ex8">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 9.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/98fbbe72d5c143f11cf23f82f651ed60.png"/></div>
+<div class="ex ex9" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/574ded7ab44a8d592782454e77daa0eb.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex9" href="#" rel=".ex9">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 10.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/d071940791e14b8a1b18892b062cbdf4.png"/></div>
+<div class="ex ex10" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f266421f87b9783ac2e59839dbb49e66.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex10" href="#" rel=".ex10">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 11.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/bd184f63ff1ee9ade46a522457688d6f.png"/></div>
+<div class="ex ex11" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/3f81e0052ea0eb6be30dfb877fc34fc2.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex11" href="#" rel=".ex11">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 12.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/dd48192190265279e044058249af88a1.png"/></div>
+<div class="ex ex12" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/3eae86041bf17aab417c520ba47c7091.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex12" href="#" rel=".ex12">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 13.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/6ccdf4c0608113b0ab771bde74ac107b.png"/></div>
+<div class="ex ex13" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/baf850c4c41e2c0d7e17e4f615f3f6bd.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex13" href="#" rel=".ex13">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 14.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/f59e6f3962c21d69550e61134ca9343a.png"/></div>
+<div class="ex ex14" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/aa789929956024a55a5c44b7f62378a2.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex14" href="#" rel=".ex14">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 15.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/26e52572c378ff92b20ff960823ed993.png"/></div>
+<div class="ex ex15" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/6caf51c48d80ce3610d4c2e7e42eb30d.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex15" href="#" rel=".ex15">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 16.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/42577f5a0d430dcd6e74ab472a6724a5.png"/></div>
+<div class="ex ex16" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/c48db2faa342ac2f0807dbfdf160434a.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex16" href="#" rel=".ex16">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 17.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/aef1127a9182078d1aff46b0c47b7883.png"/></div>
+<div class="ex ex17" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/d13c31c29234a24e5f4aaae2b0d6e7a5.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex17" href="#" rel=".ex17">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 18.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/0633c69d3caa9dc7022e2decae3cd85c.png"/></div>
+<div class="ex ex18" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/38dd8c568d2774ddd197e36b6b871fc9.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex18" href="#" rel=".ex18">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 19.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/a103cabdd60af6f2f847080c90ff9754.png"/></div>
+<div class="ex ex19" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/934958cca13f0f98e53f2db363771bf3.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex19" href="#" rel=".ex19">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 20.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/72f6b7365e575e82bb0e044b811d122d.png"/></div>
+<div class="ex ex20" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/98ef17a866aced41ad2c033c98c7583c.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex20" href="#" rel=".ex20">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 21.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/0b6ed4e6318a750bcfc2b8f585a99162.png"/></div>
+<div class="ex ex21" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/cf5c8124d214d8bc904f72a220330ef8.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex21" href="#" rel=".ex21">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 22.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/1be89064eb2da99dcf8993879e829993.png"/></div>
+<div class="ex ex22" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/3430abf4537576602f7c6449a4dac578.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex22" href="#" rel=".ex22">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 23.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/59458e3164000c6801b70c086910675f.png"/></div>
+<div class="ex ex23" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f10eb0b25dc65ae0676aa29ff3c61e66.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex23" href="#" rel=".ex23">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 24.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/f623baab7ff3279443d69d39b28dac3e.png"/></div>
+<div class="ex ex24" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/ffb9acd872dcb6891ae9b9103ee870c7.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex24" href="#" rel=".ex24">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 25.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/03e4097f74be9e8e1b591074c389a4ee.png"/></div>
+<div class="ex ex25" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/8428b30bfc64da9911cb199602b9d37d.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex25" href="#" rel=".ex25">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 26.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/f66ce838b87df59f746883350d6972e2.png"/></div>
+<div class="ex ex26" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/277ab6f0d617c493404113341e857ee1.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex26" href="#" rel=".ex26">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 27.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/bbdb23f5d2a483a47cbd7fbbeb383519.png"/></div>
+<div class="ex ex27" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/81e182a8098953a2f0de074fc7d12454.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex27" href="#" rel=".ex27">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 28.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/9d2c264c0b9172f7ebfd3c53bc2e0e52.png"/></div>
+<div class="ex ex28" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/ae8170fe8dc1c26449f434aaae87fc00.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex28" href="#" rel=".ex28">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 29.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/854e81fb9ebdfea6d9adb6a93cc58e4c.png"/></div>
+<div class="ex ex29" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/9880baea422246a388d81fcfbb5fe761.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex29" href="#" rel=".ex29">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 30.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/ac269e91c3c44dbc228ddf319cb85dfb.png"/></div>
+<div class="ex ex30" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/a0a528a1610c0d9b291eddbb1f7c63b9.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex30" href="#" rel=".ex30">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 31.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/12eed913ecc4c728bf12a16be7d8ccfa.png"/></div>
+<div class="ex ex31" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/2cae56c6e8ce76be8f58abd2af99564a.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex31" href="#" rel=".ex31">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 32.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/70395ae5014fabbca50b5fb260421df9.png"/></div>
+<div class="ex ex32" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/4084c1f4ed78012b598ec23f966a716f.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex32" href="#" rel=".ex32">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 33.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/570b4b9f99b66d05735e41f49b53799f.png"/></div>
+<div class="ex ex33" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/da142d745c6d89237bc61e857225fda3.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex33" href="#" rel=".ex33">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 34.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/c61be70c62a278540520fc0b762d307b.png"/></div>
+<div class="ex ex34" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/e2a28c5edf0dce88dabfd592d6ac1a10.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex34" href="#" rel=".ex34">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 35.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/fc6b9e5bfb4e4289694a77adfb79cf06.png"/></div>
+<div class="ex ex35" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img class="alignnone" decoding="async" loading="lazy" src="../media/e0e17101b2e4c22dc67356f56acce27a.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex35" href="#" rel=".ex35">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 36.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/260356532c7a52a7eca6b23a3ebab4d0.png"/></div>
+<div class="ex ex36" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img class="alignnone" decoding="async" loading="lazy" src="../media/9ab49a379a175a39f4e6257787598d66.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex36" href="#" rel=".ex36">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 37.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/1c4560b8a6af51a360cf32035ff57c3d.png"/></div>
+<div class="ex ex37" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/945fba5ab925156bca6a1dbc5b4f0c3b.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex37" href="#" rel=".ex37">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 38.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/f7651642bee1c2a2d54897d109080fdc.png"/></div>
+<div class="ex ex38" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/4520628c21288afde7657f3f01590364.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex38" href="#" rel=".ex38">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 39.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/7aaaf0024008b8c49cacd91c878b0220.png"/></div>
+<div class="ex ex39" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/7181dbebb5ddeb2cb060ad9556a849ff.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex39" href="#" rel=".ex39">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 40.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/1223bfb5c8332f68fba4f0f28026fd3e.png"/></div>
+<div class="ex ex40" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/ec90f9bc95ae76ae20c1c241f14888d3.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex40" href="#" rel=".ex40">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 41.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/334ea501d26ce5f9e093b843c3b33f76.png"/></div>
+<div class="ex ex41" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/a6dcabcdc5f6a2dbba525c638a52f995.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex41" href="#" rel=".ex41">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 42.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/5b40d613c2781d03c74ce1384dbf5b23.png"/></div>
+<div class="ex ex42" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/b81fb65517fbec497348ba921ad7d497.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex42" href="#" rel=".ex42">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 43.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/da5aaced8c7bb949e3e27783bf32fddb.png"/></div>
+<div class="ex ex43" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/ca78b71358601aaba62204110b9988a5.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex43" href="#" rel=".ex43">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 44.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/8e1b49b96cac25d51c4c8eaa4e7701be.png"/></div>
+<div class="ex ex44" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/be5b20e3ba5c75e8e3aadbef8bbd6066.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex44" href="#" rel=".ex44">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 45.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/b26387112e391d9c448abd4f1300ec7f.png"/></div>
+<div class="ex ex45" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/edbcde1cdb039d24d98d772e819742bb.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex45" href="#" rel=".ex45">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 46.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/1ccf8b8e3568ccbb1c2cbfd70d77d399.png"/></div>
+<div class="ex ex46" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/eb4090a495c5dcfd5e07a246dcd30e07.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex46" href="#" rel=".ex46">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 47.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/6b63ed5283f4ed72d45c50e737e92f52.png"/></div>
+<div class="ex ex47" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f02ae198c234018a7e5b082acd878664.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex47" href="#" rel=".ex47">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 48.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/87938bcab4d9fd259ac9d04938d0a104.png"/></div>
+<div class="ex ex48" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/7491137ef6ab8c126e766e56dcce277a.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex48" href="#" rel=".ex48">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 49.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/87245a67eb575185d866e6ae536bceec.png"/></div>
+<div class="ex ex49" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/8c9424744e5c931b01fef87aa262e94a.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex49" href="#" rel=".ex49">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 50.</span> Разложите на множители многочлен:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/b8e790004c496d4fa75b61f664213c1f.png"/></div>
+<div class="ex ex50" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/784d96de78190bd63da458abcdb53398.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex50" href="#" rel=".ex50">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 51.</span> В следующем выражении вынесите за скобки общий множитель <span style="color: #000000;">2<em>a</em></span>, затем выражение в скобках разложите на множители:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/25db734726e685fd5ce362b7746a547c.png"/></div>
+<div class="ex ex51" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/9ba65e92f9a20535eed50c4b5949c9c6.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex51" href="#" rel=".ex51">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 52.</span> В следующем выражении вынесите за скобки общий множитель <span style="color: #000000;">4</span>, затем выражение в скобках разложите на множители:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/405f8f43ca9098081055e17760848de5.png"/></div>
+<div class="ex ex52" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/f40018f269febdf182930e85bfb0584a.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex52" href="#" rel=".ex52">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 53.</span> В следующем выражении вынесите за скобки общий множитель <span style="color: #000000;">2<em>x</em><sup>2</sup><em>y</em><sup>2</sup></span>, затем выражение в скобках разложите на множители:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/8ac15930532fa14cc1bebed937665769.png"/></div>
+<div class="ex ex53" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/b2ba7e06f36bb6cf1c9727bdc68f9f5d.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex53" href="#" rel=".ex53">Показать решение</a></div>
+</div>
+<div class="b-test-work">
+<div class="b-test-work-description"><span class="b-test-work-description_strong">Задание 54.</span> В следующем выражении вынесите за скобки общий множитель <span style="color: #000000;">4<em>x</em><sup>3</sup><em>y</em><sup>3</sup></span>, затем выражение в скобках разложите на множители:</div>
+<div class="b-test-work-example"><img decoding="async" loading="lazy" src="../media/707f3bec2292fd621bb8a1ef6bac6f18.png"/></div>
+<div class="ex ex54" data-solution="true">
+<div class="decision-text">Решение:</div>
+<div class="decision-img"><img decoding="async" loading="lazy" src="../media/61706dbe35c3a456122202e7ff7f488b.png"/></div>
+</div>
+<div class="b-test-work-show-example"><a aria-expanded="false" class="show_hide" data-answer=".ex54" href="#" rel=".ex54">Показать решение</a></div>
+</div>
+<hr/>
+</div></main></body></html>
