@@ -43,7 +43,7 @@ private enum class LessonFilter(val label: String) {
 }
 
 private enum class MathPage(val label: String) {
-    Catalog("Уроки"), Review("Повторение"), Activity("Активность"),
+    Catalog("Уроки"), Review("Повторение"),
 }
 
 @Composable
@@ -118,7 +118,6 @@ fun MathScreen(viewModel: MathViewModel, onOpenLesson: (String) -> Unit) {
         ) {
             when (page) {
                 MathPage.Review -> item { MathReviewQueue(state, today, onReview = { reviewId = it }) }
-                MathPage.Activity -> item { MathActivity(state.progress.events, today) }
                 MathPage.Catalog -> {
                     item {
                         Card(Modifier.fillMaxWidth()) {

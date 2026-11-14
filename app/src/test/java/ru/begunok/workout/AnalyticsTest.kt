@@ -31,8 +31,9 @@ class AnalyticsTest {
             today,
             zone,
             showers = listOf(
-                ColdShowerEntity(1, millis(LocalDate.of(2026, 10, 27)), 90, 90, true),
+                ColdShowerEntity(1, millis(LocalDate.of(2026, 10, 27)), 90, 180, true),
                 ColdShowerEntity(2, millis(LocalDate.of(2026, 9, 1)), 60, 60, true),
+                ColdShowerEntity(3, millis(LocalDate.of(2026, 10, 27)) + 60_000, 35, 90, false),
             ),
             steps = 12_345,
         )
@@ -42,7 +43,8 @@ class AnalyticsTest {
         assertEquals(listOf(1_800.0, 2_000.0), a.runs.map { it.distanceM })
         assertEquals(2, a.programRuns)
         assertEquals(1, a.programCompleted)
-        assertEquals(1, a.coldShowers)
+        assertEquals(125L, a.coldShowerDurationSec)
+        assertEquals(listOf(125f), a.showerSeries.map { it.value })
         assertEquals(12_345L, a.steps)
         val pull = a.exercises.single()
         assertEquals(DayType.Run, pull.day)

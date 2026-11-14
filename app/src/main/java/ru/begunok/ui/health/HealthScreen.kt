@@ -80,12 +80,13 @@ fun HealthScreen(viewModel: HealthViewModel) {
         Box(Modifier.appear(1)) {
             StatusCard(
                 ui = ui,
-                total = viewModel.permissions.size,
+                permissions = viewModel.permissions,
                 onRequest = { request.launch(viewModel.permissions) },
                 onInstall = { context.openHealthConnectStore() },
                 onManage = { context.openHealthConnectSettings() },
             )
         }
+        ui.message?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         ui.day?.let { day ->
             Box(Modifier.appear(2)) { TodayCard(day) }
             Box(Modifier.appear(3)) { SourcesCard(day.totals.sources) }
@@ -112,7 +113,7 @@ private fun PanelCard(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun StatusCard(ui: HealthUi, total: Int, onRequest: () -> Unit, onInstall: () -> Unit, onManage: () -> Unit) {
+private fun StatusCard(ui: HealthUi, permissions: Set<String>, onRequest: () -> Unit, onInstall: () -> Unit, onManage: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -134,6 +135,10 @@ private fun StatusCard(ui: HealthUi, total: Int, onRequest: () -> Unit, onInstal
                 Text("Установите или обновите приложение Health Connect из Google Play.", color = white)
                 Button(onClick = onInstall) { Text("Открыть Google Play") }
             }
+            ui.message != null -> {
+                Text("Ошибка чтения Health Connect. Попробуйте обновить данные.", color = white)
+                OutlinedButton(onClick = onManage) { Text("Настройки", color = Color.White) }
+            }
             ui.granted.isEmpty() -> {
                 Text(
                     "Разрешите Бегунку читать шаги, пульс, SpO2, сон, калории и тренировки. " +
@@ -143,11 +148,12 @@ private fun StatusCard(ui: HealthUi, total: Int, onRequest: () -> Unit, onInstal
                 Button(onClick = onRequest) { Text("Разрешить доступ") }
             }
             else -> {
-                Text("Доступ разрешён: ${ui.granted.size} из $total типов данных", color = white)
+                Text("Разрешений выдано: ${ui.granted.intersect(permissions).size} из ${permissions.size}", color = white)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (ui.granted.size < total) Button(onClick = onRequest) { Text("Дать остальные") }
+                    if (!ui.granted.containsAll(permissions)) Button(onClick = onRequest) { Text("Дать остальные") }
                     OutlinedButton(onClick = onManage) { Text("Настройки", color = Color.White) }
                 }
+                Text("Для старых шагов дайте доступ к истории. Без него глубина чтения — 30 дней до первого разрешения.", color = white)
             }
         }
     }

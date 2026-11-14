@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -53,10 +54,15 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import ru.begunok.activity.ActivityCalendarPeriod
+import ru.begunok.data.MathRepository
+import ru.begunok.data.ReadingRepository
+import ru.begunok.lol.LolSettings
 import ru.begunok.data.ShowerRepository
 import ru.begunok.data.MentalRepository
 import ru.begunok.data.WorkoutRepository
 import ru.begunok.health.HealthRepository
+import ru.begunok.health.StepHistory
 import ru.begunok.mental.MentalAnalytics
 import ru.begunok.ui.Format
 import ru.begunok.ui.common.appear
@@ -73,6 +79,7 @@ import ru.begunok.workout.RunPoint
 import ru.begunok.workout.WeekSummary
 import java.time.Instant
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.text.SimpleDateFormat
@@ -88,6 +95,9 @@ class AnalyticsViewModel(
     showers: ShowerRepository,
     private val health: HealthRepository,
     mental: MentalRepository,
+    reading: ReadingRepository,
+    math: MathRepository,
+    lolSettings: LolSettings,
 ) : ViewModel() {
     private val _period = MutableStateFlow(Period.Month)
     val period: StateFlow<Period> = _period.asStateFlow()
@@ -95,26 +105,46 @@ class AnalyticsViewModel(
     private val _kind = MutableStateFlow(WorkoutKind.All)
     val kind: StateFlow<WorkoutKind> = _kind.asStateFlow()
 
-    private val stepSeries: StateFlow<List<AnalyticsPoint>> = period
+    private val activityReload = MutableStateFlow(0)
+    private val _activitySelection = MutableStateFlow(ActivityCalendarPeriod())
+    internal val activitySelection = _activitySelection.asStateFlow()
+
+    val stepHistory: StateFlow<StepHistory> = combine(activityReload, _period) { _, selected -> selected }
         .flatMapLatest { selected ->
             flow {
                 val zone = ZoneId.systemDefault()
-                val start = Analytics.periodStart(LocalDate.now(), selected).atStartOfDay(zone).toInstant()
-                emit(health.dailySteps(start, Instant.now(), zone).map {
-                    AnalyticsPoint(it.day.atStartOfDay(zone).toInstant().toEpochMilli(), it.count.toFloat())
-                })
-            }.catch { emit(emptyList()) }
+                val start = Analytics.periodStart(LocalDate.now(zone), selected).atStartOfDay(zone).toInstant()
+                emit(health.dailySteps(start, Instant.now(), zone))
+            }.onStart { emit(StepHistory(loading = true)) }
+                .catch { emit(StepHistory(message = it.message ?: "Не удалось прочитать шаги.", failed = true)) }
         }
         .flowOn(Dispatchers.IO)
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StepHistory(loading = true))
+
+    internal val dailyActivity = observeDailyActivity(
+        repository, reading, math, showers, lolSettings, health, activitySelection, activityReload,
+    ).flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DailyActivityTableState())
+
+    fun reloadDailyActivity() {
+        activityReload.value += 1
+    }
+
+    internal fun selectActivity(value: ActivityCalendarPeriod) {
+        _activitySelection.value = value.copy(month = minOf(value.month, YearMonth.now()))
+    }
 
     val analytics: StateFlow<Analytics?> =
         combine(repository.observeFinished(), repository.observeAllSets(), showers.observeAll(), _period, _kind) { workouts, sets, showerSessions, period, kind ->
             Analytics.build(workouts, sets, LocalDate.now(), period = period, kind = kind, showers = showerSessions)
-        }.combine(stepSeries) { analytics, points ->
+        }.combine(stepHistory) { analytics, history ->
+            val start = Analytics.periodStart(LocalDate.now(), period.value)
+            val points = history.days.filter { it.day >= start }
             analytics.copy(
-                steps = points.takeIf { it.isNotEmpty() }?.sumOf { it.value.toLong() },
-                stepSeries = points,
+                steps = points.takeIf { it.isNotEmpty() }?.sumOf { it.count },
+                stepSeries = points.map {
+                    AnalyticsPoint(it.day.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(), it.count.toFloat())
+                },
             )
         }
             .flowOn(Dispatchers.Default)
@@ -157,6 +187,14 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
     val period by viewModel.period.collectAsStateWithLifecycle()
     val kind by viewModel.kind.collectAsStateWithLifecycle()
     val mental by viewModel.mentalAnalytics.collectAsStateWithLifecycle()
+    val dailyActivity by viewModel.dailyActivity.collectAsStateWithLifecycle()
+    val activitySelection by viewModel.activitySelection.collectAsStateWithLifecycle()
+    val steps by viewModel.stepHistory.collectAsStateWithLifecycle()
+    LifecycleResumeEffect(viewModel) {
+        viewModel.reloadDailyActivity()
+        onPauseOrDispose {}
+    }
+    val activityColors = activityColors()
     var mentalScope by rememberSaveable { mutableStateOf(false) }
     Column(
         Modifier
@@ -206,15 +244,9 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
                 ) { Text(k.label) }
             }
         }
-        if (a.total == 0 && a.daysSinceLast == null && a.coldShowers == 0 && a.steps == null) {
-            Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                Text("Аналитика появится после первой тренировки", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            return@Column
-        }
         Row(Modifier.fillMaxWidth().appear(0), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Tile("${a.thisWeek}/${a.weekPlan}", "на этой неделе", Modifier.weight(1f), StageColors.Done)
-            Tile("${a.total}", "тренировок", Modifier.weight(1f))
+            Tile("${a.total}", "тренировок", Modifier.weight(1f), activityColors.training)
         }
         Row(Modifier.fillMaxWidth().appear(1), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             if (kind == WorkoutKind.Strength) {
@@ -222,17 +254,24 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
             } else {
                 Tile(km(a.totalDistanceM), "км за период", Modifier.weight(1f), StageColors.Run)
             }
-            Tile(Format.duration(a.totalTimeMs), "время", Modifier.weight(1f))
+            Tile(Format.duration(a.totalTimeMs), "время", Modifier.weight(1f), MaterialTheme.colorScheme.secondary)
         }
         Row(Modifier.fillMaxWidth().appear(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Tile("${a.coldShowers}", "холодных душей", Modifier.weight(1f), StageColors.Warmup)
-            Tile(a.steps?.toString() ?: "—", "шагов", Modifier.weight(1f), StageColors.Walk)
+            Tile(Format.duration(a.coldShowerDurationSec * 1000), "холодный душ", Modifier.weight(1f), activityColors.showers)
+            Tile(if (steps.loading) "…" else a.steps?.toString() ?: "—", "шагов", Modifier.weight(1f), activityColors.steps)
         }
-        if (a.showerSeries.isNotEmpty()) Section("Холодный душ", "количество по дням", Modifier.appear(3)) {
+        steps.message?.let {
+            Text(it, color = if (steps.failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        if (!steps.loading && !steps.failed && steps.days.isEmpty() && steps.message == null) {
+            Text("За выбранный период в Health Connect нет данных о шагах.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        DailyActivityTable(dailyActivity, activitySelection, viewModel::selectActivity, viewModel::reloadDailyActivity)
+        if (a.showerSeries.isNotEmpty()) Section("Холодный душ", "время по дням", Modifier.appear(3)) {
             MetricChart(
                 times = a.showerSeries.map { it.time },
-                lines = listOf(ChartLine(a.showerSeries.map { it.value }, StageColors.Warmup, "души", area = true)),
-                formatY = { it.roundToInt().toString() },
+                lines = listOf(ChartLine(a.showerSeries.map { it.value }, StageColors.Warmup, "время душа", area = true)),
+                formatY = { Format.duration((it * 1000).toLong()) },
                 modifier = Modifier.fillMaxWidth().height(180.dp),
             )
         }

@@ -89,7 +89,7 @@ data class Analytics(
     val programRuns: Int,
     val programCompleted: Int,
     val exercises: List<ExerciseStat>,
-    val coldShowers: Int,
+    val coldShowerDurationSec: Long,
     val steps: Long?,
     val showerSeries: List<AnalyticsPoint>,
     val stepSeries: List<AnalyticsPoint>,
@@ -152,11 +152,11 @@ data class Analytics(
             val runs = allRuns.filter { it.id in periodIds }
             val programs = inPeriod.filter { it.programName != null && it.dayType != DayType.Strength.name }
             val coldShowersInPeriod = showers.filter { !dateOf(it.time).isBefore(from) }
-            val coldShowers = coldShowersInPeriod.size
+            val coldShowerDurationSec = coldShowersInPeriod.sumOf { it.durationSec.toLong() }
             val showerSeries = coldShowersInPeriod
                 .groupBy { dateOf(it.time) }
                 .toSortedMap()
-                .map { (day, sessions) -> AnalyticsPoint(day.atStartOfDay(zone).toInstant().toEpochMilli(), sessions.size.toFloat()) }
+                .map { (day, sessions) -> AnalyticsPoint(day.atStartOfDay(zone).toInstant().toEpochMilli(), sessions.sumOf { it.durationSec.toLong() }.toFloat()) }
             return Analytics(
                 total = inPeriod.size,
                 thisWeek = weeks.last().workouts,
@@ -179,7 +179,7 @@ data class Analytics(
                 programRuns = programs.size,
                 programCompleted = programs.count { it.programCompleted },
                 exercises = exerciseStats(sets.filter { it.workoutId in periodIds }),
-                coldShowers = coldShowers,
+                coldShowerDurationSec = coldShowerDurationSec,
                 steps = steps,
                 showerSeries = showerSeries,
                 stepSeries = stepSeries,

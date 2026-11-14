@@ -83,6 +83,7 @@ import ru.begunok.workout.gpsCoverage
 import ru.begunok.workout.paceSecPerKm
 import ru.begunok.workout.timeAboveFraction
 import ru.begunok.health.HealthRepository
+import ru.begunok.health.HealthReadException
 import ru.begunok.health.HealthTotals
 import java.io.File
 import java.time.Instant
@@ -99,6 +100,7 @@ data class WorkoutDetail(
     val gpsCoverage: Double?,
     val sets: List<ExerciseSetEntity>,
     val band: HealthTotals? = null,
+    val bandMessage: String? = null,
 )
 
 class WorkoutDetailViewModel(
@@ -112,6 +114,13 @@ class WorkoutDetailViewModel(
         .combine(repository.observeSets(workoutId)) { workout, sets -> workout to sets }
         .map { (workout, sets) ->
             val samples = repository.samples(workout.id)
+            var bandMessage: String? = null
+            val band = try {
+                bandTotals(workout)
+            } catch (error: HealthReadException) {
+                bandMessage = error.message
+                null
+            }
             WorkoutDetail(
                 workout = workout,
                 segments = buildRouteSegments(samples, workout.upperLimit),
@@ -119,7 +128,8 @@ class WorkoutDetailViewModel(
                 timeAbove = timeAboveFraction(samples, workout.upperLimit),
                 gpsCoverage = gpsCoverage(samples),
                 sets = sets,
-                band = bandTotals(workout),
+                band = band,
+                bandMessage = bandMessage,
             )
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
@@ -316,6 +326,11 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
         if (d.sets.isNotEmpty()) DetailCard("Площадка", Modifier.appear(6)) { ExerciseSets(d.sets) }
 
         d.band?.let { band -> DetailCard("Браслет · Health Connect", Modifier.appear(7)) { BandStats(band, d.workout) } }
+        d.bandMessage?.let { message ->
+            DetailCard("Браслет · Health Connect", Modifier.appear(7)) {
+                Text(message, color = MaterialTheme.colorScheme.error)
+            }
+        }
 
         d.gpsCoverage?.let {
             Text(

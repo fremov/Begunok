@@ -2,7 +2,9 @@ package ru.begunok.health
 
 import android.content.Context
 import androidx.health.connect.client.HealthConnectClient
+import android.util.Log
 import androidx.health.connect.client.aggregate.AggregateMetric
+import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.aggregate.AggregationResult
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
@@ -13,11 +15,14 @@ import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
 import androidx.health.connect.client.request.AggregateRequest
+import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
+import kotlinx.coroutines.CancellationException
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.Period
 import java.time.ZoneId
 import kotlin.reflect.KClass
 
@@ -40,6 +45,15 @@ data class HealthTotals(
 
 data class DailySteps(val day: LocalDate, val count: Long)
 
+data class StepHistory(
+    val days: List<DailySteps> = emptyList(),
+    val loading: Boolean = false,
+    val message: String? = null,
+    val failed: Boolean = false,
+)
+
+class HealthReadException(message: String, cause: Exception? = null) : Exception(message, cause)
+
 data class HealthDay(
     val totals: HealthTotals,
     val lastHr: HrSample?,
@@ -48,14 +62,19 @@ data class HealthDay(
 )
 
 class HealthRepository(private val context: Context) {
-    val permissions: Set<String> = setOf(
-        read(StepsRecord::class),
-        read(HeartRateRecord::class),
-        read(OxygenSaturationRecord::class),
-        read(SleepSessionRecord::class),
-        read(ActiveCaloriesBurnedRecord::class),
-        read(ExerciseSessionRecord::class),
-    )
+    val permissions: Set<String>
+        get() = buildSet {
+            add(read(StepsRecord::class))
+            add(read(HeartRateRecord::class))
+            add(read(OxygenSaturationRecord::class))
+            add(read(SleepSessionRecord::class))
+            add(read(ActiveCaloriesBurnedRecord::class))
+            add(read(ExerciseSessionRecord::class))
+            if (availability() == HealthAvailability.Available &&
+                client.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY) ==
+                HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
+            ) add(HealthPermission.PERMISSION_READ_HEALTH_DATA_HISTORY)
+        }
 
     private val client: HealthConnectClient by lazy { HealthConnectClient.getOrCreate(context) }
 
@@ -67,33 +86,49 @@ class HealthRepository(private val context: Context) {
 
     suspend fun granted(): Set<String> =
         if (availability() == HealthAvailability.Available) {
-            runCatching { client.permissionController.getGrantedPermissions() }.getOrDefault(emptySet())
+            reading("Не удалось проверить разрешения Health Connect") {
+                client.permissionController.getGrantedPermissions()
+            }
         } else {
             emptySet()
         }
 
     suspend fun steps(start: Instant, end: Instant): Long? {
         val granted = granted()
-        return if (read(StepsRecord::class) in granted) totals(start, end, granted).steps else null
+        return if (read(StepsRecord::class) in granted && end.isAfter(start)) {
+            reading("Не удалось прочитать шаги") {
+                client.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), TimeRangeFilter.between(start, end)))[StepsRecord.COUNT_TOTAL]
+            }
+        } else null
     }
 
-    suspend fun dailySteps(start: Instant, end: Instant, zone: ZoneId = ZoneId.systemDefault()): List<DailySteps> {
-        val granted = granted()
-        if (read(StepsRecord::class) !in granted || !end.isAfter(start)) return emptyList()
-        val result = mutableListOf<DailySteps>()
-        var day = start.atZone(zone).toLocalDate()
-        val last = end.minusMillis(1).atZone(zone).toLocalDate()
-        while (!day.isAfter(last)) {
-            val rawStart = day.atStartOfDay(zone).toInstant()
-            val rawEnd = day.plusDays(1).atStartOfDay(zone).toInstant()
-            val dayStart = if (start.isAfter(rawStart)) start else rawStart
-            val dayEnd = if (end.isBefore(rawEnd)) end else rawEnd
-            val count = totals(dayStart, dayEnd, granted).steps ?: 0L
-            if (count > 0) result += DailySteps(day, count)
-            day = day.plusDays(1)
+    suspend fun dailySteps(start: Instant, end: Instant, zone: ZoneId = ZoneId.systemDefault()): StepHistory {
+        if (availability() != HealthAvailability.Available) {
+            return StepHistory(message = "Шаги: Health Connect недоступен.", failed = true)
         }
-        return result
+        val granted = granted()
+        if (read(StepsRecord::class) !in granted) {
+            return StepHistory(message = "Шаги: разрешите чтение в разделе «Здоровье».")
+        }
+        return readStepHistory(
+            start, end, zone,
+            historyGranted = HealthPermission.PERMISSION_READ_HEALTH_DATA_HISTORY in granted,
+            today = LocalDate.now(zone),
+        ) { from, until -> readDailySteps(from, until, zone) }
     }
+
+    private suspend fun readDailySteps(start: Instant, end: Instant, zone: ZoneId): List<DailySteps> =
+        reading("Не удалось прочитать шаги за ${start.atZone(zone).toLocalDate()} — ${end.atZone(zone).toLocalDate()}") {
+            client.aggregateGroupByPeriod(
+                AggregateGroupByPeriodRequest(
+                    metrics = setOf(StepsRecord.COUNT_TOTAL),
+                    timeRangeFilter = TimeRangeFilter.between(start.atZone(zone).toLocalDateTime(), end.atZone(zone).toLocalDateTime()),
+                    timeRangeSlicer = Period.ofDays(1),
+                ),
+            ).mapNotNull { bucket ->
+                bucket.result[StepsRecord.COUNT_TOTAL]?.let { DailySteps(bucket.startTime.toLocalDate(), it) }
+            }
+        }
 
     suspend fun totals(start: Instant, end: Instant, granted: Set<String>): HealthTotals {
         val metrics = buildSet<AggregateMetric<*>> {
@@ -106,9 +141,9 @@ class HealthRepository(private val context: Context) {
             }
         }
         if (metrics.isEmpty() || !end.isAfter(start)) return HealthTotals()
-        val result: AggregationResult = runCatching {
+        val result: AggregationResult = reading("Не удалось прочитать показатели Health Connect") {
             client.aggregate(AggregateRequest(metrics, TimeRangeFilter.between(start, end)))
-        }.getOrNull() ?: return HealthTotals()
+        }
         return HealthTotals(
             steps = result[StepsRecord.COUNT_TOTAL],
             activeKcal = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories,
@@ -141,7 +176,7 @@ class HealthRepository(private val context: Context) {
         pageSize: Int = 100,
     ): List<T>? {
         if (read(type) !in granted) return null
-        return runCatching {
+        return reading("Не удалось прочитать ${type.simpleName} из Health Connect") {
             client.readRecords(
                 ReadRecordsRequest(
                     recordType = type,
@@ -150,8 +185,18 @@ class HealthRepository(private val context: Context) {
                     pageSize = pageSize,
                 )
             ).records
-        }.getOrNull()
+        }
     }
+
+    private suspend fun <T> reading(message: String, block: suspend () -> T): T =
+        try {
+            block()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Log.e("BegunokHealth", message, error)
+            throw HealthReadException(message, error)
+        }
 
     companion object {
         const val PROVIDER_PACKAGE = "com.google.android.apps.healthdata"

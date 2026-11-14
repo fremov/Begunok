@@ -60,6 +60,24 @@ class LolParsersTest {
     }
 
     @Test
+    fun historyKeepsEveryQueue() {
+        val ids = LolParsers.matchIds("""["RU_420","RU_450","RU_2400","RU_9999"]""")
+        val queues = listOf(420, 450, 2400, 9999)
+        assertEquals(queues.map { "RU_$it" }, ids)
+        for ((id, queue) in ids.zip(queues)) {
+            val match = LolParsers.match(
+                """{"metadata":{"matchId":"$id"},"info":{"queueId":$queue,"gameDuration":1200,
+                  "gameEndTimestamp":1700000000000,"participants":[]}}""",
+                "me",
+            )
+            assertEquals(id, match.id)
+            assertEquals(queue, match.queueId)
+            assertEquals(1200, match.durationSec)
+            assertEquals(1700000000000L, match.endedAtMs)
+        }
+    }
+
+    @Test
     fun liveGame() {
         val g = LolParsers.liveGame(
             """{"gameQueueConfigId":420,"gameMode":"CLASSIC","gameLength":300,

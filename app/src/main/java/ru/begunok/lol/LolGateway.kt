@@ -41,6 +41,16 @@ class LolGateway(private val settings: LolSettings) {
     suspend fun players(query: String, limit: Int): String =
         authed("/v1/players?q=${segment(query)}&limit=$limit")
 
+    /** Собственные игры, синхронизированные настольным Sintence, включая ARAM «Хаос». */
+    suspend fun activityMatches(riotId: String, startTime: Long?, endTime: Long, cursor: String?): String {
+        val query = buildString {
+            append("riotId=${segment(riotId)}&endTime=$endTime")
+            if (startTime != null) append("&startTime=$startTime")
+            if (cursor != null) append("&cursor=${segment(cursor)}")
+        }
+        return authed("/v1/activity/matches?$query")
+    }
+
     private suspend fun authed(path: String): String {
         val server = settings.current().serverUrl
         if (server.isEmpty()) throw GatewayException(GatewayError.NotConfigured, "")
