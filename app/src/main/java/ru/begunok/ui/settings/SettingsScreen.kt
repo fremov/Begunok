@@ -94,6 +94,7 @@ import ru.begunok.workout.IntervalProgram
 import java.io.File
 import java.util.UUID
 import kotlin.math.roundToInt
+import ru.begunok.health.HealthAutoSync
 
 class SettingsViewModel(
     private val appContext: Context,
@@ -242,7 +243,7 @@ class SettingsViewModel(
 }
 
 @Composable
-fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit) {
+fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit, healthSync: HealthAutoSync) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val sensor by viewModel.sensor.collectAsStateWithLifecycle()
     val engines by viewModel.engines.collectAsStateWithLifecycle()
@@ -256,6 +257,7 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        HealthConnectSettings(healthSync)
         Section("Тема") {
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 ThemeMode.entries.forEachIndexed { i, mode ->

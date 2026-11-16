@@ -22,6 +22,10 @@ import kotlinx.coroutines.flow.first
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+import ru.begunok.health.HealthAutoSync
 
 class MainActivity : ComponentActivity() {
     private var stopRequested by mutableStateOf(false)
@@ -40,6 +44,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         handleIntent(intent)
         val container = (application as BegunokApp).container
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    container.healthAutoSync.refresh()
+                    delay(HealthAutoSync.FOREGROUND_INTERVAL_MS)
+                }
+            }
+        }
         // Тема читается до первого кадра, иначе при светлой теме на мгновение мелькнёт тёмная.
         val initial = runBlocking { container.settings.settings.first() }
         setContent {

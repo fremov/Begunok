@@ -49,7 +49,7 @@ internal fun MentalAnalyticsContent(state: MentalAnalyticsState, onRetry: () -> 
         return
     }
     if (data == null) {
-        Text("Загружаем записи…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("Загружаем записи…")
         return
     }
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -57,18 +57,44 @@ internal fun MentalAnalyticsContent(state: MentalAnalyticsState, onRetry: () -> 
         Text(
             data.start?.let { dateRange(it, data.endExclusive.minusDays(1)) } ?: "Вся история до ${data.endExclusive.minusDays(1).format(mentalDate)}",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = MaterialTheme.colorScheme.onSurface,
         )
         if (data.entries.isEmpty()) {
-            Text("За этот период нет быстрых отметок. Отмечайте настроение, напряжение и энергию в разделе «Психологическое состояние».")
+            Text("За этот период нет быстрых отметок.")
         } else {
             QuickSummary(data)
             QuickCharts(data)
             DaypartSummary(data)
         }
         Text("Опросники", style = MaterialTheme.typography.headlineSmall)
-        Text("Каждая шкала показана отдельно. Точка — одно прохождение; нажмите на график или используйте кнопки выбора.", style = MaterialTheme.typography.bodySmall)
         data.questionnaires.forEach { QuestionnaireChart(it) }
+    }
+}
+
+@Composable
+internal fun FeelingsAnalyticsContent(state: MentalAnalyticsState, onRetry: () -> Unit, onRecord: () -> Unit) {
+    Section("Настроение и энергия: ваши отметки") {
+        TextButton(onClick = onRecord) { Text("Отметить состояние") }
+        when {
+            state.failed -> {
+                Text("Не удалось загрузить отметки", color = MaterialTheme.colorScheme.error)
+                TextButton(onClick = onRetry) { Text("Повторить") }
+            }
+            state.data == null -> Text("Загружаем отметки…")
+            state.data.entries.isEmpty() -> Text("За выбранный период отметок нет")
+            else -> {
+                val latest = state.data.entries.last()
+                Text("Последняя отметка: ${timestamp(latest.completedAt)}")
+                Text("Настроение: ${latest.mood} / 10")
+                Text("Напряжение: ${latest.tension} / 10")
+                Text("Энергия: ${latest.energy} / 10")
+            }
+        }
+    }
+    state.data?.takeIf { it.entries.isNotEmpty() }?.let { data ->
+        QuickSummary(data)
+        QuickCharts(data)
+        DaypartSummary(data)
     }
 }
 
@@ -76,13 +102,11 @@ internal fun MentalAnalyticsContent(state: MentalAnalyticsState, onRetry: () -> 
 private fun QuickSummary(data: MentalAnalytics) {
     val summary = data.summary
     val average = summary.averages ?: return
-    Section("Быстрые отметки", "${summary.entries} записей · ${summary.observedDays} дней с отметками") {
-        Text("Средние за период: каждый день с отметками имеет одинаковый вес. Дни без записей не учитываются.", style = MaterialTheme.typography.bodySmall)
+    Section("Быстрые отметки") {
+        Text("${summary.entries} записей · ${summary.observedDays} дней")
         AverageRows(average)
         val previous = data.previous
-        if (previous == null) {
-            Text("Для сравнения с предыдущим периодом выберите 4 недели или 3 месяца.", style = MaterialTheme.typography.bodySmall)
-        } else {
+        if (previous != null) {
             Text("Предыдущий равный период: ${dateRange(requireNotNull(data.previousStart), requireNotNull(data.start).minusDays(1))}", style = MaterialTheme.typography.bodySmall)
             val prior = previous.averages
             if (prior == null) {
@@ -114,16 +138,15 @@ private fun QuickCharts(data: MentalAnalytics) {
     }
     val index = selected.coerceIn(0, entries.lastIndex)
     val entry = entries[index]
-    Text("Точка — одна отметка. Нажмите или проведите пальцем по графику, чтобы выбрать запись. Выбор общий для трёх графиков.", style = MaterialTheme.typography.bodySmall)
     val times = entries.map { it.completedAt }
-    QuickMetric("Настроение", "0 — очень плохо · 10 — отлично", times, entries.map { it.mood.toFloat() }, StageColors.Done, index, entry.context) { selected = it }
-    QuickMetric("Напряжение", "0 — нет напряжения · 10 — крайне сильное", times, entries.map { it.tension.toFloat() }, StageColors.Warmup, index, entry.context) { selected = it }
-    QuickMetric("Энергия", "0 — совсем нет сил · 10 — много сил", times, entries.map { it.energy.toFloat() }, StageColors.Run, index, entry.context) { selected = it }
+    QuickMetric("Настроение", times, entries.map { it.mood.toFloat() }, StageColors.Done, index, entry.context) { selected = it }
+    QuickMetric("Напряжение", times, entries.map { it.tension.toFloat() }, StageColors.Warmup, index, entry.context) { selected = it }
+    QuickMetric("Энергия", times, entries.map { it.energy.toFloat() }, StageColors.Run, index, entry.context) { selected = it }
 }
 
 @Composable
-private fun QuickMetric(title: String, subtitle: String, times: List<Long>, values: List<Float>, color: Color, selected: Int, context: String?, onSelect: (Int) -> Unit) {
-    Section(title, "$subtitle. Расстояние между точками соответствует времени; промежутки без записей — не нули.") {
+private fun QuickMetric(title: String, times: List<Long>, values: List<Float>, color: Color, selected: Int, context: String?, onSelect: (Int) -> Unit) {
+    Section(title) {
         MetricChart(
             times = times,
             lines = listOf(ChartLine(values, color, title)),
@@ -143,12 +166,11 @@ private fun QuickMetric(title: String, subtitle: String, times: List<Long>, valu
 
 @Composable
 private fun DaypartSummary(data: MentalAnalytics) {
-    Section("Утро и вечер", "Утро 06:00–11:59 · вечер 18:00–23:59 · местное время") {
+    Section("Утро и вечер") {
         val comparison = data.dayparts
         if (comparison == null) {
-            Text("Сравнение появится, когда хотя бы в двух днях будут и утренние, и вечерние отметки.", style = MaterialTheme.typography.bodySmall)
+            Text("Нет парных утренних и вечерних отметок.")
         } else {
-            Text("Сравниваются только ${comparison.pairedDays} дней с обоими окнами, с одинаковым весом каждого дня.", style = MaterialTheme.typography.bodySmall)
             Text("Утро · ${comparison.morning.entries} записей / ${comparison.morning.observedDays} дней", style = MaterialTheme.typography.titleSmall)
             AverageRows(requireNotNull(comparison.morning.averages))
             Text("Вечер · ${comparison.evening.entries} записей / ${comparison.evening.observedDays} дней", style = MaterialTheme.typography.titleSmall)
@@ -160,23 +182,15 @@ private fun DaypartSummary(data: MentalAnalytics) {
 @Composable
 private fun QuestionnaireChart(series: MentalQuestionnaireSeries) {
     val test = series.test
-    val higherMeans = when (test) {
-        MentalTest.WHO5 -> "выше — лучшее самочувствие"
-        MentalTest.PSS10 -> "выше — больше воспринимаемого стресса"
-        MentalTest.GAD7 -> "выше — больше симптомов тревоги"
-        MentalTest.PHQ9 -> "выше — больше симптомов сниженного настроения"
-    }
-    Section(test.title, "${test.subtitle} · 0–${test.maxScore} · $higherMeans") {
+    Section(test.title) {
         val latest = series.latest
         if (latest == null) {
-            Text("За этот период нет результатов", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("За этот период нет результатов")
         } else {
             Text("Последний: ${latest.score} / ${test.maxScore}", style = MaterialTheme.typography.titleMedium)
             Text(timestamp(latest.completedAt), style = MaterialTheme.typography.bodySmall)
             val change = series.change
-            if (change == null) {
-                Text("Первый результат этой шкалы — сравнения пока нет", style = MaterialTheme.typography.bodySmall)
-            } else {
+            if (change != null) {
                 val direction = when {
                     change == 0 -> "без изменений"
                     test == MentalTest.WHO5 && change > 0 -> "самочувствие выше по шкале"

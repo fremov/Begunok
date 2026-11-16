@@ -54,6 +54,10 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.distinctUntilChanged
+import ru.begunok.health.HealthAutoSync
+import ru.begunok.health.normalizeSleepNights
 import ru.begunok.activity.ActivityCalendarPeriod
 import ru.begunok.data.MathRepository
 import ru.begunok.data.ReadingRepository
@@ -61,7 +65,6 @@ import ru.begunok.lol.LolSettings
 import ru.begunok.data.ShowerRepository
 import ru.begunok.data.MentalRepository
 import ru.begunok.data.WorkoutRepository
-import ru.begunok.health.HealthRepository
 import ru.begunok.health.StepHistory
 import ru.begunok.mental.MentalAnalytics
 import ru.begunok.ui.Format
@@ -93,11 +96,11 @@ import kotlin.math.roundToInt
 class AnalyticsViewModel(
     repository: WorkoutRepository,
     showers: ShowerRepository,
-    private val health: HealthRepository,
     mental: MentalRepository,
     reading: ReadingRepository,
     math: MathRepository,
     lolSettings: LolSettings,
+    healthAutoSync: HealthAutoSync,
 ) : ViewModel() {
     private val _period = MutableStateFlow(Period.Month)
     val period: StateFlow<Period> = _period.asStateFlow()
@@ -108,13 +111,24 @@ class AnalyticsViewModel(
     private val activityReload = MutableStateFlow(0)
     private val _activitySelection = MutableStateFlow(ActivityCalendarPeriod())
     internal val activitySelection = _activitySelection.asStateFlow()
-
-    val stepHistory: StateFlow<StepHistory> = combine(activityReload, _period) { _, selected -> selected }
+    private val healthChanges = healthAutoSync.historyChanges.map { Unit }
+    val bandSync = healthAutoSync.state
+    internal val bandHistory = combine(_period, healthAutoSync.historyChanges) { selected, _ -> selected }
         .flatMapLatest { selected ->
             flow {
-                val zone = ZoneId.systemDefault()
-                val start = Analytics.periodStart(LocalDate.now(zone), selected).atStartOfDay(zone).toInstant()
-                emit(health.dailySteps(start, Instant.now(), zone))
+                val today = LocalDate.now()
+                val start = if (selected == Period.All) null else Analytics.periodStart(today, selected)
+                emit(HealthHistoryUi(data = healthAutoSync.history(start, today)))
+            }.catch { emit(HealthHistoryUi(message = it.message ?: "Не удалось прочитать сохранённые показатели.")) }
+        }.flowOn(Dispatchers.IO)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HealthHistoryUi())
+
+    val stepHistory: StateFlow<StepHistory> = combine(activityReload, _period, healthChanges) { _, selected, _ -> selected }
+        .flatMapLatest { selected ->
+            flow {
+                val today = LocalDate.now()
+                val start = if (selected == Period.All) null else Analytics.periodStart(today, selected)
+                emit(StepHistory(days = healthAutoSync.dailySteps(start, today)))
             }.onStart { emit(StepHistory(loading = true)) }
                 .catch { emit(StepHistory(message = it.message ?: "Не удалось прочитать шаги.", failed = true)) }
         }
@@ -122,7 +136,7 @@ class AnalyticsViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StepHistory(loading = true))
 
     internal val dailyActivity = observeDailyActivity(
-        repository, reading, math, showers, lolSettings, health, activitySelection, activityReload,
+        repository, reading, math, showers, lolSettings, healthAutoSync, activitySelection, activityReload, healthChanges,
     ).flowOn(Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DailyActivityTableState())
 
@@ -182,7 +196,7 @@ private val HrColor = ZoneColors.Above
 private fun km(meters: Double) = String.format(ru, "%.1f", meters / 1000)
 
 @Composable
-fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
+fun AnalyticsScreen(viewModel: AnalyticsViewModel, onOpenMental: () -> Unit) {
     val analytics by viewModel.analytics.collectAsStateWithLifecycle()
     val period by viewModel.period.collectAsStateWithLifecycle()
     val kind by viewModel.kind.collectAsStateWithLifecycle()
@@ -190,12 +204,14 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
     val dailyActivity by viewModel.dailyActivity.collectAsStateWithLifecycle()
     val activitySelection by viewModel.activitySelection.collectAsStateWithLifecycle()
     val steps by viewModel.stepHistory.collectAsStateWithLifecycle()
+    val bandHistory by viewModel.bandHistory.collectAsStateWithLifecycle()
+    val bandSync by viewModel.bandSync.collectAsStateWithLifecycle()
     LifecycleResumeEffect(viewModel) {
         viewModel.reloadDailyActivity()
         onPauseOrDispose {}
     }
     val activityColors = activityColors()
-    var mentalScope by rememberSaveable { mutableStateOf(false) }
+    var analyticsScope by rememberSaveable { mutableIntStateOf(0) }
     Column(
         Modifier
             .fillMaxSize()
@@ -207,10 +223,10 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            listOf("Тренировки", "Психологическое состояние").forEachIndexed { i, label ->
+            listOf("Показатели", "Сон и состояние", "Психологическое состояние", "Тренировки").forEachIndexed { i, label ->
                 FilterChip(
-                    selected = mentalScope == (i == 1),
-                    onClick = { mentalScope = i == 1 },
+                    selected = analyticsScope == i,
+                    onClick = { analyticsScope = i },
                     label = { Text(label, maxLines = 1, softWrap = false) },
                 )
             }
@@ -225,13 +241,24 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
                 ) { Text(p.label) }
             }
         }
-        if (mentalScope) {
+        if (analyticsScope == 0) {
+            HealthAnalyticsContent(bandHistory, bandSync, mental)
+            return@Column
+        }
+        if (analyticsScope == 2) {
             MentalAnalyticsContent(mental, viewModel::retryMentalAnalytics)
+            return@Column
+        }
+        if (analyticsScope == 1) {
+            val nights = bandHistory.data?.days.orEmpty().flatMap { it.data.sleepNights }
+            SleepAnalyticsContent(normalizeSleepNights(nights))
+            BraceletExtrasAnalyticsContent(bandHistory, bandSync)
+            FeelingsAnalyticsContent(mental, viewModel::retryMentalAnalytics, onOpenMental)
             return@Column
         }
         val a = analytics
         if (a == null) {
-            Text("Загружаем тренировки…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Загружаем тренировки…")
             return@Column
         }
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -261,13 +288,13 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
             Tile(if (steps.loading) "…" else a.steps?.toString() ?: "—", "шагов", Modifier.weight(1f), activityColors.steps)
         }
         steps.message?.let {
-            Text(it, color = if (steps.failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(it, color = if (steps.failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface)
         }
         if (!steps.loading && !steps.failed && steps.days.isEmpty() && steps.message == null) {
-            Text("За выбранный период в Health Connect нет данных о шагах.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("За выбранный период нет сохранённых шагов.")
         }
         DailyActivityTable(dailyActivity, activitySelection, viewModel::selectActivity, viewModel::reloadDailyActivity)
-        if (a.showerSeries.isNotEmpty()) Section("Холодный душ", "время по дням", Modifier.appear(3)) {
+        if (a.showerSeries.isNotEmpty()) Section("Холодный душ", Modifier.appear(3)) {
             MetricChart(
                 times = a.showerSeries.map { it.time },
                 lines = listOf(ChartLine(a.showerSeries.map { it.value }, StageColors.Warmup, "время душа", area = true)),
@@ -275,7 +302,7 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
                 modifier = Modifier.fillMaxWidth().height(180.dp),
             )
         }
-        if (a.stepSeries.isNotEmpty()) Section("Шаги", "количество по дням", Modifier.appear(3)) {
+        if (a.stepSeries.isNotEmpty()) Section("Шаги", Modifier.appear(3)) {
             MetricChart(
                 times = a.stepSeries.map { it.time },
                 lines = listOf(ChartLine(a.stepSeries.map { it.value }, StageColors.Walk, "шаги", area = true)),
@@ -298,7 +325,7 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
 
         if (kind != WorkoutKind.Strength) WeekCompare(a.currentWeek, a.previousWeek, Modifier.appear(2))
 
-        Section("Тренировки по неделям", "столбец — неделя с понедельника, пунктир — план ${a.weekPlan} в неделю", Modifier.appear(3)) {
+        Section("Тренировки по неделям", Modifier.appear(3)) {
             BarChart(
                 values = a.weeks.map { it.workouts.toFloat() },
                 labels = a.weeks.map { it.start.format(dayMonth) },
@@ -308,7 +335,7 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
                 goal = ChartRule(a.weekPlan.toFloat(), "план", StageColors.Done),
             )
         }
-        if (kind != WorkoutKind.Strength) Section("Километры по неделям", "бег и беговые дни; силовые километры не считаются", Modifier.appear(4)) {
+        if (kind != WorkoutKind.Strength) Section("Километры по неделям", Modifier.appear(4)) {
             BarChart(
                 values = a.weeks.map { (it.distanceM / 1000).toFloat() },
                 labels = a.weeks.map { it.start.format(dayMonth) },
@@ -352,15 +379,10 @@ private fun RunsSection(a: Analytics) {
             style = MaterialTheme.typography.bodyMedium,
         )
     }
-    Text(
-        "Каждая точка или столбец — одна пробежка. Нажмите или проведите пальцем по графику, чтобы выбрать пробежку.",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
     SelectedRun(run, runs.getOrNull(selected - 1))
 
     val avgKm = (runs.map { it.distanceM }.average() / 1000).toFloat()
-    Section("Дистанция", "км за пробежку · пунктир — среднее ${String.format(ru, "%.2f", avgKm)} км") {
+    Section("Дистанция, км") {
         MetricChart(
             times = times,
             lines = emptyList(),
@@ -375,7 +397,7 @@ private fun RunsSection(a: Analytics) {
 
     val paces = runs.map { it.paceSecPerKm?.toFloat() }
     val avgPace = paces.filterNotNull().takeIf { it.isNotEmpty() }?.average()?.toFloat()
-    Section("Средний темп", "мин/км · шкала перевёрнута: выше — быстрее" + (avgPace?.let { " · среднее ${Format.pace(it.toDouble())}" } ?: "")) {
+    Section("Средний темп, мин/км") {
         MetricChart(
             times = times,
             lines = listOf(ChartLine(paces, PaceColor, "темп", area = true)),
@@ -389,7 +411,7 @@ private fun RunsSection(a: Analytics) {
     }
 
     val limit = runs.last().upperLimit.toFloat()
-    Section("Пульс", "уд/мин · пунктир — верхняя граница ${limit.roundToInt()}") {
+    Section("Пульс, уд/мин") {
         MetricChart(
             times = times,
             lines = listOf(
@@ -436,13 +458,6 @@ private fun SelectedRun(run: RunPoint, previous: RunPoint?) {
                 RunValue("темп, мин/км", Format.pace(run.paceSecPerKm), paceDelta, Modifier.weight(1f))
                 RunValue("пульс ср./макс.", "${Format.heartRate(run.avgHr)}/${Format.heartRate(run.maxHr)}", null, Modifier.weight(1f))
             }
-            if (previous != null) {
-                Text(
-                    "Сравнение с предыдущей пробежкой",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
     }
 }
@@ -468,7 +483,7 @@ private fun RunValue(label: String, value: String, delta: Delta?, modifier: Modi
 
 @Composable
 private fun WeekCompare(current: WeekSummary, previous: WeekSummary, modifier: Modifier = Modifier) {
-    Section("Неделя к неделе", "бег на этой неделе по сравнению с прошлой", modifier) {
+    Section("Неделя к неделе", modifier) {
         Row(Modifier.fillMaxWidth()) {
             Text("", Modifier.weight(1.3f))
             Text("эта", Modifier.weight(1f), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
@@ -515,7 +530,7 @@ private fun CompareRow(label: String, current: String, previous: String, diff: D
 @Composable
 private fun Records(a: Analytics) {
     val r = a.records
-    Section("Рекорды", "за всё время") {
+    Section("Рекорды") {
         r.longest?.let { RecordRow("Самая длинная", "${Format.distanceKm(it.distanceM)} км", it.time) }
         r.fastest?.let { RecordRow("Самый быстрый темп (от 1 км)", "${Format.pace(it.paceSecPerKm)} /км", it.time) }
         r.longestTime?.let { RecordRow("Самая долгая", Format.duration(it.durationMs), it.time) }
@@ -537,7 +552,7 @@ private fun RecordRow(label: String, value: String, time: Long) {
 private fun RunTable(runs: List<RunPoint>, selected: Int, onSelect: (Int) -> Unit) {
     val fastest = runs.filter { it.distanceM >= Analytics.MIN_RECORD_PACE_M }.mapNotNull { it.paceSecPerKm }.minOrNull()
     val longest = runs.maxOf { it.distanceM }
-    Section("Все пробежки", "нажмите на строку, чтобы выделить её на графиках") {
+    Section("Все пробежки") {
         Row(Modifier.fillMaxWidth()) {
             listOf("дата" to 1f, "км" to 0.8f, "время" to 1f, "темп" to 0.9f, "пульс" to 0.8f).forEach { (h, w) ->
                 Text(h, Modifier.weight(w), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -577,11 +592,9 @@ private fun RunTable(runs: List<RunPoint>, selected: Int, onSelect: (Int) -> Uni
 @Composable
 private fun ExerciseCard(stat: ExerciseStat) {
     val unit = if (stat.timed) " с" else ""
-    val last = stat.last
-    val level = ExerciseCatalog.level(stat.key.substringAfter(':'))
     var selected by rememberSaveable(stat.key, stat.sessions.size) { mutableIntStateOf(stat.sessions.lastIndex) }
     val session = stat.sessions[selected.coerceIn(0, stat.sessions.lastIndex)]
-    Section(stat.name, listOfNotNull(stat.day?.label, level?.let { "ступень ${it.first} из ${it.second}" }).joinToString(" · ")) {
+    Section(stat.name) {
         Row(Modifier.fillMaxWidth()) {
             Column(Modifier.weight(1f)) {
                 Text(session.reps.joinToString(" · ") { "$it$unit" }, style = numberStyle(26))
@@ -609,18 +622,12 @@ private fun ExerciseCard(stat: ExerciseStat) {
                 modifier = Modifier.fillMaxWidth().height(150.dp),
             )
             Legend(listOf(MaterialTheme.colorScheme.primary to "лучший подход", MaterialTheme.colorScheme.onSurfaceVariant to "цель"))
-        } else {
-            Text(
-                "График появится после второй тренировки с этим упражнением · последний раз ${last.reps.joinToString(" · ")}$unit",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
         }
     }
 }
 
 @Composable
-internal fun Section(title: String, subtitle: String?, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+internal fun Section(title: String, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
@@ -628,9 +635,6 @@ internal fun Section(title: String, subtitle: String?, modifier: Modifier = Modi
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(title, style = MaterialTheme.typography.titleLarge)
-            subtitle?.takeIf { it.isNotEmpty() }?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
             content()
         }
     }

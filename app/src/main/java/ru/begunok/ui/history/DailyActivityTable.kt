@@ -99,7 +99,7 @@ internal fun DailyActivityTable(
             pickingMonth = false
         }
     }
-    Section("Активность", null) {
+    Section("Активность") {
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
             listOf("Месяц", "Год").forEachIndexed { index, label ->
                 SegmentedButton(
@@ -161,19 +161,14 @@ internal fun DailyActivityTable(
                 }
                 val summaryRows = if (selected == null) rows else listOfNotNull(byDay[selected])
                 ActivityNumbers(summaryRows, colors, state.gamesLoading)
-                Text(
-                    if (selected == null) "Нажмите на день: все цвета показывают, чем вы занимались." else "Учёба: темы / задачи / повторы. LoL включает ARAM. Душ — время. — нет данных.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
                 if (state.gamesLoading) Text("Загружаем игры LoL…", style = MaterialTheme.typography.bodySmall)
                 if (state.stepsLoading) Text("Загружаем шаги…", style = MaterialTheme.typography.bodySmall)
                 state.stepsMessage?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     TextButton(onClick = onReload) { Text("Обновить шаги") }
                 }
                 state.gamesMessage?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     TextButton(onClick = onReload) { Text("Обновить") }
                 }
             }

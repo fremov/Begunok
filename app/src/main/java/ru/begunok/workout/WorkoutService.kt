@@ -131,7 +131,7 @@ class WorkoutService : LifecycleService() {
             settings = container.settings.settings.first()
             val dayPlan = settings.dayType?.let(settings::dayPlan)
             plan = dayPlan
-            program = dayPlan?.runProgram(settings.selectedProgram) ?: settings.selectedProgram
+            program = if (dayPlan != null) dayPlan.runProgram(settings.selectedProgram) else settings.selectedProgram
             if (dayPlan != null) {
                 val last = container.workouts.observeLastSessions(dayPlan.strength.exercises.map { it.id }).first()
                 targets = Progression.targets(dayPlan.strength, last)
@@ -140,6 +140,7 @@ class WorkoutService : LifecycleService() {
             launch { container.settings.settings.collect { settings = it } }
             val id = container.workouts.create(startTime, settings.upperLimit, settings.lowerLimit, program?.name, dayPlan?.type)
             workoutId = id
+            if (dayPlan?.initialStage == Stage.Strength) toStrength()
 
             val origin = SystemClock.elapsedRealtime()
             while (isActive) {

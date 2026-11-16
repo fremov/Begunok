@@ -161,11 +161,12 @@ data class StrengthBlock(
 data class DayPlan(
     val type: DayType,
     val warmupSec: Int,
-    val jog: IntervalProgram?,
     val strength: StrengthBlock,
 ) {
+    val initialStage: Stage get() = if (type == DayType.Strength) Stage.Strength else Stage.Run
+
     fun runProgram(selected: IntervalProgram?): IntervalProgram? =
-        (jog ?: selected)?.copy(warmupSec = warmupSec)
+        if (initialStage == Stage.Run) selected?.copy(warmupSec = warmupSec) else null
 
     companion object {
         fun key(type: DayType, variationId: String) = "${type.name}:$variationId"
@@ -178,7 +179,6 @@ data class DayPlan(
                 DayType.Run -> DayPlan(
                     type = type,
                     warmupSec = 5 * 60,
-                    jog = null,
                     strength = StrengthBlock(
                         "Круг на площадке", exercises, config.sets, circuit = true,
                         config.restBetweenSetsSec, config.restBetweenExercisesSec,
@@ -187,7 +187,6 @@ data class DayPlan(
                 DayType.Strength -> DayPlan(
                     type = type,
                     warmupSec = 0,
-                    jog = IntervalProgram("jog", "Трусца", 6 * 60, 0, 1),
                     strength = StrengthBlock(
                         "Силовая", exercises, config.sets, circuit = false,
                         config.restBetweenSetsSec, config.restBetweenExercisesSec,

@@ -100,7 +100,7 @@ fun MetricChart(
     val count = times.size
     if (count == 0) return
     val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    val labelStyle = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
     val gridColor = MaterialTheme.colorScheme.outlineVariant
     val guideColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f)
     val surface = MaterialTheme.colorScheme.surfaceContainer
@@ -281,7 +281,7 @@ fun Legend(items: List<Pair<Color, String>>) {
                         .background(color)
                 )
                 Spacer(Modifier.width(6.dp))
-                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -298,7 +298,7 @@ fun BarChart(
 ) {
     if (values.isEmpty()) return
     val measurer = rememberTextMeasurer()
-    val labelStyle = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    val labelStyle = TextStyle(fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
     val valueStyle = TextStyle(fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
     val track = MaterialTheme.colorScheme.surfaceContainerHighest
     val reveal = rememberReveal(values)

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,16 +43,19 @@ class DesktopExportActivity : ComponentActivity() {
                     val lolPrefs = container.lolSettings.current()
                     if (lolPrefs.myRiotId.isNotBlank()) container.lolSettings.setMe(lolPrefs.myRiotId)
                     val health = container.health
-                    val granted = health.granted()
+                    val autoSync = container.healthAutoSync
+                    autoSync.refresh()
+                    val granted = autoSync.state.value.granted
                     val now = Instant.now()
-                    val zone = ZoneId.systemDefault()
-                    val today = LocalDate.now(zone)
+                    val today = LocalDate.now(ZoneId.systemDefault())
+                    val retained = autoSync.history(null, today)
+                    check(retained.days.isNotEmpty()) {
+                        autoSync.state.value.message ?: "На телефоне пока нет сохранённых показателей Health Connect."
+                    }
                     val days = JSONArray()
-                    for (offset in 29 downTo 0) {
-                        val date = today.minusDays(offset.toLong())
-                        val start = date.atStartOfDay(zone).toInstant()
-                        val end = minOf(date.plusDays(1).atStartOfDay(zone).toInstant(), now)
-                        val day = health.day(start, end, granted)
+                    for (entry in retained.days) {
+                        val date = entry.date
+                        val day = entry.data
                         days.put(JSONObject().apply {
                             put("day", date.toString())
                             put("steps", day.totals.steps ?: JSONObject.NULL)
@@ -63,6 +67,8 @@ class DesktopExportActivity : ComponentActivity() {
                             put("spo2", day.spo2?.let { JSONObject().put("time", it.time.toEpochMilli()).put("percent", it.percent) } ?: JSONObject.NULL)
                             put("sleepSeconds", day.sleep?.seconds ?: JSONObject.NULL)
                             put("sources", JSONArray(day.totals.sources.toList()))
+                            put("distanceMeters", day.distanceMeters ?: JSONObject.NULL)
+                            put("avgStepCadence", day.avgStepCadence ?: JSONObject.NULL)
                         })
                     }
                     atomicWrite(File(directory, "health.json"), JSONObject()
@@ -71,8 +77,12 @@ class DesktopExportActivity : ComponentActivity() {
                         .put("permissions", JSONArray(granted.toList()))
                         .put("days", days).toString())
                     result.put("ok", true).put("exportedAt", now.toEpochMilli())
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
                 } catch (error: Exception) {
-                    result.put("ok", false).put("error", error.message ?: "Не удалось экспортировать показатели.")
+                    val message = listOfNotNull(error.message, error.cause?.message).distinct()
+                        .joinToString(": ").ifBlank { "Не удалось экспортировать показатели." }
+                    result.put("ok", false).put("error", message)
                 }
                 atomicWrite(File(directory, "result.json"), result.toString())
             }

@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Settings
@@ -73,8 +72,6 @@ import kotlinx.coroutines.launch
 import ru.begunok.AppContainer
 import ru.begunok.ui.common.LocalNavAnimatedScope
 import ru.begunok.ui.common.LocalSharedTransitionScope
-import ru.begunok.ui.health.HealthScreen
-import ru.begunok.ui.health.HealthViewModel
 import ru.begunok.ui.history.AnalyticsScreen
 import ru.begunok.ui.history.AnalyticsViewModel
 import ru.begunok.ui.history.HistoryScreen
@@ -124,7 +121,6 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
     Shower("Холодный душ", Icons.Filled.Shower, Group.Habits),
     Reading("Чтение", Icons.AutoMirrored.Filled.MenuBook, Group.Habits),
     Math("Математика", Icons.Filled.Calculate, Group.Learning),
-    Health("Браслет и показатели", Icons.Filled.MonitorHeart, Group.Health),
     Weight("Вес", Icons.Filled.MonitorWeight, Group.Health),
     Mental("Психологическое состояние", Icons.Filled.Psychology, Group.Health),
     Finance("Финансы", Icons.Filled.AccountBalanceWallet, Group.Money),
@@ -274,7 +270,7 @@ private fun AppNavHost(
                 },
                 label = "section",
             ) { current ->
-                SectionContent(current, navController, container, stopRequested, onStopRequestHandled)
+                SectionContent(current, navController, container, stopRequested, onStopRequestHandled) { open(Section.Mental) }
             }
         }
         screen(SENSOR) {
@@ -339,6 +335,7 @@ private fun SectionContent(
     container: AppContainer,
     stopRequested: Boolean,
     onStopRequestHandled: () -> Unit,
+    onOpenMental: () -> Unit,
 ) {
     when (section) {
         Section.Workout -> HomeScreen(
@@ -364,10 +361,11 @@ private fun SectionContent(
         Section.Analytics -> AnalyticsScreen(
             viewModel {
                 AnalyticsViewModel(
-                    container.workouts, container.showers, container.health, container.mental,
-                    container.reading, container.math, container.lolSettings,
+                    container.workouts, container.showers, container.mental,
+                    container.reading, container.math, container.lolSettings, container.healthAutoSync,
                 )
             },
+            onOpenMental = onOpenMental,
         )
         Section.Shower -> ShowerScreen(
             viewModel { ShowerViewModel(container.appContext, container.showers, container.settings, container.voicePack) },
@@ -377,7 +375,6 @@ private fun SectionContent(
             viewModel = viewModel { MathViewModel(container.math) },
             onOpenLesson = { id -> navController.navigate("math/${Uri.encode(id)}") },
         )
-        Section.Health -> HealthScreen(viewModel { HealthViewModel(container.health) })
         Section.Weight -> WeightScreen(viewModel { WeightViewModel(container.weight, container.settings) })
         Section.Mental -> MentalScreen(viewModel { MentalViewModel(container.mental) })
         Section.Finance -> FinanceScreen(viewModel { FinanceViewModel(container.finance, container.appContext) })
@@ -387,6 +384,7 @@ private fun SectionContent(
                 SettingsViewModel(container.appContext, container.settings, container.voicePack, container.heartRateMonitor.state)
             },
             onOpenSensor = { navController.navigate(SENSOR) },
+            healthSync = container.healthAutoSync,
         )
     }
 }

@@ -24,7 +24,7 @@ import ru.begunok.data.WorkoutRepository
 import ru.begunok.data.db.ColdShowerEntity
 import ru.begunok.data.db.ReadingEntryEntity
 import ru.begunok.data.db.WorkoutEntity
-import ru.begunok.health.HealthRepository
+import ru.begunok.health.HealthAutoSync
 import ru.begunok.health.StepHistory
 import ru.begunok.lol.LolSettings
 import ru.begunok.math.MathActivityEvent
@@ -63,9 +63,10 @@ internal fun observeDailyActivity(
     math: MathRepository,
     showers: ShowerRepository,
     settings: LolSettings,
-    health: HealthRepository,
+    health: HealthAutoSync,
     selection: Flow<ActivityCalendarPeriod>,
     reload: Flow<Int>,
+    healthChanges: Flow<Unit>,
 ): Flow<DailyActivityTableState> =
     combine(selection.distinctUntilChanged(), reload) { selected, _ -> selected }
         .flatMapLatest { selected ->
@@ -85,18 +86,14 @@ internal fun observeDailyActivity(
                 ) { sessions, pages, progress, cold ->
                     LocalActivity(sessions, pages, progress.events, cold)
                 }
-                val steps: Flow<StepHistory> = flow {
-                    emit(
-                        health.dailySteps(
-                            start.atStartOfDay(zone).toInstant(),
-                            end.plusDays(1).atStartOfDay(zone).toInstant(),
-                            zone,
-                        ),
-                    )
+                val steps: Flow<StepHistory> = healthChanges.flatMapLatest {
+                    flow {
+                        emit(StepHistory(days = health.dailySteps(start, end)))
+                    }
+                        .onStart { emit(StepHistory(loading = true)) }
+                        .catch { emit(StepHistory(message = it.message ?: "Не удалось прочитать шаги.", failed = true)) }
+                        .flowOn(Dispatchers.IO)
                 }
-                    .onStart { emit(StepHistory(loading = true)) }
-                    .catch { emit(StepHistory(message = it.message ?: "Не удалось прочитать шаги.", failed = true)) }
-                    .flowOn(Dispatchers.IO)
                 // Token registration must not restart an in-flight match-history request.
                 val connection = settings.prefs
                     .map { Triple(it.serverUrl, it.myRiotId, it.demo) }

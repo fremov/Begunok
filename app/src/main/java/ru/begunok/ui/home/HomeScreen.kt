@@ -280,7 +280,7 @@ private fun PreStart(
                     )
                 }
                 val subtitle = when (settings.dayType) {
-                    DayType.Strength -> "трусца, затем площадка"
+                    DayType.Strength -> "силовая на площадке"
                     else -> settings.selectedProgram?.let { "${it.name} · ${it.description}" } ?: "свободная пробежка"
                 }
                 StartButton("Старт", subtitle, onStart)
@@ -748,7 +748,8 @@ internal fun ProgramBar(program: IntervalProgram, position: IntervalPosition?, m
 @Composable
 private fun StageHero(state: WorkoutState, settings: AppSettings) {
     val position = state.interval
-    val program = settings.dayType?.let { settings.dayPlan(it).runProgram(settings.selectedProgram) } ?: settings.selectedProgram
+    val dayPlan = settings.dayType?.let(settings::dayPlan)
+    val program = if (dayPlan != null) dayPlan.runProgram(settings.selectedProgram) else settings.selectedProgram
     val (label, target) = when (position?.kind) {
         IntervalKind.Warmup -> "РАЗМИНКА" to StageColors.Warmup
         IntervalKind.Run -> "БЕГ" to StageColors.Run

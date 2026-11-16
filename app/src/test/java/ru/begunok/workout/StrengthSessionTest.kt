@@ -6,6 +6,31 @@ import org.junit.Test
 
 class StrengthSessionTest {
     @Test
+    fun strengthDayStartsWithExerciseWithoutJogOrSelectedRunProgram() {
+        val plan = DayPlan.of(DayType.Strength)
+        assertEquals(Stage.Strength, plan.initialStage)
+        assertEquals(null, plan.runProgram(IntervalProgram.defaults.first()))
+        assertEquals(null, plan.runProgram(null))
+        val session = StrengthSession(plan.strength, emptyMap())
+        val first = session.begin(0).single() as StrengthEvent.Work
+        assertEquals(plan.strength.exercises.first(), first.exercise)
+        assertEquals(1, first.set)
+        assertEquals(0, session.view(0).stepIndex)
+    }
+
+    @Test
+    fun runningDayKeepsWarmupAndSelectedRunBeforeStrength() {
+        val plan = DayPlan.of(DayType.Run)
+        val selected = IntervalProgram.defaults.first()
+        assertEquals(Stage.Run, plan.initialStage)
+        val program = requireNotNull(plan.runProgram(selected))
+        assertEquals(selected.copy(warmupSec = 300), program)
+        assertEquals(IntervalKind.Warmup, program.positionAt(0).kind)
+        assertEquals(IntervalKind.Run, program.positionAt(300).kind)
+        assertEquals(null, plan.runProgram(null))
+    }
+
+    @Test
     fun straightSetsRestBetweenSetsAndExercises() {
         val steps = StrengthSession.buildSteps(DayPlan.of(DayType.Strength).strength)
         assertEquals(5 * 3 + 5 * 2 + 4, steps.size)

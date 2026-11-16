@@ -135,7 +135,6 @@ object Cues {
                 if (plan.warmupSec > 0) {
                     add(interval(IntervalPosition(IntervalKind.Warmup, 1, 1, plan.warmupSec, -1), plan.warmupSec, false))
                 }
-                plan.jog?.let { add(interval(IntervalPosition(IntervalKind.Run, 1, 1, it.runSec, 0), it.runSec, true)) }
                 val first = plan.strength.exercises.first()
                 if (plan.strength.restBetweenSetsSec > 0) add(rest(plan.strength.restBetweenSetsSec, first, true))
             }

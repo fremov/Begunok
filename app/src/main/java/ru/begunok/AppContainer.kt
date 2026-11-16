@@ -18,6 +18,7 @@ import ru.begunok.data.WeightRepository
 import ru.begunok.data.WorkoutRepository
 import ru.begunok.data.db.AppDatabase
 import ru.begunok.health.HealthRepository
+import ru.begunok.health.HealthAutoSync
 import ru.begunok.location.LocationClient
 import ru.begunok.lol.LolSettings
 import ru.begunok.reminders.ReminderScheduler
@@ -43,10 +44,12 @@ class AppContainer(context: Context) {
     val finance = FinanceRepository(database.financeDao())
     val math = MathRepository(appContext)
     val health = HealthRepository(appContext)
+    val healthAutoSync = HealthAutoSync(appContext, health, settings)
     val voicePack = VoicePack(appContext)
     val lolSettings = LolSettings(appContext)
 
     init {
+        healthAutoSync.schedule()
         appScope.launch {
             settings.settings.collect { reminderScheduler.schedule(it) }
         }

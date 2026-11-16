@@ -127,14 +127,15 @@ internal fun PlanCard(preview: PlanPreview, program: IntervalProgram?, onEdit: (
         }
         val steps = buildList {
             if (plan.warmupSec > 0) add(StageColors.Warmup to "Разминка ${formatSpan(plan.warmupSec)}, быстрый шаг")
-            add(
-                StageColors.Run to (
-                    plan.jog?.let { "${it.name} ${formatSpan(it.runSec)}" }
-                        ?: program?.let { "${it.name}: ${it.description}" }
-                        ?: "Бег без интервалов"
-                    ),
-            )
-            add(StageColors.Rest to "Перерыв, площадка начинается по кнопке")
+            if (plan.initialStage == ru.begunok.workout.Stage.Run) {
+                add(
+                    StageColors.Run to (
+                        program?.let { "${it.name}: ${it.description}" }
+                            ?: "Бег без интервалов"
+                        ),
+                )
+                add(StageColors.Rest to "Перерыв, площадка начинается по кнопке")
+            }
             add(StageColors.Done to strength.description)
         }
         steps.forEachIndexed { i, (color, text) ->

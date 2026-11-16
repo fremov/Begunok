@@ -105,6 +105,7 @@ class SettingsRepository(private val context: Context) {
         val checkInMorningMinute = intPreferencesKey("check_in_morning_minute")
         val checkInEveningMinute = intPreferencesKey("check_in_evening_minute")
         val themeMode = stringPreferencesKey("theme_mode")
+        val gadgetbridgeExportTreeUri = stringPreferencesKey("gadgetbridge_export_tree_uri")
         fun dayConfig(type: DayType) = stringPreferencesKey("day_config_${type.name}")
         fun clip(id: CueId) = stringPreferencesKey("clip_${id.name}")
     }
@@ -112,6 +113,17 @@ class SettingsRepository(private val context: Context) {
     val settings: Flow<AppSettings> = context.dataStore.data
         .map { it.toSettings() }
         .distinctUntilChanged()
+
+    val gadgetbridgeExportTreeUri: Flow<String?> = context.dataStore.data
+        .map { it[Keys.gadgetbridgeExportTreeUri] }
+        .distinctUntilChanged()
+
+    suspend fun setGadgetbridgeExportTreeUri(value: String?) {
+        context.dataStore.edit {
+            if (value.isNullOrBlank()) it.remove(Keys.gadgetbridgeExportTreeUri)
+            else it[Keys.gadgetbridgeExportTreeUri] = value
+        }
+    }
 
     private fun Preferences.toSettings() = AppSettings(
         sensor = this[Keys.sensorAddress]?.let { SavedSensor(it, this[Keys.sensorName]) },

@@ -8,12 +8,13 @@ import androidx.health.connect.client.HealthConnectFeatures
 import androidx.health.connect.client.aggregate.AggregationResult
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.ActiveCaloriesBurnedRecord
-import androidx.health.connect.client.records.ExerciseSessionRecord
+import androidx.health.connect.client.records.DistanceRecord
 import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.StepsCadenceRecord
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
@@ -59,6 +60,15 @@ data class HealthDay(
     val lastHr: HrSample?,
     val spo2: Spo2Sample?,
     val sleep: Duration?,
+    val distanceMeters: Double? = null,
+    val avgStepCadence: Double? = null,
+    val hrSamples: List<HrSample> = emptyList(),
+    val spo2Samples: List<Spo2Sample> = emptyList(),
+    val sleepNights: List<SleepNight> = emptyList(),
+    val stressSamples: List<StressSample> = emptyList(),
+    val vitalitySamples: List<VitalitySample> = emptyList(),
+    val lastStress: StressSample? = null,
+    val lastVitality: VitalitySample? = null,
 )
 
 class HealthRepository(private val context: Context) {
@@ -69,7 +79,7 @@ class HealthRepository(private val context: Context) {
             add(read(OxygenSaturationRecord::class))
             add(read(SleepSessionRecord::class))
             add(read(ActiveCaloriesBurnedRecord::class))
-            add(read(ExerciseSessionRecord::class))
+            add(read(DistanceRecord::class))
             if (availability() == HealthAvailability.Available &&
                 client.features.getFeatureStatus(HealthConnectFeatures.FEATURE_READ_HEALTH_DATA_HISTORY) ==
                 HealthConnectFeatures.FEATURE_STATUS_AVAILABLE
@@ -155,36 +165,135 @@ class HealthRepository(private val context: Context) {
     }
 
     suspend fun day(dayStart: Instant, now: Instant, granted: Set<String>): HealthDay {
-        val lastHr = latest(HeartRateRecord::class, now.minus(Duration.ofDays(1)), now, granted)
-            ?.samples?.maxByOrNull { it.time }?.let { HrSample(it.time, it.beatsPerMinute) }
-        val spo2 = latest(OxygenSaturationRecord::class, now.minus(Duration.ofDays(7)), now, granted)
-            ?.let { Spo2Sample(it.time, it.percentage.value) }
-        val sleep = records(SleepSessionRecord::class, dayStart.minus(Duration.ofHours(SLEEP_LOOKBACK_HOURS)), now, granted)
-            ?.takeIf { it.isNotEmpty() }
-            ?.fold(Duration.ZERO) { sum, s -> sum + Duration.between(s.startTime, s.endTime) }
-        return HealthDay(totals(dayStart, now, granted), lastHr, spo2, sleep)
+        val result = readDay(dayStart, now, granted)
+        if (result.errors.isNotEmpty()) throw HealthReadException(result.errors.joinToString("; "))
+        return result.data
     }
 
-    private suspend fun <T : Record> latest(type: KClass<T>, start: Instant, end: Instant, granted: Set<String>): T? =
-        records(type, start, end, granted, pageSize = 1)?.firstOrNull()
+    /** Independent reads retain successful metrics even when one provider query fails. */
+    internal suspend fun readDay(dayStart: Instant, now: Instant, granted: Set<String>): HealthDayRead {
+        if (!now.isAfter(dayStart)) return HealthDayRead(HealthDay(HealthTotals(), null, null, null), emptySet(), emptyList())
+        val errors = mutableListOf<String>()
+        val completed = mutableSetOf<String>()
+        suspend fun <T> metric(type: KClass<out Record>, readValue: suspend () -> T): T? {
+            val permission = read(type)
+            if (permission !in granted) return null
+            return try {
+                readValue().also { completed.add(permission) }
+            } catch (error: HealthReadException) {
+                errors.add(error.message ?: "Не удалось прочитать ${type.simpleName}")
+                null
+            }
+        }
+        // Read the full requested day, not just the most recent record/page. HC may contain
+        // only an old Mi Fitness upload; never replace its source timestamp with the read time.
+        val heartRecords = metric(HeartRateRecord::class) {
+            // Interval records may begin before midnight while containing today's samples.
+            records(HeartRateRecord::class, dayStart.minus(Duration.ofDays(1)), now, granted).orEmpty()
+        }
+        val hr = heartRecords.orEmpty().flatMap { record ->
+            record.samples.filter { sampleInRange(it.time, dayStart, now) }
+                .map { HrSample(it.time, it.beatsPerMinute) }
+        }.distinct().sortedBy { it.time }
+        val oxygenRecords = metric(OxygenSaturationRecord::class) {
+            records(OxygenSaturationRecord::class, dayStart, now, granted).orEmpty()
+        }
+        val oxygen = oxygenRecords.orEmpty().filter { sampleInRange(it.time, dayStart, now) }
+            .map { Spo2Sample(it.time, it.percentage.value) }.distinct().sortedBy { it.time }
+        val sleepRecords = metric(SleepSessionRecord::class) {
+            records(SleepSessionRecord::class, dayStart.minus(Duration.ofHours(SLEEP_LOOKBACK_HOURS)), now, granted)
+                .orEmpty().filter { it.endTime.isAfter(dayStart) && !it.endTime.isAfter(now) }
+        }
+        val sleepNights = selectSleepNights(sleepRecords.orEmpty())
+        val steps = metric(StepsRecord::class) { totals(dayStart, now, setOf(read(StepsRecord::class))) }
+        val calories = metric(ActiveCaloriesBurnedRecord::class) {
+            totals(dayStart, now, setOf(read(ActiveCaloriesBurnedRecord::class)))
+        }
+        // Steps cadence shares the READ_STEPS permission, but its failures must still leave
+        // this day pending so a later backfill can retrieve the missing cadence.
+        val distance = metric(DistanceRecord::class) {
+            clientAggregate(DistanceRecord.DISTANCE_TOTAL, dayStart, now)?.inMeters
+        }
+        val cadence = metric(StepsCadenceRecord::class) {
+            clientAggregate(StepsCadenceRecord.RATE_AVG, dayStart, now)
+        }
+        if (errors.isNotEmpty()) completed.clear()
+        val totals = HealthTotals(
+            steps = steps?.steps,
+            activeKcal = calories?.activeKcal,
+            avgHr = hr.takeIf { it.isNotEmpty() }?.map { it.bpm }?.average()?.toLong(),
+            minHr = hr.minOfOrNull { it.bpm },
+            maxHr = hr.maxOfOrNull { it.bpm },
+            sources = buildSet {
+                addAll(steps?.sources.orEmpty())
+                addAll(calories?.sources.orEmpty())
+                heartRecords.orEmpty().forEach { add(it.metadata.dataOrigin.packageName) }
+                oxygenRecords.orEmpty().forEach { add(it.metadata.dataOrigin.packageName) }
+                sleepRecords.orEmpty().forEach { add(it.metadata.dataOrigin.packageName) }
+            },
+        )
+        return HealthDayRead(
+            HealthDay(totals, hr.lastOrNull(), oxygen.lastOrNull(),
+                sleepNights.takeIf { it.isNotEmpty() }?.fold(Duration.ZERO) { total, night -> total + night.sleepDuration },
+                distanceMeters = distance, avgStepCadence = cadence, hrSamples = hr, spo2Samples = oxygen,
+                sleepNights = sleepNights),
+            completed, errors,
+        )
+    }
+
+    private suspend fun <T : Any> clientAggregate(metric: AggregateMetric<T>, start: Instant, end: Instant): T? =
+        reading("Не удалось прочитать расстояние или шаговый каденс") {
+            client.aggregate(AggregateRequest(setOf(metric), TimeRangeFilter.between(start, end)))[metric]
+        }
+
+    private fun selectSleepNights(records: List<SleepSessionRecord>): List<SleepNight> {
+        val candidates = records.map { record ->
+            SleepNight(
+                start = record.startTime,
+                end = record.endTime,
+                stages = record.stages.map { stage ->
+                    SleepStageSample(stage.startTime, stage.endTime, when (stage.stage) {
+                        SleepSessionRecord.STAGE_TYPE_AWAKE,
+                        SleepSessionRecord.STAGE_TYPE_AWAKE_IN_BED -> SleepStageKind.AWAKE
+                        SleepSessionRecord.STAGE_TYPE_SLEEPING -> SleepStageKind.SLEEPING
+                        SleepSessionRecord.STAGE_TYPE_OUT_OF_BED -> SleepStageKind.OUT_OF_BED
+                        SleepSessionRecord.STAGE_TYPE_LIGHT -> SleepStageKind.LIGHT
+                        SleepSessionRecord.STAGE_TYPE_DEEP -> SleepStageKind.DEEP
+                        SleepSessionRecord.STAGE_TYPE_REM -> SleepStageKind.REM
+                        else -> SleepStageKind.UNKNOWN
+                    })
+                },
+                source = record.metadata.dataOrigin.packageName,
+            )
+        }
+        return normalizeSleepNights(candidates)
+    }
 
     private suspend fun <T : Record> records(
         type: KClass<T>,
         start: Instant,
         end: Instant,
         granted: Set<String>,
-        pageSize: Int = 100,
     ): List<T>? {
         if (read(type) !in granted) return null
+        if (!end.isAfter(start)) return emptyList()
         return reading("Не удалось прочитать ${type.simpleName} из Health Connect") {
-            client.readRecords(
-                ReadRecordsRequest(
-                    recordType = type,
-                    timeRangeFilter = TimeRangeFilter.between(start, end),
-                    ascendingOrder = false,
-                    pageSize = pageSize,
+            val records = mutableListOf<T>()
+            var token: String? = null
+            do {
+                val page = client.readRecords(
+                    ReadRecordsRequest(
+                        recordType = type,
+                        timeRangeFilter = TimeRangeFilter.between(start, end),
+                        ascendingOrder = false,
+                        pageSize = 1000,
+                        pageToken = token,
+                    )
                 )
-            ).records
+                records.addAll(page.records)
+                token = page.pageToken
+            } while (token != null)
+            records
         }
     }
 
@@ -200,7 +309,7 @@ class HealthRepository(private val context: Context) {
 
     companion object {
         const val PROVIDER_PACKAGE = "com.google.android.apps.healthdata"
-        private const val SLEEP_LOOKBACK_HOURS = 6L
+        private const val SLEEP_LOOKBACK_HOURS = 24L
 
         fun read(type: KClass<out Record>): String = HealthPermission.getReadPermission(type)
 
