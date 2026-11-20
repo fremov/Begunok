@@ -42,6 +42,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalIconButton
@@ -119,7 +120,7 @@ fun HomeScreen(
 ) {
     val sensor by viewModel.sensor.collectAsStateWithLifecycle()
     val workout by viewModel.workout.collectAsStateWithLifecycle()
-    val settings by viewModel.appSettings.collectAsStateWithLifecycle()
+    val settings = viewModel.appSettings.collectAsStateWithLifecycle().value
     val recovery by viewModel.recovery.collectAsStateWithLifecycle()
     val summary by viewModel.summary.collectAsStateWithLifecycle()
     val preview by viewModel.preview.collectAsStateWithLifecycle()
@@ -154,7 +155,7 @@ fun HomeScreen(
                     ActiveWorkout(
                         state = workout,
                         sensor = sensor,
-                        settings = settings,
+                        settings = settings ?: remember { AppSettings() },
                         onPause = viewModel::pause,
                         onResume = viewModel::resume,
                         onStop = { confirmStop = true },
@@ -169,7 +170,7 @@ fun HomeScreen(
                         onSkipWarmup = viewModel::skipWarmup,
                         onFinish = viewModel::stop,
                     )
-                } else {
+                } else if (settings != null) {
                     val gps by viewModel.gps.collectAsStateWithLifecycle()
                     PreStart(
                         sensor = sensor,
@@ -185,6 +186,10 @@ fun HomeScreen(
                         onSelectProgram = viewModel::selectProgram,
                         onDismissBatteryHint = viewModel::dismissBatteryHint,
                     )
+                } else {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }
@@ -217,14 +222,15 @@ private fun PreStart(
     settings: AppSettings,
     preview: PlanPreview?,
     runProgress: RunProgress?,
-    onSelectDayType: (DayType?) -> Unit,
+    onSelectDayType: (DayType) -> Unit,
     onEditPlan: (DayType) -> Unit,
-    onStart: () -> Unit,
+    onStart: (DayType) -> Unit,
     onOpenSensor: () -> Unit,
     onChangeUpperLimit: (Int) -> Unit,
     onSelectProgram: (String?) -> Unit,
     onDismissBatteryHint: () -> Unit,
 ) {
+    val dayType = settings.trainingDayType
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -235,30 +241,27 @@ private fun PreStart(
         Column(Modifier.appear(0)) {
             val today = remember { SimpleDateFormat("EEEE, d MMMM", ru).format(Date()).replaceFirstChar { it.titlecase(ru) } }
             Text(today, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(
-                when (settings.dayType) {
-                    DayType.Run -> "Беговой день"
-                    DayType.Strength -> "Силовой день"
-                    null -> "Готов к пробежке?"
-                },
-                style = MaterialTheme.typography.displaySmall,
-            )
+            Text(dayType.label, style = MaterialTheme.typography.displaySmall)
         }
-        Row(Modifier.appear(1), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.appear(1)) { DayTypePicker(dayType, onSelectDayType) }
+        Row(Modifier.appear(2), verticalAlignment = Alignment.CenterVertically) {
             SensorBadge(sensor, Modifier.weight(1f, fill = false))
             if (sensor.status == SensorStatus.NotSelected) {
                 Spacer(Modifier.width(8.dp))
                 TextButton(onClick = onOpenSensor) { Text("Выбрать датчик") }
             }
         }
-        HeartHero(sensor.heartRate, settings, paused = false, compact = false, modifier = Modifier.appear(2))
-        LimitStepper(settings.upperLimit, onChangeUpperLimit, Modifier.appear(3))
-        Box(Modifier.appear(4)) { DayTypePicker(settings.dayType, onSelectDayType) }
-        if (settings.dayType != DayType.Strength) {
+        HeartHero(sensor.heartRate, settings, paused = false, compact = false, modifier = Modifier.appear(3))
+        LimitStepper(settings.upperLimit, onChangeUpperLimit, Modifier.appear(4))
+        if (dayType == DayType.Run) {
             Box(Modifier.appear(5)) { ProgramPicker(settings, onSelectProgram) }
+            runProgress?.takeIf { it.program.id == settings.selectedProgramId }?.let {
+                Box(Modifier.appear(6)) { RunProgressCard(it) { next -> onSelectProgram(next.id) } }
+            }
         }
-        runProgress?.let { Box(Modifier.appear(6)) { RunProgressCard(it) { next -> onSelectProgram(next.id) } } }
-        preview?.let { Box(Modifier.appear(7)) { PlanCard(it, settings.selectedProgram) { onEditPlan(it.plan.type) } } }
+        preview?.takeIf { it.plan.type == dayType }?.let {
+            Box(Modifier.appear(7)) { PlanCard(it, settings.selectedProgram) { onEditPlan(dayType) } }
+        }
 
         PermissionGate(
             permissions = Permissions.location,
@@ -279,11 +282,11 @@ private fun PreStart(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                val subtitle = when (settings.dayType) {
+                val subtitle = when (dayType) {
                     DayType.Strength -> "силовая на площадке"
-                    else -> settings.selectedProgram?.let { "${it.name} · ${it.description}" } ?: "свободная пробежка"
+                    DayType.Run -> settings.selectedProgram?.let { "${it.name} · затем площадка" } ?: "бег и площадка"
                 }
-                StartButton("Старт", subtitle, onStart)
+                StartButton("Старт", subtitle, { onStart(dayType) })
             }
         }
 
@@ -484,7 +487,7 @@ private fun ActiveWorkout(
                                     .height(200.dp)
                                     .clip(RoundedCornerShape(24.dp)),
                             )
-                            if (state.day != null) {
+                            if (state.day == DayType.Run && state.workoutId != null) {
                                 OutlinedButton(onClick = { confirmBreak = true }, modifier = Modifier.fillMaxWidth()) {
                                     Text("Закончить бег и перейти к площадке")
                                 }
@@ -662,8 +665,8 @@ private fun ProgramPicker(settings: AppSettings, onSelect: (String?) -> Unit) {
             Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text("Программа бега", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(selected?.name ?: "Свободная тренировка", style = MaterialTheme.typography.titleLarge)
-                    Text(selected?.description ?: "без интервалов", style = MaterialTheme.typography.bodyMedium)
+                    Text(selected?.name ?: "Без интервалов", style = MaterialTheme.typography.titleLarge)
+                    Text(selected?.description ?: "Бег в своём темпе перед площадкой", style = MaterialTheme.typography.bodyMedium)
                 }
                 Icon(Icons.Filled.ExpandMore, contentDescription = null)
             }
@@ -671,7 +674,7 @@ private fun ProgramPicker(settings: AppSettings, onSelect: (String?) -> Unit) {
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(
-                text = { Text("Свободная тренировка") },
+                text = { Text("Без интервалов") },
                 onClick = {
                     expanded = false
                     onSelect(null)
@@ -748,7 +751,7 @@ internal fun ProgramBar(program: IntervalProgram, position: IntervalPosition?, m
 @Composable
 private fun StageHero(state: WorkoutState, settings: AppSettings) {
     val position = state.interval
-    val dayPlan = settings.dayType?.let(settings::dayPlan)
+    val dayPlan = state.day?.let(settings::dayPlan)
     val program = if (dayPlan != null) dayPlan.runProgram(settings.selectedProgram) else settings.selectedProgram
     val (label, target) = when (position?.kind) {
         IntervalKind.Warmup -> "РАЗМИНКА" to StageColors.Warmup

@@ -325,7 +325,7 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
 
         if (d.sets.isNotEmpty()) DetailCard("Площадка", Modifier.appear(6)) { ExerciseSets(d.sets) }
 
-        d.band?.let { band -> DetailCard("Браслет · Health Connect", Modifier.appear(7)) { BandStats(band, d.workout) } }
+        d.band?.let { band -> DetailCard("Браслет · Health Connect", Modifier.appear(7)) { BandStats(band) } }
         d.bandMessage?.let { message ->
             DetailCard("Браслет · Health Connect", Modifier.appear(7)) {
                 Text(message, color = MaterialTheme.colorScheme.error)
@@ -355,11 +355,9 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
 }
 
 @Composable
-private fun BandStats(band: HealthTotals, workout: WorkoutEntity) {
-    val cadence = if (workout.dayType == null) HealthRepository.cadence(band.steps, workout.durationMs) else null
+private fun BandStats(band: HealthTotals) {
     val items = listOfNotNull(
         band.steps?.let { "Шаги" to it.toString() },
-        cadence?.let { "Каденс, шаг/мин" to it.toString() },
         band.activeKcal?.let { "Активные ккал" to it.roundToInt().toString() },
         band.avgHr?.let { "Пульс ср. / макс." to "$it / ${band.maxHr ?: "—"}" },
     )

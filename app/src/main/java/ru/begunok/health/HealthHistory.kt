@@ -20,6 +20,28 @@ internal data class HealthDayRead(
     val errors: List<String>,
 )
 
+internal const val HEALTH_STEPS_PERMISSION = "android.permission.health.READ_STEPS"
+private const val MAX_STEPS_COMPLETE = "steps_max_by_source"
+private const val MAX_STEPS_LIMITED_COMPLETE = "steps_max_by_source_limited"
+
+// Legacy READ_STEPS completion refers to the old cross-source aggregate. A separate marker
+// schedules re-reading without changing the retained count or touching other permissions.
+internal fun healthCompletionMarkers(permissions: Set<String>, historyGranted: Boolean): Set<String> =
+    if (HEALTH_STEPS_PERMISSION !in permissions) permissions else {
+        (permissions - HEALTH_STEPS_PERMISSION) +
+            (if (historyGranted) MAX_STEPS_COMPLETE else MAX_STEPS_LIMITED_COMPLETE)
+    }
+
+internal fun pendingHealthPermissions(
+    permissions: Set<String>,
+    completed: Set<String>,
+    historyGranted: Boolean,
+): Set<String> = permissions.filterTo(mutableSetOf()) { permission ->
+    if (permission == HEALTH_STEPS_PERMISSION) {
+        MAX_STEPS_COMPLETE !in completed && (historyGranted || MAX_STEPS_LIMITED_COMPLETE !in completed)
+    } else permission !in completed
+}
+
 internal fun sampleInRange(time: Instant, start: Instant, end: Instant): Boolean =
     !time.isBefore(start) && time.isBefore(end)
 
@@ -30,6 +52,7 @@ internal fun mergeHealthDay(previous: HealthDay?, incoming: HealthDay): HealthDa
     val old = previous ?: HealthDay(HealthTotals(), null, null, null)
     return HealthDay(
         totals = HealthTotals(
+            // A recovered single-source count may be lower than the legacy combined count.
             steps = long(old.totals.steps, incoming.totals.steps),
             activeKcal = number(old.totals.activeKcal, incoming.totals.activeKcal),
             avgHr = long(old.totals.avgHr, incoming.totals.avgHr),

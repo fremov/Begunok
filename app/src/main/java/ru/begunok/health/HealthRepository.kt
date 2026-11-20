@@ -14,16 +14,14 @@ import androidx.health.connect.client.records.OxygenSaturationRecord
 import androidx.health.connect.client.records.Record
 import androidx.health.connect.client.records.SleepSessionRecord
 import androidx.health.connect.client.records.StepsRecord
-import androidx.health.connect.client.records.StepsCadenceRecord
+import androidx.health.connect.client.records.metadata.DataOrigin
 import androidx.health.connect.client.request.AggregateRequest
-import androidx.health.connect.client.request.AggregateGroupByPeriodRequest
 import androidx.health.connect.client.request.ReadRecordsRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import kotlinx.coroutines.CancellationException
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
-import java.time.Period
 import java.time.ZoneId
 import kotlin.reflect.KClass
 
@@ -71,6 +69,24 @@ data class HealthDay(
     val lastVitality: VitalitySample? = null,
 )
 
+internal data class StepSourceTotal(val packageName: String, val count: Long)
+
+internal suspend fun maxStepsBySource(
+    origins: Set<DataOrigin>,
+    readCount: suspend (DataOrigin) -> Long?,
+): StepSourceTotal? {
+    var winner: DataOrigin? = null
+    var maximum = -1L
+    for (origin in origins) {
+        val count = readCount(origin)?.takeIf { it >= 0 } ?: continue
+        if (count > maximum || (count == maximum && origin.packageName < checkNotNull(winner).packageName)) {
+            winner = origin
+            maximum = count
+        }
+    }
+    return winner?.let { StepSourceTotal(it.packageName, maximum) }
+}
+
 class HealthRepository(private val context: Context) {
     val permissions: Set<String>
         get() = buildSet {
@@ -106,9 +122,7 @@ class HealthRepository(private val context: Context) {
     suspend fun steps(start: Instant, end: Instant): Long? {
         val granted = granted()
         return if (read(StepsRecord::class) in granted && end.isAfter(start)) {
-            reading("Не удалось прочитать шаги") {
-                client.aggregate(AggregateRequest(setOf(StepsRecord.COUNT_TOTAL), TimeRangeFilter.between(start, end)))[StepsRecord.COUNT_TOTAL]
-            }
+            stepTotals(start, end)?.count
         } else null
     }
 
@@ -127,22 +141,35 @@ class HealthRepository(private val context: Context) {
         ) { from, until -> readDailySteps(from, until, zone) }
     }
 
-    private suspend fun readDailySteps(start: Instant, end: Instant, zone: ZoneId): List<DailySteps> =
-        reading("Не удалось прочитать шаги за ${start.atZone(zone).toLocalDate()} — ${end.atZone(zone).toLocalDate()}") {
-            client.aggregateGroupByPeriod(
-                AggregateGroupByPeriodRequest(
-                    metrics = setOf(StepsRecord.COUNT_TOTAL),
-                    timeRangeFilter = TimeRangeFilter.between(start.atZone(zone).toLocalDateTime(), end.atZone(zone).toLocalDateTime()),
-                    timeRangeSlicer = Period.ofDays(1),
-                ),
-            ).mapNotNull { bucket ->
-                bucket.result[StepsRecord.COUNT_TOTAL]?.let { DailySteps(bucket.startTime.toLocalDate(), it) }
+    private suspend fun readDailySteps(start: Instant, end: Instant, zone: ZoneId): List<DailySteps> {
+        val days = mutableListOf<DailySteps>()
+        var from = start
+        while (from < end) {
+            val date = from.atZone(zone).toLocalDate()
+            val until = minOf(end, date.plusDays(1).atStartOfDay(zone).toInstant())
+            stepTotals(from, until)?.let { days.add(DailySteps(date, it.count)) }
+            from = until
+        }
+        return days
+    }
+
+    private suspend fun stepTotals(start: Instant, end: Instant): StepSourceTotal? =
+        reading("Не удалось прочитать шаги Health Connect") {
+            val range = TimeRangeFilter.between(start, end)
+            val metrics = setOf(StepsRecord.COUNT_TOTAL)
+            // Aggregation discovers overlapping intervals that began before the window.
+            // Raw records also expose origins that did not contribute to the priority aggregate.
+            val origins = client.aggregate(AggregateRequest(metrics, range)).dataOrigins.toMutableSet()
+            visitRecords(StepsRecord::class, range) { origins.add(it.metadata.dataOrigin) }
+            maxStepsBySource(origins) { origin ->
+                client.aggregate(AggregateRequest(metrics, range, setOf(origin)))[StepsRecord.COUNT_TOTAL]
             }
         }
 
     suspend fun totals(start: Instant, end: Instant, granted: Set<String>): HealthTotals {
+        if (!end.isAfter(start)) return HealthTotals()
+        val steps = if (read(StepsRecord::class) in granted) stepTotals(start, end) else null
         val metrics = buildSet<AggregateMetric<*>> {
-            if (read(StepsRecord::class) in granted) add(StepsRecord.COUNT_TOTAL)
             if (read(ActiveCaloriesBurnedRecord::class) in granted) add(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)
             if (read(HeartRateRecord::class) in granted) {
                 add(HeartRateRecord.BPM_AVG)
@@ -150,17 +177,21 @@ class HealthRepository(private val context: Context) {
                 add(HeartRateRecord.BPM_MAX)
             }
         }
-        if (metrics.isEmpty() || !end.isAfter(start)) return HealthTotals()
-        val result: AggregationResult = reading("Не удалось прочитать показатели Health Connect") {
-            client.aggregate(AggregateRequest(metrics, TimeRangeFilter.between(start, end)))
+        val result: AggregationResult? = if (metrics.isEmpty()) null else {
+            reading("Не удалось прочитать показатели Health Connect") {
+                client.aggregate(AggregateRequest(metrics, TimeRangeFilter.between(start, end)))
+            }
         }
         return HealthTotals(
-            steps = result[StepsRecord.COUNT_TOTAL],
-            activeKcal = result[ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL]?.inKilocalories,
-            avgHr = result[HeartRateRecord.BPM_AVG],
-            minHr = result[HeartRateRecord.BPM_MIN],
-            maxHr = result[HeartRateRecord.BPM_MAX],
-            sources = result.dataOrigins.map { it.packageName }.toSet(),
+            steps = steps?.count,
+            activeKcal = result?.get(ActiveCaloriesBurnedRecord.ACTIVE_CALORIES_TOTAL)?.inKilocalories,
+            avgHr = result?.get(HeartRateRecord.BPM_AVG),
+            minHr = result?.get(HeartRateRecord.BPM_MIN),
+            maxHr = result?.get(HeartRateRecord.BPM_MAX),
+            sources = buildSet {
+                steps?.let { add(it.packageName) }
+                result?.dataOrigins?.forEach { add(it.packageName) }
+            },
         )
     }
 
@@ -205,27 +236,24 @@ class HealthRepository(private val context: Context) {
                 .orEmpty().filter { it.endTime.isAfter(dayStart) && !it.endTime.isAfter(now) }
         }
         val sleepNights = selectSleepNights(sleepRecords.orEmpty())
-        val steps = metric(StepsRecord::class) { totals(dayStart, now, setOf(read(StepsRecord::class))) }
+        val steps = metric(StepsRecord::class) { stepTotals(dayStart, now) }
         val calories = metric(ActiveCaloriesBurnedRecord::class) {
             totals(dayStart, now, setOf(read(ActiveCaloriesBurnedRecord::class)))
         }
-        // Steps cadence shares the READ_STEPS permission, but its failures must still leave
-        // this day pending so a later backfill can retrieve the missing cadence.
         val distance = metric(DistanceRecord::class) {
-            clientAggregate(DistanceRecord.DISTANCE_TOTAL, dayStart, now)?.inMeters
+            reading("Не удалось прочитать расстояние из Health Connect") {
+                val request = AggregateRequest(setOf(DistanceRecord.DISTANCE_TOTAL), TimeRangeFilter.between(dayStart, now))
+                client.aggregate(request)[DistanceRecord.DISTANCE_TOTAL]?.inMeters
+            }
         }
-        val cadence = metric(StepsCadenceRecord::class) {
-            clientAggregate(StepsCadenceRecord.RATE_AVG, dayStart, now)
-        }
-        if (errors.isNotEmpty()) completed.clear()
         val totals = HealthTotals(
-            steps = steps?.steps,
+            steps = steps?.count,
             activeKcal = calories?.activeKcal,
             avgHr = hr.takeIf { it.isNotEmpty() }?.map { it.bpm }?.average()?.toLong(),
             minHr = hr.minOfOrNull { it.bpm },
             maxHr = hr.maxOfOrNull { it.bpm },
             sources = buildSet {
-                addAll(steps?.sources.orEmpty())
+                steps?.let { add(it.packageName) }
                 addAll(calories?.sources.orEmpty())
                 heartRecords.orEmpty().forEach { add(it.metadata.dataOrigin.packageName) }
                 oxygenRecords.orEmpty().forEach { add(it.metadata.dataOrigin.packageName) }
@@ -235,16 +263,11 @@ class HealthRepository(private val context: Context) {
         return HealthDayRead(
             HealthDay(totals, hr.lastOrNull(), oxygen.lastOrNull(),
                 sleepNights.takeIf { it.isNotEmpty() }?.fold(Duration.ZERO) { total, night -> total + night.sleepDuration },
-                distanceMeters = distance, avgStepCadence = cadence, hrSamples = hr, spo2Samples = oxygen,
+                distanceMeters = distance, hrSamples = hr, spo2Samples = oxygen,
                 sleepNights = sleepNights),
             completed, errors,
         )
     }
-
-    private suspend fun <T : Any> clientAggregate(metric: AggregateMetric<T>, start: Instant, end: Instant): T? =
-        reading("Не удалось прочитать расстояние или шаговый каденс") {
-            client.aggregate(AggregateRequest(setOf(metric), TimeRangeFilter.between(start, end)))[metric]
-        }
 
     private fun selectSleepNights(records: List<SleepSessionRecord>): List<SleepNight> {
         val candidates = records.map { record ->
@@ -278,23 +301,27 @@ class HealthRepository(private val context: Context) {
         if (read(type) !in granted) return null
         if (!end.isAfter(start)) return emptyList()
         return reading("Не удалось прочитать ${type.simpleName} из Health Connect") {
-            val records = mutableListOf<T>()
-            var token: String? = null
-            do {
-                val page = client.readRecords(
-                    ReadRecordsRequest(
-                        recordType = type,
-                        timeRangeFilter = TimeRangeFilter.between(start, end),
-                        ascendingOrder = false,
-                        pageSize = 1000,
-                        pageToken = token,
-                    )
-                )
-                records.addAll(page.records)
-                token = page.pageToken
-            } while (token != null)
-            records
+            buildList {
+                visitRecords(type, TimeRangeFilter.between(start, end)) { add(it) }
+            }
         }
+    }
+
+    private suspend fun <T : Record> visitRecords(type: KClass<T>, range: TimeRangeFilter, visit: (T) -> Unit) {
+        var token: String? = null
+        do {
+            val page = client.readRecords(
+                ReadRecordsRequest(
+                    recordType = type,
+                    timeRangeFilter = range,
+                    ascendingOrder = false,
+                    pageSize = 1000,
+                    pageToken = token,
+                )
+            )
+            page.records.forEach(visit)
+            token = page.pageToken
+        } while (token != null)
     }
 
     private suspend fun <T> reading(message: String, block: suspend () -> T): T =
@@ -312,10 +339,5 @@ class HealthRepository(private val context: Context) {
         private const val SLEEP_LOOKBACK_HOURS = 24L
 
         fun read(type: KClass<out Record>): String = HealthPermission.getReadPermission(type)
-
-        fun cadence(steps: Long?, durationMs: Long): Int? {
-            if (steps == null || steps <= 0 || durationMs < 60_000) return null
-            return (steps * 60_000 / durationMs).toInt()
-        }
     }
 }

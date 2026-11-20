@@ -72,6 +72,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import ru.begunok.BegunokApp
 import ru.begunok.alerts.AlertPlayer
 import ru.begunok.alerts.Cue
 import ru.begunok.alerts.CueId
@@ -258,6 +259,9 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit, healt
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         HealthConnectSettings(healthSync)
+        Section("Синхронизация аналитики") {
+            AnalyticsSyncSettings((LocalContext.current.applicationContext as BegunokApp).container.analyticsSync)
+        }
         Section("Тема") {
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 ThemeMode.entries.forEachIndexed { i, mode ->

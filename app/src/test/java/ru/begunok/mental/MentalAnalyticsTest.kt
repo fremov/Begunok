@@ -21,9 +21,7 @@ class MentalAnalyticsTest {
         assertEquals(11, result.entries.size)
         assertEquals(11, result.summary.entries)
         assertEquals(2, result.summary.observedDays)
-        assertEquals(5.0, result.summary.averages!!.mood, 0.0001)
-        assertEquals(5.0, result.summary.averages!!.tension, 0.0001)
-        assertEquals(5.0, result.summary.averages!!.energy, 0.0001)
+        assertEquals(5.0, result.summary.averageTension!!, 0.0001)
         assertEquals(10, result.daily.first().entries)
         assertTrue(result.entries.zipWithNext().all { (a, b) -> a.completedAt <= b.completedAt })
     }
@@ -34,18 +32,18 @@ class MentalAnalyticsTest {
 
         assertEquals(2, result.daily.size)
         assertEquals(2, result.summary.observedDays)
-        assertEquals(4.0, result.summary.averages!!.mood, 0.0001)
-        assertNull(result.previous!!.averages)
+        assertEquals(4.0, result.summary.averageTension!!, 0.0001)
+        assertNull(result.previous!!.averageTension)
         val empty = build(emptyList())
         assertEquals(0, empty.summary.observedDays)
-        assertNull(empty.summary.averages)
+        assertNull(empty.summary.averageTension)
     }
 
     @Test
     fun currentAndEqualPrecedingPeriodsAreHalfOpenAndDoNotOverlap() {
-        val start = millis("2026-10-19")
+        val start = millis("2026-10-11")
         val end = millis("2026-11-11")
-        val previousStart = millis("2026-09-26")
+        val previousStart = millis("2026-09-10")
         val entries = listOf(
             at(previousStart - 1, 10),
             at(previousStart, 2),
@@ -56,34 +54,37 @@ class MentalAnalyticsTest {
         )
         val result = build(entries)
 
-        assertEquals(LocalDate.of(2026, 10, 19), result.start)
-        assertEquals(LocalDate.of(2026, 9, 26), result.previousStart)
+        assertEquals(LocalDate.of(2026, 10, 11), result.start)
+        assertEquals(LocalDate.of(2026, 9, 10), result.previousStart)
         assertEquals(LocalDate.of(2026, 11, 11), result.endExclusive)
         assertEquals(listOf(start, end - 1), result.entries.map { it.completedAt })
-        assertEquals(7.0, result.summary.averages!!.mood, 0.0001)
-        assertEquals(3.0, result.previous!!.averages!!.mood, 0.0001)
+        assertEquals(7.0, result.summary.averageTension!!, 0.0001)
+        assertEquals(3.0, result.previous!!.averageTension!!, 0.0001)
         assertEquals(2, result.previous!!.entries)
     }
 
     @Test
     fun comparisonUsesDailyMeansInBothPeriods() {
         val currentBusy = (0..8).map { entry("2026-11-09", it, 10) }
-        val previousBusy = (0..8).map { entry("2026-10-15", it, 0) }
-        val result = build(currentBusy + entry("2026-11-10", 9, 0) + previousBusy + entry("2026-10-16", 9, 8))
+        val previousBusy = (0..8).map { entry("2026-10-05", it, 0) }
+        val result = build(currentBusy + entry("2026-11-10", 9, 0) + previousBusy + entry("2026-10-06", 9, 8))
 
-        assertEquals(5.0, result.summary.averages!!.mood, 0.0001)
-        assertEquals(4.0, result.previous!!.averages!!.mood, 0.0001)
-        assertEquals(1.0, (result.summary.averages!! - result.previous!!.averages!!).mood, 0.0001)
+        assertEquals(5.0, result.summary.averageTension!!, 0.0001)
+        assertEquals(4.0, result.previous!!.averageTension!!, 0.0001)
     }
 
     @Test
-    fun quarterUsesExistingWeekAlignedBoundaryAndAllIncludesOlderHistory() {
+    fun quarterAndYearUseCalendarMonthBoundariesAndAllIncludesOlderHistory() {
         val old = entry("2020-01-01", 9, 7)
-        val boundary = entry("2026-08-17", 0, 3)
+        val boundary = entry("2026-08-11", 0, 3)
         val before = at(boundary.completedAt - 1, 9)
-        val quarter = MentalAnalytics.build(listOf(old, before, boundary), emptyList(), today, Period.Quarter, zone)
-        assertEquals(LocalDate.of(2026, 8, 17), quarter.start)
+        val yearBoundary = entry("2025-11-11", 0, 4)
+        val quarter = MentalAnalytics.build(listOf(old, before, boundary, yearBoundary), emptyList(), today, Period.Quarter, zone)
+        assertEquals(LocalDate.of(2026, 8, 11), quarter.start)
         assertEquals(listOf(boundary), quarter.entries)
+
+        val year = build(listOf(old, at(yearBoundary.completedAt - 1, 8), yearBoundary, boundary), period = Period.Year)
+        assertEquals(listOf(yearBoundary, boundary), year.entries)
 
         val all = build(listOf(old, boundary), period = Period.All)
         assertEquals(2, all.summary.entries)
@@ -94,16 +95,16 @@ class MentalAnalyticsTest {
     @Test
     fun localDayBoundariesAndComparisonStayCalendarBasedAcrossDaylightSaving() {
         val berlin = ZoneId.of("Europe/Berlin")
-        val firstDay = LocalDate.of(2026, 3, 9)
+        val firstDay = LocalDate.of(2026, 3, 1)
         val before = firstDay.atStartOfDay(berlin).toInstant().toEpochMilli() - 1
         val start = before + 1
         val result = MentalAnalytics.build(
             listOf(at(before, 2), at(start, 8)), emptyList(), LocalDate.of(2026, 3, 31), Period.Month, berlin,
         )
         assertEquals(firstDay, result.start)
-        assertEquals(LocalDate.of(2026, 2, 14), result.previousStart)
+        assertEquals(LocalDate.of(2026, 1, 29), result.previousStart)
         assertEquals(listOf(start), result.entries.map { it.completedAt })
-        assertEquals(2.0, result.previous!!.averages!!.mood, 0.0001)
+        assertEquals(2.0, result.previous!!.averageTension!!, 0.0001)
         assertEquals(firstDay, result.daily.single().day)
     }
 
@@ -121,14 +122,14 @@ class MentalAnalyticsTest {
         assertEquals(2, comparison.pairedDays)
         assertEquals(7, comparison.morning.entries)
         assertEquals(2, comparison.evening.entries)
-        assertEquals(5.0, comparison.morning.averages!!.mood, 0.0001)
-        assertEquals(3.0, comparison.evening.averages!!.mood, 0.0001)
+        assertEquals(5.0, comparison.morning.averageTension!!, 0.0001)
+        assertEquals(3.0, comparison.evening.averageTension!!, 0.0001)
         assertNull(build(entries.filter { it.completedAt < millis("2026-11-09") }).dayparts)
     }
 
     @Test
     fun questionnaireSeriesNeverMixScalesAndCompareWithPrecedingResultOutsidePeriod() {
-        val whoOld = result(MentalTest.WHO5, "2026-10-18", 1, 1)
+        val whoOld = result(MentalTest.WHO5, "2026-10-10", 1, 1)
         val whoNew = result(MentalTest.WHO5, "2026-11-09", 3, 2)
         val gadOld = result(MentalTest.GAD7, "2026-11-01", 2, 3)
         val gadNew = result(MentalTest.GAD7, "2026-11-10", 1, 4)
@@ -159,7 +160,7 @@ class MentalAnalyticsTest {
         at(millis(date) + hour * 3_600_000L, value, id)
 
     private fun at(time: Long, value: Int, id: Long = 0) =
-        QuickCheckIn(id = id, completedAt = time, mood = value, tension = value, energy = value)
+        QuickCheckIn(id = id, completedAt = time, tension = value)
 
     private fun result(test: MentalTest, date: String, answer: Int, id: Long) =
         MentalResult(id, test, millis(date), List(test.questions.size) { answer })

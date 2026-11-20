@@ -1,25 +1,17 @@
 package ru.begunok.mental
 
-import ru.begunok.workout.Analytics
 import ru.begunok.workout.Period
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
-/** Averages use observed calendar days, not the number of entries in a day. */
-data class MentalAverages(val mood: Double, val tension: Double, val energy: Double) {
-    operator fun minus(other: MentalAverages) = MentalAverages(
-        mood - other.mood, tension - other.tension, energy - other.energy,
-    )
-}
-
-data class MentalDailyAverage(val day: LocalDate, val entries: Int, val averages: MentalAverages)
+data class MentalDailyAverage(val day: LocalDate, val entries: Int, val averageTension: Double)
 
 data class MentalPeriodSummary(
     val entries: Int,
     val observedDays: Int,
-    val averages: MentalAverages?,
+    val averageTension: Double?,
 )
 
 /** Only days with both windows participate, with equal weight per paired day. */
@@ -57,7 +49,7 @@ data class MentalAnalytics(
             period: Period,
             zone: ZoneId = ZoneId.systemDefault(),
         ): MentalAnalytics {
-            val start = if (period == Period.All) null else Analytics.periodStart(today, period)
+            val start = period.start(today)
             val end = today.plusDays(1)
             val previousStart = start?.minusDays(ChronoUnit.DAYS.between(start, end))
             val startTime = start?.atStartOfDay(zone)?.toInstant()?.toEpochMilli()
@@ -97,21 +89,13 @@ data class MentalAnalytics(
         private fun daily(entries: List<QuickCheckIn>, zone: ZoneId): List<MentalDailyAverage> = entries
             .groupBy { Instant.ofEpochMilli(it.completedAt).atZone(zone).toLocalDate() }
             .map { (day, items) ->
-                MentalDailyAverage(day, items.size, MentalAverages(
-                    items.sumOf { it.mood.toDouble() } / items.size,
-                    items.sumOf { it.tension.toDouble() } / items.size,
-                    items.sumOf { it.energy.toDouble() } / items.size,
-                ))
+                MentalDailyAverage(day, items.size, items.sumOf { it.tension.toDouble() } / items.size)
             }.sortedBy { it.day }
 
         private fun summarize(days: List<MentalDailyAverage>) = MentalPeriodSummary(
             entries = days.sumOf { it.entries },
             observedDays = days.size,
-            averages = days.takeIf { it.isNotEmpty() }?.let {
-                MentalAverages(it.sumOf { day -> day.averages.mood } / it.size,
-                    it.sumOf { day -> day.averages.tension } / it.size,
-                    it.sumOf { day -> day.averages.energy } / it.size)
-            },
+            averageTension = days.takeIf { it.isNotEmpty() }?.let { it.sumOf { day -> day.averageTension } / it.size },
         )
     }
 }

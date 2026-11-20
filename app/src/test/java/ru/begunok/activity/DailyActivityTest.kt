@@ -10,7 +10,6 @@ import ru.begunok.health.DailySteps
 import ru.begunok.math.MathActivityEvent
 import ru.begunok.math.MathActivityKind
 import ru.begunok.math.MathDayActivity
-import ru.begunok.workout.Analytics
 import ru.begunok.workout.Period
 import java.time.LocalDate
 import java.time.ZoneId
@@ -46,14 +45,13 @@ class DailyActivityTest {
         reading: List<ReadingEntryEntity> = emptyList(),
         learning: List<MathActivityEvent> = emptyList(),
         showers: List<ColdShowerEntity> = emptyList(),
-        games: List<DailyGameActivity>? = emptyList(),
         steps: List<DailySteps> = emptyList(),
         period: Period = Period.All,
         zone: ZoneId = this.zone,
-    ) = DailyActivity.build(workouts, reading, learning, showers, games, steps, today, period, zone)
+    ) = DailyActivity.build(workouts, reading, learning, showers, steps, today, period, zone)
 
     @Test
-    fun mixedSourcesSumWithinDayAndDeduplicateGames() {
+    fun mixedSourcesSumWithinDay() {
         val rows = build(
             workouts = listOf(workout(today), workout(today, "Strength")),
             reading = listOf(reading(today, 0, 12), reading(today, 12, 19), reading(today, 19, 10), reading(today, 10, 10)),
@@ -65,11 +63,6 @@ class DailyActivityTest {
                 event(today, MathActivityKind.Review),
             ),
             showers = listOf(shower(today), shower(today, completed = false).copy(durationSec = 45)),
-            games = listOf(
-                DailyGameActivity("one", millis(today), Int.MAX_VALUE),
-                DailyGameActivity("one", millis(today), Int.MAX_VALUE),
-                DailyGameActivity("two", millis(today), Int.MAX_VALUE),
-            ),
             steps = listOf(DailySteps(today, 12_345)),
         )
         assertEquals(
@@ -78,8 +71,6 @@ class DailyActivityTest {
                 workouts = 2,
                 study = MathDayActivity(topics = 1, tasks = 2, reviews = 1),
                 pages = 19,
-                games = 2,
-                gameDurationSec = 2L * Int.MAX_VALUE,
                 showerDurationSec = 75L,
                 steps = 12_345,
             ),
@@ -88,26 +79,10 @@ class DailyActivityTest {
     }
 
     @Test
-    fun allQueuesIncludeStandardAndChaosAramWithoutDoubleCounting() {
-        val row = build(
-            games = listOf(
-                DailyGameActivity("regular", millis(today), 1_800, queueId = 400),
-                DailyGameActivity("aram", millis(today), 1_200, queueId = 450),
-                DailyGameActivity("chaos", millis(today), 900, queueId = 2400),
-                DailyGameActivity("aram", millis(today), 1_200, queueId = 450),
-                DailyGameActivity("chaos", millis(today), 900, queueId = 2400),
-            ),
-        ).single()
-
-        assertEquals(3, row.games)
-        assertEquals(3_900L, row.gameDurationSec)
-    }
-
-    @Test
     fun finitePeriodsIncludeBoundaryAndUseLocalDateAtMidnight() {
         val localZone = ZoneId.of("Europe/Moscow")
-        for (period in listOf(Period.Month, Period.Quarter)) {
-            val start = Analytics.periodStart(today, period)
+        for (period in listOf(Period.Month, Period.Quarter, Period.Year)) {
+            val start = requireNotNull(period.start(today))
             val boundary = millis(start, localZone)
             val endOfToday = millis(today.plusDays(1), localZone) - 1
             val rows = build(
@@ -118,7 +93,6 @@ class DailyActivityTest {
                 ),
                 reading = listOf(reading(today, 0, 5).copy(time = boundary)),
                 showers = listOf(shower(today).copy(time = boundary)),
-                games = listOf(DailyGameActivity("boundary", boundary, 60, queueId = 2400)),
                 period = period,
                 zone = localZone,
             )
@@ -128,8 +102,6 @@ class DailyActivityTest {
             assertEquals(1, rows.last().workouts)
             assertEquals(5, rows.last().pages)
             assertEquals(30L, rows.last().showerDurationSec)
-            assertEquals(1, rows.last().games)
-            assertEquals(60L, rows.last().gameDurationSec)
             assertEquals(2, rows.sumOf { it.workouts })
             assertEquals(ChronoUnit.DAYS.between(start, today) + 1, rows.size.toLong())
         }
@@ -143,18 +115,17 @@ class DailyActivityTest {
             reading = listOf(reading(tomorrow, 0, 20), reading(today.minusYears(3), 10, 5)),
             learning = listOf(event(tomorrow, MathActivityKind.Topic)),
             showers = listOf(shower(tomorrow)),
-            games = listOf(DailyGameActivity("future", millis(tomorrow), 60, queueId = 450)),
             steps = listOf(DailySteps(tomorrow, 123)),
         )
         assertEquals(
-            listOf(DailyActivityRow(today, games = 0, gameDurationSec = 0L)),
+            listOf(DailyActivityRow(today)),
             rows,
         )
     }
 
     @Test
     fun firstTopicBeforeCutoffIsNotRecountedInsidePeriod() {
-        val start = Analytics.periodStart(today, Period.Month)
+        val start = requireNotNull(Period.Month.start(today))
         val rows = build(
             learning = listOf(
                 event(today, MathActivityKind.Topic),
@@ -169,14 +140,9 @@ class DailyActivityTest {
     }
 
     @Test
-    fun unavailableSourcesRemainNullAndKnownEmptyGamesAreZero() {
-        val unavailable = build(games = null).single()
-        assertNull(unavailable.games)
-        assertNull(unavailable.gameDurationSec)
-        assertNull(unavailable.steps)
+    fun missingStepsStayNullAndRecordedZeroIsPreserved() {
+        assertNull(build().single().steps)
         val available = build(steps = listOf(DailySteps(today.minusDays(1), 0)))
-        assertEquals(0, available.first().games)
-        assertEquals(0L, available.first().gameDurationSec)
         assertNull(available.first().steps)
         assertEquals(0L, available.last().steps)
     }
@@ -189,7 +155,6 @@ class DailyActivityTest {
             build(reading = listOf(reading(oldest, 0, 1))),
             build(learning = listOf(event(oldest, MathActivityKind.Topic))),
             build(showers = listOf(shower(oldest, completed = false))),
-            build(games = listOf(DailyGameActivity("old", millis(oldest), 60))),
             build(steps = listOf(DailySteps(oldest, 0))),
         )
         for (rows in sources) {
@@ -197,7 +162,7 @@ class DailyActivityTest {
             assertEquals(today, rows.first().day)
             assertEquals(oldest, rows.last().day)
             assertEquals(
-                DailyActivityRow(today.minusDays(1), games = 0, gameDurationSec = 0L),
+                DailyActivityRow(today.minusDays(1)),
                 rows[1],
             )
             assertEquals((0L..280L).map { today.minusDays(it) }, rows.map { it.day })

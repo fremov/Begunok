@@ -74,11 +74,17 @@ internal class HealthHistoryStore(context: Context) : SQLiteOpenHelper(
     }
 
     @Synchronized
-    fun save(date: LocalDate, readAt: Instant, data: HealthDay, completed: Set<String>): HealthHistoryDay {
+    fun save(
+        date: LocalDate,
+        readAt: Instant,
+        data: HealthDay,
+        completed: Set<String>,
+        historyGranted: Boolean = false,
+    ): HealthHistoryDay {
         val db = writableDatabase
         db.beginTransaction()
         return try {
-            val result = save(db, date, readAt, data, completed)
+            val result = save(db, date, readAt, data, completed, historyGranted)
             db.setTransactionSuccessful()
             result
         } finally {
@@ -86,12 +92,23 @@ internal class HealthHistoryStore(context: Context) : SQLiteOpenHelper(
         }
     }
 
-    private fun save(db: SQLiteDatabase, date: LocalDate, readAt: Instant, data: HealthDay, completed: Set<String>): HealthHistoryDay {
+    private fun save(
+        db: SQLiteDatabase,
+        date: LocalDate,
+        readAt: Instant,
+        data: HealthDay,
+        completed: Set<String>,
+        historyGranted: Boolean = false,
+    ): HealthHistoryDay {
         val old = day(db, date)
         val merged = if (old != null && readAt.isBefore(old.readAt)) mergeHealthDay(data, old.data)
             else mergeHealthDay(old?.data, data)
         val timestamp = maxOf(old?.readAt ?: readAt, readAt)
-        val permissions = completed(db, date) + completed
+        // If a newer save won the merge, do not mark a discarded step correction as complete.
+        val accepted = if (data.totals.steps != null && data.totals.steps != merged.totals.steps) {
+            completed - HEALTH_STEPS_PERMISSION
+        } else completed
+        val permissions = completed(db, date) + healthCompletionMarkers(accepted, historyGranted)
         db.insertWithOnConflict("daily", null, ContentValues().apply {
             put("date", date.toString())
             put("read_at", timestamp.toString())
@@ -111,30 +128,22 @@ internal class HealthHistoryStore(context: Context) : SQLiteOpenHelper(
             db.execSQL("INSERT OR REPLACE INTO stress(seconds,nanos,score) VALUES(?,?,?)",
                 arrayOf<Any>(sample.time.epochSecond, sample.time.nano, sample.score))
         }
-        data.vitalitySamples.filter { it.score.isFinite() && it.score >= 0 }.forEach { sample ->
-            db.execSQL("INSERT OR REPLACE INTO vitality(seconds,nanos,score,earned) VALUES(?,?,?,?)",
-                arrayOf<Any?>(sample.time.epochSecond, sample.time.nano, sample.score, sample.earned))
-        }
         return HealthHistoryDay(date, timestamp, merged)
     }
 
     @Synchronized
-    fun saveExtras(stress: List<StressSample>, vitality: List<VitalitySample>, readAt: Instant, zone: ZoneId) {
-        if (stress.isEmpty() && vitality.isEmpty()) return
+    fun saveStress(stress: List<StressSample>, readAt: Instant, zone: ZoneId) {
+        if (stress.isEmpty()) return
         val stressDays = stress.groupBy { it.time.atZone(zone).toLocalDate() }
-        val vitalityDays = vitality.groupBy { it.time.atZone(zone).toLocalDate() }
         val db = writableDatabase
         db.beginTransaction()
         try {
-            for (date in stressDays.keys + vitalityDays.keys) {
-                val stressSamples = stressDays[date].orEmpty()
-                val vitalitySamples = vitalityDays[date].orEmpty()
+            for ((date, stressSamples) in stressDays) {
                 save(db, date, readAt, HealthDay(
                     totals = HealthTotals(sources = setOf("nodomain.freeyourgadget.gadgetbridge")),
                     lastHr = null, spo2 = null, sleep = null,
-                    stressSamples = stressSamples, vitalitySamples = vitalitySamples,
+                    stressSamples = stressSamples,
                     lastStress = stressSamples.maxByOrNull { it.time },
-                    lastVitality = vitalitySamples.maxByOrNull { it.time },
                 ), emptySet())
             }
             db.setTransactionSuccessful()
@@ -147,27 +156,43 @@ internal class HealthHistoryStore(context: Context) : SQLiteOpenHelper(
     fun day(date: LocalDate): HealthHistoryDay? = day(readableDatabase, date)
 
     @Synchronized
-    fun pendingDates(today: LocalDate, permissions: Set<String>, limit: Int): List<LocalDate> {
+    fun pendingDays(
+        today: LocalDate,
+        permissions: Set<String>,
+        historyGranted: Boolean,
+        limit: Int,
+    ): List<Pair<LocalDate, Set<String>>> {
+        if (permissions.isEmpty()) return emptyList()
         val db = readableDatabase
         val start = metadata(db, "backfill_start")?.let(LocalDate::parse) ?: return emptyList()
-        val completedDates = mutableSetOf<LocalDate>()
-        val attempts = mutableMapOf<LocalDate, Instant>()
-        db.query("daily", arrayOf("date", "read_at", "completed"), "date >= ? AND date < ?",
-            arrayOf(start.toString(), today.toString()), null, null, null).use { cursor ->
+        val olderPermissions = permissions.intersect(setOf(HEALTH_STEPS_PERMISSION))
+        val storedDates = mutableSetOf<LocalDate>()
+        val pending = mutableListOf<Triple<LocalDate, Set<String>, Instant>>()
+        val condition = if (olderPermissions.isEmpty()) "date >= ? AND date < ?" else "date < ?"
+        val startText = start.toString()
+        val endText = today.toString()
+        val args = if (olderPermissions.isEmpty()) arrayOf(startText, startText, endText) else arrayOf(startText, endText)
+        db.rawQuery(
+            "SELECT date, read_at, completed, CASE WHEN date < ? THEN data END FROM daily WHERE $condition ORDER BY date DESC",
+            args,
+        ).use { cursor ->
             while (cursor.moveToNext()) {
                 val date = LocalDate.parse(cursor.getString(0))
-                if (strings(JSONArray(cursor.getString(2))).containsAll(permissions)) completedDates.add(date)
-                else attempts[date] = Instant.parse(cursor.getString(1))
+                val older = date < start
+                if (!older) storedDates.add(date)
+                val wanted = if (older) olderPermissions else permissions
+                val missing = pendingHealthPermissions(wanted, strings(JSONArray(cursor.getString(2))), historyGranted)
+                if (missing.isEmpty() || (older && JSONObject(cursor.getString(3)).isNull("steps"))) continue
+                pending.add(Triple(date, missing, Instant.parse(cursor.getString(1))))
             }
         }
-        val result = mutableListOf<LocalDate>()
         var date = today.minusDays(1)
-        while (!date.isBefore(start)) {
-            if (date !in completedDates) result.add(date)
+        while (date >= start) {
+            if (date !in storedDates) pending.add(Triple(date, permissions, Instant.MIN))
             date = date.minusDays(1)
         }
         // Unattempted days first; persistent failures rotate instead of starving older dates.
-        return result.sortedBy { attempts[it] ?: Instant.MIN }.take(limit)
+        return pending.sortedBy { it.third }.take(limit).map { it.first to it.second }
     }
 
     @Synchronized
@@ -186,7 +211,36 @@ internal class HealthHistoryStore(context: Context) : SQLiteOpenHelper(
     }
 
     @Synchronized
-    fun history(start: LocalDate?, end: LocalDate, zone: ZoneId): HealthHistory {
+    fun analyticsDateBounds(zone: ZoneId): ClosedRange<LocalDate>? {
+        val db = readableDatabase
+        var first: LocalDate? = null
+        var last: LocalDate? = null
+        fun include(start: LocalDate, end: LocalDate) {
+            first = minOf(first ?: start, start)
+            last = maxOf(last ?: end, end)
+        }
+        db.rawQuery("SELECT min(date), max(date) FROM daily", null).use { cursor ->
+            if (cursor.moveToFirst() && !cursor.isNull(0)) {
+                include(LocalDate.parse(cursor.getString(0)), LocalDate.parse(cursor.getString(1)))
+            }
+        }
+        for (table in listOf("heart_rate", "oxygen", "stress")) {
+            db.rawQuery(
+                "SELECT (SELECT seconds FROM $table ORDER BY seconds LIMIT 1), " +
+                    "(SELECT seconds FROM $table ORDER BY seconds DESC LIMIT 1)",
+                null,
+            ).use { cursor ->
+                if (cursor.moveToFirst() && !cursor.isNull(0)) {
+                    fun date(column: Int) = Instant.ofEpochSecond(cursor.getLong(column)).atZone(zone).toLocalDate()
+                    include(date(0), date(1))
+                }
+            }
+        }
+        return first?.let { it..checkNotNull(last) }
+    }
+
+    @Synchronized
+    fun history(start: LocalDate?, end: LocalDate, zone: ZoneId, includeVitality: Boolean = true): HealthHistory {
         if (start != null && start.isAfter(end)) return HealthHistory()
         val db = readableDatabase
         val days = mutableListOf<HealthHistoryDay>()
@@ -215,9 +269,11 @@ internal class HealthHistoryStore(context: Context) : SQLiteOpenHelper(
             while (cursor.moveToNext()) stress.add(StressSample(Instant.ofEpochSecond(cursor.getLong(0), cursor.getLong(1)), cursor.getInt(2)))
         }
         val vitality = mutableListOf<VitalitySample>()
-        db.query("vitality", arrayOf("seconds", "nanos", "score", "earned"), samplesCondition, sampleArgs, null, null, "seconds ASC, nanos ASC").use { cursor ->
-            while (cursor.moveToNext()) vitality.add(VitalitySample(Instant.ofEpochSecond(cursor.getLong(0), cursor.getLong(1)), cursor.getDouble(2),
-                if (cursor.isNull(3)) null else cursor.getDouble(3)))
+        if (includeVitality) {
+            db.query("vitality", arrayOf("seconds", "nanos", "score", "earned"), samplesCondition, sampleArgs, null, null, "seconds ASC, nanos ASC").use { cursor ->
+                while (cursor.moveToNext()) vitality.add(VitalitySample(Instant.ofEpochSecond(cursor.getLong(0), cursor.getLong(1)), cursor.getDouble(2),
+                    if (cursor.isNull(3)) null else cursor.getDouble(3)))
+            }
         }
         return HealthHistory(days, heartRates, oxygen, stress, vitality)
     }

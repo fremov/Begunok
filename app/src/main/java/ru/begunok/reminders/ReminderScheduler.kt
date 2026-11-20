@@ -104,7 +104,7 @@ class ReminderScheduler(context: Context) {
                 Kind.Movement -> Triple("Пора размяться", "Встаньте и немного походите после сидения.", 4200 + slot)
                 Kind.CheckInMorning, Kind.CheckInEvening -> Triple(
                     "Как ты себя сейчас чувствуешь?",
-                    "Отметь настроение, напряжение и энергию.",
+                    "Отметь уровень напряжения.",
                     kind.requestCode(slot),
                 )
             }

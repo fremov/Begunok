@@ -59,6 +59,17 @@ class HealthAutoSync(private val context: Context, private val repository: Healt
         historyStore.history(start, end, ZoneId.systemDefault())
     }
 
+    internal suspend fun analyticsDateBounds(zone: ZoneId): ClosedRange<LocalDate>? = withContext(Dispatchers.IO) {
+        check(initializeHistory(LocalDate.now(zone)) == null) { "Health history is not initialized" }
+        historyStore.analyticsDateBounds(zone)
+    }
+
+    internal suspend fun analyticsHistory(start: LocalDate, end: LocalDate, zone: ZoneId): HealthHistory =
+        withContext(Dispatchers.IO) {
+            check(initializeHistory(LocalDate.now(zone)) == null) { "Health history is not initialized" }
+            historyStore.history(start, end, zone, includeVitality = false)
+        }
+
     /** Calendar projection: daily rows only, no raw measurement arrays or provider requests. */
     suspend fun dailySteps(start: LocalDate?, end: LocalDate): List<DailySteps> = withContext(Dispatchers.IO) {
         initializeHistory(LocalDate.now(ZoneId.systemDefault()))
@@ -134,7 +145,7 @@ class HealthAutoSync(private val context: Context, private val repository: Healt
                 val elapsed = SystemClock.elapsedRealtime()
                 if (exportUri != lastExtrasUri || lastExtrasReadAt < 0 || elapsed - lastExtrasReadAt >= GADGETBRIDGE_REQUEST_INTERVAL_MS) {
                     val extras = extrasImporter.read(exportUri?.toUri(), date.minusDays(30).atStartOfDay(zone).toInstant(), now)
-                    withContext(Dispatchers.IO) { historyStore.saveExtras(extras.stress, extras.vitality, now, zone) }
+                    withContext(Dispatchers.IO) { historyStore.saveStress(extras.stress, now, zone) }
                     extrasMessage = extras.message
                     lastExtrasUri = exportUri
                     lastExtrasReadAt = elapsed
@@ -192,7 +203,7 @@ class HealthAutoSync(private val context: Context, private val repository: Healt
                 context.sendBroadcast(
                     Intent("nodomain.freeyourgadget.gadgetbridge.command.ACTIVITY_SYNC")
                         .setPackage(GADGETBRIDGE_PACKAGE)
-                        // Daily activity, SpO2, stress, HR and Xiaomi vitality; no workouts or GPS tracks.
+                        // Keep the existing activity and sensor request, without workout or GPS flags.
                         .putExtra("dataTypesHex", "0x000001E1")
                 )
                 Log.i(TAG, "Requested bracelet sync from Gadgetbridge")
@@ -209,16 +220,17 @@ class HealthAutoSync(private val context: Context, private val repository: Healt
             val zone = ZoneId.systemDefault()
             val today = LocalDate.now(zone)
             val readable = granted.intersect(repository.permissions) - HealthPermission.PERMISSION_READ_HEALTH_DATA_HISTORY
+            val historyGranted = HealthPermission.PERMISSION_READ_HEALTH_DATA_HISTORY in granted
             val pending = withContext(Dispatchers.IO) {
-                historyStore.pendingDates(today, readable, BACKFILL_DAYS_PER_REFRESH)
+                historyStore.pendingDays(today, readable, historyGranted, BACKFILL_DAYS_PER_REFRESH)
             }
             val failures = mutableListOf<String>()
-            for (date in pending) {
+            for ((date, permissions) in pending) {
                 val result = repository.readDay(
-                    date.atStartOfDay(zone).toInstant(), date.plusDays(1).atStartOfDay(zone).toInstant(), granted,
+                    date.atStartOfDay(zone).toInstant(), date.plusDays(1).atStartOfDay(zone).toInstant(), permissions,
                 )
                 withContext(Dispatchers.IO) {
-                    historyStore.save(date, Instant.now(), result.data, result.completedPermissions.intersect(readable))
+                    historyStore.save(date, Instant.now(), result.data, result.completedPermissions, historyGranted)
                 }
                 historyCommitted()
                 if (result.errors.isNotEmpty()) failures.add("$date: ${result.errors.joinToString("; ")}")

@@ -34,35 +34,36 @@ class MentalRepository(private val dao: MentalDao) {
 
     fun observeCheckIns(): Flow<List<QuickCheckIn>> = dao.observeCheckIns().map { entries ->
         entries.map { entry ->
-            QuickCheckIn(entry.id, entry.completedAt, entry.mood, entry.tension, entry.energy, entry.context)
+            QuickCheckIn(entry.id, entry.completedAt, entry.tension, entry.context)
         }
     }
 
     suspend fun recordCheckIn(
-        mood: Int,
         tension: Int,
-        energy: Int,
         context: String? = null,
         completedAt: Long = System.currentTimeMillis(),
     ) {
         // Validate before touching storage; no same-day replacement or score aggregation.
         val entry = QuickCheckIn(
             completedAt = completedAt,
-            mood = mood,
             tension = tension,
-            energy = energy,
             context = context?.trim()?.takeIf { it.isNotEmpty() },
         )
         dao.insertCheckIn(
             QuickCheckInEntity(
                 completedAt = entry.completedAt,
-                mood = entry.mood,
+                // Legacy columns stay in the USB/Room schema; -1 means no score was recorded.
+                mood = UNRECORDED_LEGACY_SCORE,
                 tension = entry.tension,
-                energy = entry.energy,
+                energy = UNRECORDED_LEGACY_SCORE,
                 context = entry.context,
             )
         )
     }
 
     suspend fun deleteCheckIn(id: Long) = dao.deleteCheckIn(id)
+
+    private companion object {
+        const val UNRECORDED_LEGACY_SCORE = -1
+    }
 }

@@ -99,7 +99,7 @@ internal fun GadgetbridgeExportSettings(onFolderChanged: () -> Unit) {
 
     Card(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Gadgetbridge · стресс и Vitality", style = MaterialTheme.typography.titleLarge)
+            Text("Gadgetbridge · стресс", style = MaterialTheme.typography.titleLarge)
             Text("Выберите отдельную папку Documents/MyLifeSensors и настройте в Gadgetbridge автоэкспорт базы SQLite (.db) в ту же папку. ZIP-резервная копия не нужна.")
             val configured = selected
             if (configured == null) {
@@ -139,7 +139,6 @@ internal fun GadgetbridgeExportSettings(onFolderChanged: () -> Unit) {
                     }
                 }) { Text("Отключить папку") }
             }
-            Text("Vitality / PAI — баллы активности, не запас энергии. Настроение отмечается отдельно в самооценке.")
         }
     }
 }

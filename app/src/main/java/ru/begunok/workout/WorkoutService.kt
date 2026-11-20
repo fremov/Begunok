@@ -69,7 +69,11 @@ class WorkoutService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         when (intent?.action) {
-            ACTION_START -> start()
+            ACTION_START -> {
+                val type = intent.getStringExtra(EXTRA_DAY_TYPE)
+                val dayType = DayType.entries.firstOrNull { it.name == type }
+                if (dayType != null) start(dayType) else if (tracker == null) stopSelf()
+            }
             ACTION_PAUSE -> pause()
             ACTION_RESUME -> resume()
             ACTION_STOP -> stop()
@@ -87,10 +91,10 @@ class WorkoutService : LifecycleService() {
         return START_NOT_STICKY
     }
 
-    private fun start() {
+    private fun start(dayType: DayType) {
         if (tracker != null) return
         startTime = System.currentTimeMillis()
-        val initial = WorkoutState(phase = WorkoutPhase.Running, startTime = startTime)
+        val initial = WorkoutState(phase = WorkoutPhase.Running, startTime = startTime, day = dayType)
         if (!startInForeground(initial)) {
             stopSelf()
             return
@@ -129,18 +133,16 @@ class WorkoutService : LifecycleService() {
                 }
             }
             settings = container.settings.settings.first()
-            val dayPlan = settings.dayType?.let(settings::dayPlan)
+            val dayPlan = settings.dayPlan(dayType)
             plan = dayPlan
-            program = if (dayPlan != null) dayPlan.runProgram(settings.selectedProgram) else settings.selectedProgram
-            if (dayPlan != null) {
-                val last = container.workouts.observeLastSessions(dayPlan.strength.exercises.map { it.id }).first()
-                targets = Progression.targets(dayPlan.strength, last)
-            }
+            program = dayPlan.runProgram(settings.selectedProgram)
+            val last = container.workouts.observeLastSessions(dayPlan.strength.exercises.map { it.id }).first()
+            targets = Progression.targets(dayPlan.strength, last)
             alerts = AlertPlayer(this@WorkoutService, lifecycleScope, settings.voice.engine, container.voicePack)
             launch { container.settings.settings.collect { settings = it } }
-            val id = container.workouts.create(startTime, settings.upperLimit, settings.lowerLimit, program?.name, dayPlan?.type)
+            val id = container.workouts.create(startTime, settings.upperLimit, settings.lowerLimit, program?.name, dayType)
             workoutId = id
-            if (dayPlan?.initialStage == Stage.Strength) toStrength()
+            if (dayPlan.initialStage == Stage.Strength && stage == Stage.Run) toStrength()
 
             val origin = SystemClock.elapsedRealtime()
             while (isActive) {
@@ -388,10 +390,8 @@ class WorkoutService : LifecycleService() {
                 lastCountdown = -1
                 if (position.finished) {
                     onProgramCompleted()
-                    if (plan != null) {
-                        toBreak(auto = true)
-                        return
-                    }
+                    toBreak(auto = true)
+                    return
                 }
                 val segmentSec = when (position.kind) {
                     IntervalKind.Warmup -> p.warmupSec
@@ -519,6 +519,7 @@ class WorkoutService : LifecycleService() {
         private const val ACTION_RUN_RESULT = "ru.begunok.workout.RUN_RESULT"
         private const val EXTRA_REPS = "reps"
         private const val EXTRA_COMPLETED = "completed"
+        private const val EXTRA_DAY_TYPE = "day_type"
 
         private const val TICK_MS = 1_000L
         private const val COOLDOWN_MS = 3 * 60_000L
@@ -528,8 +529,8 @@ class WorkoutService : LifecycleService() {
         private val _state = MutableStateFlow(WorkoutState())
         val state: StateFlow<WorkoutState> = _state.asStateFlow()
 
-        fun start(context: Context) {
-            ContextCompat.startForegroundService(context, intent(context, ACTION_START))
+        fun start(context: Context, dayType: DayType) {
+            ContextCompat.startForegroundService(context, intent(context, ACTION_START).putExtra(EXTRA_DAY_TYPE, dayType.name))
         }
 
         fun send(context: Context, action: String) {

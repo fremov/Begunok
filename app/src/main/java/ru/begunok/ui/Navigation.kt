@@ -13,14 +13,16 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.filled.MenuBook
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Insights
@@ -41,7 +43,9 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -116,8 +120,7 @@ private enum class Group(val label: String?) {
 
 private enum class Section(val label: String, val icon: ImageVector, val group: Group) {
     Workout("Тренировка", Icons.AutoMirrored.Filled.DirectionsRun, Group.Training),
-    History("История", Icons.Filled.History, Group.Training),
-    Analytics("Аналитика", Icons.Filled.Insights, Group.Training),
+    Analytics("Активность", Icons.Filled.Insights, Group.Training),
     Shower("Холодный душ", Icons.Filled.Shower, Group.Habits),
     Reading("Чтение", Icons.AutoMirrored.Filled.MenuBook, Group.Habits),
     Math("Математика", Icons.Filled.Calculate, Group.Learning),
@@ -129,6 +132,7 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
 }
 
 private const val TABS = "tabs"
+private const val HISTORY = "history"
 private const val SENSOR = "sensor"
 private const val MATH_READER = "math/{lessonId}"
 
@@ -146,7 +150,9 @@ fun BegunokNavigation(
     val scope = rememberCoroutineScope()
     var section by rememberSaveable { mutableStateOf(Section.Workout) }
     val backStack by navController.currentBackStackEntryAsState()
-    val onTabs = backStack?.destination?.route == TABS
+    val route = backStack?.destination?.route
+    val onTabs = route == TABS
+    val onHistory = route == HISTORY
 
     fun open(target: Section) {
         if (!onTabs) navController.popBackStack(TABS, inclusive = false)
@@ -174,13 +180,27 @@ fun BegunokNavigation(
         drawerContent = { DrawerContent(section, onSelect = ::open) },
     ) {
         Scaffold(
+            contentWindowInsets = if (route == MATH_READER) WindowInsets.safeDrawing else ScaffoldDefaults.contentWindowInsets,
             topBar = {
-                if (onTabs) {
+                if (onTabs || onHistory) {
                     TopAppBar(
-                        title = { Text(section.label) },
+                        title = { Text(if (onHistory) "История" else section.label) },
                         navigationIcon = {
-                            IconButton(onClick = { scope.launch { drawer.toggle() } }) {
-                                Icon(Icons.Filled.Menu, contentDescription = "Меню")
+                            if (onHistory) {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
+                                }
+                            } else {
+                                IconButton(onClick = { scope.launch { drawer.toggle() } }) {
+                                    Icon(Icons.Filled.Menu, contentDescription = "Меню")
+                                }
+                            }
+                        },
+                        actions = {
+                            if (onTabs && section == Section.Workout) {
+                                TextButton(onClick = { navController.navigate(HISTORY) { launchSingleTop = true } }) {
+                                    Text("История")
+                                }
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
@@ -270,8 +290,14 @@ private fun AppNavHost(
                 },
                 label = "section",
             ) { current ->
-                SectionContent(current, navController, container, stopRequested, onStopRequestHandled) { open(Section.Mental) }
+                SectionContent(current, navController, container, stopRequested, onStopRequestHandled)
             }
+        }
+        screen(HISTORY) {
+            HistoryScreen(
+                viewModel = viewModel { HistoryViewModel(container.workouts) },
+                onOpen = { id -> navController.navigate("workout/$id") { launchSingleTop = true } },
+            )
         }
         screen(SENSOR) {
             SensorScreen(
@@ -286,10 +312,11 @@ private fun AppNavHost(
             MathReaderScreen(
                 viewModel = viewModel { MathViewModel(container.math) },
                 lessonId = entry.arguments?.getString("lessonId").orEmpty(),
-                onBack = { navController.popBackStack() },
                 onOpenLesson = { id ->
-                    navController.navigate("math/${Uri.encode(id)}") {
-                        popUpTo(MATH_READER) { inclusive = true }
+                    if (navController.currentBackStackEntry == entry) {
+                        navController.navigate("math/${Uri.encode(id)}") {
+                            popUpTo(MATH_READER) { inclusive = true }
+                        }
                     }
                 },
             )
@@ -335,7 +362,6 @@ private fun SectionContent(
     container: AppContainer,
     stopRequested: Boolean,
     onStopRequestHandled: () -> Unit,
-    onOpenMental: () -> Unit,
 ) {
     when (section) {
         Section.Workout -> HomeScreen(
@@ -354,18 +380,13 @@ private fun SectionContent(
             onOpenWorkout = { id -> navController.navigate("workout/$id?celebrate=true") },
             onEditPlan = { type -> navController.navigate("plan/${type.name}") },
         )
-        Section.History -> HistoryScreen(
-            viewModel = viewModel { HistoryViewModel(container.workouts) },
-            onOpen = { id -> navController.navigate("workout/$id") },
-        )
         Section.Analytics -> AnalyticsScreen(
             viewModel {
                 AnalyticsViewModel(
-                    container.workouts, container.showers, container.mental,
-                    container.reading, container.math, container.lolSettings, container.healthAutoSync,
+                    container.workouts, container.showers,
+                    container.reading, container.math, container.healthAutoSync,
                 )
             },
-            onOpenMental = onOpenMental,
         )
         Section.Shower -> ShowerScreen(
             viewModel { ShowerViewModel(container.appContext, container.showers, container.settings, container.voicePack) },

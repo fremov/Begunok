@@ -19,7 +19,6 @@ import kotlin.coroutines.coroutineContext
 
 data class GadgetbridgeExtrasRead(
     val stress: List<StressSample> = emptyList(),
-    val vitality: List<VitalitySample> = emptyList(),
     val message: String? = null,
 )
 
@@ -133,13 +132,12 @@ class GadgetbridgeExtrasImporter(context: Context) {
     }
 
     private fun readSamples(db: SQLiteDatabase, start: Instant, end: Instant): GadgetbridgeExtrasRead {
-        // Official 2026.11.1 schema: GBDaoGenerator.java, XiaomiStressSampleProvider,
-        // XiaomiPaiSampleProvider, DailyDetailsParser and DailySummaryParser.
+        // Official 2026.11.1 schema: GBDaoGenerator.java, XiaomiStressSampleProvider and DailyDetailsParser.
         // https://codeberg.org/Freeyourgadget/Gadgetbridge/src/tag/2026.11.1
-        // Activity timestamps are epoch seconds; manual and daily summary timestamps are milliseconds.
+        // Activity timestamps are epoch seconds; manual sample timestamps are milliseconds.
         val deviceIds = mutableListOf<Long>()
         db.rawQuery(
-            "SELECT _id FROM DEVICE WHERE TYPE_NAME = 'MIBAND11ACTIVE' OR _id IN (SELECT DEVICE_ID FROM XIAOMI_ACTIVITY_SAMPLE UNION SELECT DEVICE_ID FROM XIAOMI_MANUAL_SAMPLE UNION SELECT DEVICE_ID FROM XIAOMI_DAILY_SUMMARY_SAMPLE)",
+            "SELECT _id FROM DEVICE WHERE TYPE_NAME = 'MIBAND11ACTIVE' OR _id IN (SELECT DEVICE_ID FROM XIAOMI_ACTIVITY_SAMPLE UNION SELECT DEVICE_ID FROM XIAOMI_MANUAL_SAMPLE)",
             null,
         ).use { cursor ->
             while (cursor.moveToNext()) deviceIds += cursor.getLong(0)
@@ -168,22 +166,7 @@ class GadgetbridgeExtrasImporter(context: Context) {
                 if (time >= start && time < end && score in 1..100) stress += StressSample(time, score)
             }
         }
-        val vitality = mutableListOf<VitalitySample>()
-        db.rawQuery(
-            "SELECT TIMESTAMP, VITALITY_CURRENT, VITALITY_INCREASE_LIGHT, VITALITY_INCREASE_MODERATE, VITALITY_INCREASE_HIGH FROM XIAOMI_DAILY_SUMMARY_SAMPLE WHERE DEVICE_ID = ? AND TIMESTAMP >= ? AND TIMESTAMP <= ? AND VITALITY_CURRENT IS NOT NULL ORDER BY TIMESTAMP",
-            arrayOf(device, start.toEpochMilli().toString(), end.toEpochMilli().toString()),
-        ).use { cursor ->
-            while (cursor.moveToNext()) {
-                val time = Instant.ofEpochMilli(cursor.getLong(0))
-                val score = cursor.getDouble(1)
-                // Null components are unknown, not zero. Keep explicit zero values.
-                val earned = if ((2..4).all { !cursor.isNull(it) })
-                    (2..4).sumOf { cursor.getDouble(it) }.takeIf { value -> value >= 0 }
-                else null
-                if (time >= start && time < end && score >= 0) vitality += VitalitySample(time, score, earned)
-            }
-        }
-        return GadgetbridgeExtrasRead(stress.distinct().sortedBy { it.time }, vitality)
+        return GadgetbridgeExtrasRead(stress.distinct().sortedBy { it.time })
     }
 
     private companion object {

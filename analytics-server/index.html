@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark light">
+    <meta name="referrer" content="no-referrer">
+    <title>Аналитика · MyLife</title>
+    <link rel="stylesheet" href="/dashboard.css">
+    <script src="/dashboard.js" defer></script>
+</head>
+<body>
+    <header class="masthead">
+        <div class="shell masthead-inner">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 28 28" fill="none"><path d="M3 15h5l3-7 4 13 4-9 2 3h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span>MyLife</span>
+            </div>
+            <span class="private-label"><svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="3.5" y="7" width="9" height="7" rx="1.5" stroke="currentColor"/><path d="M5.5 7V5a2.5 2.5 0 1 1 5 0v2" stroke="currentColor"/></svg>Личные данные</span>
+        </div>
+    </header>
+    <main class="shell">
+        <div class="workspace-header">
+            <div>
+                <h1>Аналитика</h1>
+                <p>История показателей, переданных из MyLife на телефоне.</p>
+            </div>
+            <div class="period-control">
+                <span class="control-label" id="period-label">Период</span>
+                <div class="periods" role="group" aria-labelledby="period-label" id="periods">
+                    <button type="button" data-period="month" aria-pressed="true">Месяц</button>
+                    <button type="button" data-period="quarter" aria-pressed="false">3 месяца</button>
+                    <button type="button" data-period="year" aria-pressed="false">Год</button>
+                    <button type="button" data-period="all" aria-pressed="false">Всё время</button>
+                </div>
+            </div>
+        </div>
+        <nav aria-label="Разделы аналитики" id="views" class="views">
+            <button type="button" data-view="physical" aria-pressed="true">Физическое состояние</button>
+            <button type="button" data-view="mental" aria-pressed="false">Психологическое состояние</button>
+        </nav>
+        <div class="workspace">
+            <aside class="metric-index" aria-label="Показатели">
+                <div class="index-heading">
+                    <h2>Показатели</h2>
+                    <p id="range-label"></p>
+                </div>
+                <div id="metric-list" class="metric-list" role="group" aria-label="Выбрать показатель"></div>
+                <label class="mobile-picker" for="metric-select">Показатель
+                    <select id="metric-select"></select>
+                </label>
+            </aside>
+            <div class="main-column">
+                <section id="request-state" class="surface request-state" aria-labelledby="request-title">
+                    <h2 id="request-title">Загружаем показатели</h2>
+                    <p id="request-message" role="status">Получаем историю с личного сервера.</p>
+                    <button id="retry" type="button" class="secondary-button" hidden>Повторить</button>
+                </section>
+                <section id="metric-panel" class="surface metric-panel" aria-labelledby="metric-title" hidden>
+                    <div class="panel-heading">
+                        <div>
+                            <p id="metric-kicker" class="eyebrow"></p>
+                            <h2 id="metric-title"></h2>
+                            <p id="metric-description" class="description"></p>
+                        </div>
+                        <label id="comparison-control" class="comparison-control">
+                            <input id="compare" type="checkbox" checked> Сравнение на графике
+                        </label>
+                    </div>
+                    <dl id="metric-stats" class="stat-strip"></dl>
+                    <figure class="metric-figure">
+                        <figcaption class="chart-caption">
+                            <span id="chart-unit"></span>
+                            <span id="chart-legend" class="chart-legend"><span><i class="current-key" aria-hidden="true"></i>Выбранный</span><span id="previous-key"><i class="previous-key" aria-hidden="true"></i>Предыдущий</span></span>
+                        </figcaption>
+                        <svg id="metric-chart" class="plot" role="img" aria-label="График показателя"></svg>
+                        <p id="empty-chart" class="chart-empty" hidden></p>
+                    </figure>
+                    <div id="chart-inspection" class="inspection" hidden>
+                        <div class="inspect-controls">
+                            <button type="button" id="day-back" class="icon-button" aria-label="Предыдущий день">‹</button>
+                            <label for="inspect-date" class="visually-hidden">Дата на графике</label>
+                            <input type="date" id="inspect-date" required>
+                            <button type="button" id="day-forward" class="icon-button" aria-label="Следующий день">›</button>
+                        </div>
+                        <p id="day-value" class="inspection-value" aria-live="polite"></p>
+                    </div>
+                    <p id="chart-note" class="chart-note"></p>
+                    <details id="data-details" class="data-details" hidden>
+                        <summary>Значения по дням</summary>
+                        <div id="data-table" class="data-table" tabindex="0" role="region" aria-label="Значения по дням"></div>
+                    </details>
+                </section>
+                <section id="dayparts-panel" class="surface detail-panel" aria-labelledby="dayparts-title" hidden>
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">Напряжение</p>
+                            <h2 id="dayparts-title">Утро и вечер</h2>
+                            <p class="description">Средние по дням, когда есть отметки в обоих интервалах.</p>
+                        </div>
+                    </div>
+                    <dl id="dayparts-values" class="stat-strip"></dl>
+                    <p id="dayparts-note" class="detail-note"></p>
+                </section>
+                <section id="sleep-panel" class="surface detail-panel" aria-labelledby="sleep-title" hidden>
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">Сон</p>
+                            <h2 id="sleep-title">Фазы сна</h2>
+                            <p class="description">Выберите дату пробуждения или нажмите на день на графике.</p>
+                        </div>
+                        <label id="sleep-date-control" class="sleep-control" for="sleep-date">Ночи с записями<select id="sleep-date"></select></label>
+                    </div>
+                    <p id="sleep-status" class="detail-note" role="status"></p>
+                    <button id="sleep-retry" type="button" class="secondary-button sleep-retry" hidden>Повторить</button>
+                    <div id="sleep-content" hidden>
+                        <div class="sleep-reading">
+                            <p id="sleep-window"></p>
+                            <label id="sleep-session-control" for="sleep-session" hidden>Сеанс<select id="sleep-session"></select></label>
+                        </div>
+                        <svg id="sleep-chart" class="plot sleep-plot" role="img" aria-label="Гипнограмма"></svg>
+                        <ul id="sleep-legend" class="sleep-legend" aria-label="Длительность по фазам"></ul>
+                        <dl id="sleep-comparison" class="stat-strip" aria-label="Сравнение ночей"></dl>
+                        <details id="sleep-details" class="data-details">
+                            <summary>Интервалы по фазам</summary>
+                            <div id="sleep-table" class="data-table" tabindex="0" role="region" aria-label="Интервалы по фазам"></div>
+                        </details>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+    <noscript><p class="shell">Для отображения графиков включите JavaScript.</p></noscript>
+</body>
+</html>

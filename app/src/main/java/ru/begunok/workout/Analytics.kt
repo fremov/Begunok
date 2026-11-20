@@ -10,10 +10,13 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
-enum class Period(val label: String, val weeks: Int?) {
-    Month("4 недели", 4),
-    Quarter("3 месяца", 13),
-    All("Всё время", null),
+enum class Period(val label: String, private val months: Long?) {
+    Month("Месяц", 1),
+    Quarter("3 мес.", 3),
+    Year("Год", 12),
+    All("Всё время", null);
+
+    fun start(today: LocalDate): LocalDate? = months?.let { today.plusDays(1).minusMonths(it) }
 }
 
 /** Какие тренировки показывать: все, беговые (и просто бег) или силовые. */
@@ -47,17 +50,12 @@ data class RunPoint(
     val id: Long,
     val time: Long,
     val distanceM: Double,
-    val durationMs: Long,
     val paceSecPerKm: Double?,
     val avgHr: Int?,
     val maxHr: Int?,
-    val upperLimit: Int,
-    val title: String?,
 )
 
-data class WeekSummary(val runs: Int, val distanceM: Double, val durationMs: Long, val paceSecPerKm: Double?, val avgHr: Int?)
-
-data class Records(val longest: RunPoint?, val fastest: RunPoint?, val longestTime: RunPoint?)
+data class RunAverages(val distanceM: Double?, val paceSecPerKm: Double?, val avgHr: Double?)
 
 data class ExerciseSession(val time: Long, val target: Int, val best: Int, val total: Int, val reps: List<Int>) {
     val success: Boolean get() = reps.all { it >= target }
@@ -83,9 +81,8 @@ data class Analytics(
     val daysSinceLast: Int?,
     val weeks: List<WeekStat>,
     val runs: List<RunPoint>,
-    val currentWeek: WeekSummary,
-    val previousWeek: WeekSummary,
-    val records: Records,
+    val runAverages: RunAverages,
+    val weeklyDistanceAverageM: Double?,
     val programRuns: Int,
     val programCompleted: Int,
     val exercises: List<ExerciseStat>,
@@ -93,21 +90,14 @@ data class Analytics(
     val steps: Long?,
     val showerSeries: List<AnalyticsPoint>,
     val stepSeries: List<AnalyticsPoint>,
+    val showerAverageSec: Double?,
+    val stepAverage: Double? = null,
 ) {
     companion object {
         const val RUN_PLAN = 3
         const val STRENGTH_PLAN = 2
         const val WEEK_PLAN = RUN_PLAN + STRENGTH_PLAN
-        const val MAX_WEEKS = 26
-        const val MIN_WEEKS = 4
         const val MIN_RUN_M = 500.0
-        const val MIN_RECORD_PACE_M = 1_000.0
-
-        fun periodStart(today: LocalDate, period: Period): LocalDate {
-            val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val weeks = period.weeks ?: MAX_WEEKS
-            return weekStart.minusWeeks((weeks - 1).toLong())
-        }
 
         fun build(
             workouts: List<WorkoutEntity>,
@@ -122,41 +112,39 @@ data class Analytics(
         ): Analytics {
             fun dateOf(millis: Long) = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
             val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val scoped = workouts.filter { kind.includes(it) }
-            val firstDate = scoped.minOfOrNull { dateOf(it.startTime) }
-            val weeksCount = period.weeks ?: firstDate
-                ?.let { (ChronoUnit.WEEKS.between(it.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)), weekStart) + 1).toInt() }
-                ?.coerceIn(MIN_WEEKS, MAX_WEEKS)
-                ?: MIN_WEEKS
-            val from = weekStart.minusWeeks((weeksCount - 1).toLong())
-            val inPeriod = scoped.filter { !dateOf(it.startTime).isBefore(from) }
+            val scoped = workouts.filter { kind.includes(it) && dateOf(it.startTime) <= today }
+            val from = period.start(today)
+            val inPeriod = if (from == null) scoped else scoped.filter { dateOf(it.startTime) >= from }
+            val firstWeek = (from ?: inPeriod.minOfOrNull { dateOf(it.startTime) } ?: today)
+                .with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            val workoutsByWeek = inPeriod.groupBy {
+                dateOf(it.startTime).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+            }
             val periodIds = inPeriod.map { it.id }.toSet()
 
-            fun inWeek(start: LocalDate) = scoped.filter { w ->
-                dateOf(w.startTime).let { !it.isBefore(start) && it.isBefore(start.plusWeeks(1)) }
-            }
-            val weeks = (weeksCount - 1 downTo 0).map { i ->
-                val start = weekStart.minusWeeks(i.toLong())
-                val list = inWeek(start)
-                WeekStat(start, list.size, list.filter { it.countsDistance() }.sumOf { it.distanceM })
-            }
-            val allRuns = workouts
-                .filter { it.distanceM >= MIN_RUN_M && it.countsDistance() }
+            val weeks = generateSequence(firstWeek) { start ->
+                if (start < weekStart) start.plusWeeks(1) else null
+            }.map { start ->
+                val sessions = workoutsByWeek[start].orEmpty()
+                WeekStat(start, sessions.size, sessions.filter { it.countsDistance() }.sumOf { it.distanceM })
+            }.toList()
+            val allRuns = scoped.filter { it.distanceM >= MIN_RUN_M && it.countsDistance() }
                 .sortedBy { it.startTime }
                 .map {
                     RunPoint(
-                        it.id, it.startTime, it.distanceM, it.durationMs, paceSecPerKm(it.durationMs, it.distanceM),
-                        it.avgHr, it.maxHr, it.upperLimit, it.programName,
+                        it.id, it.startTime, it.distanceM, paceSecPerKm(it.durationMs, it.distanceM),
+                        it.avgHr, it.maxHr,
                     )
                 }
             val runs = allRuns.filter { it.id in periodIds }
             val programs = inPeriod.filter { it.programName != null && it.dayType != DayType.Strength.name }
-            val coldShowersInPeriod = showers.filter { !dateOf(it.time).isBefore(from) }
-            val coldShowerDurationSec = coldShowersInPeriod.sumOf { it.durationSec.toLong() }
-            val showerSeries = coldShowersInPeriod
-                .groupBy { dateOf(it.time) }
-                .toSortedMap()
-                .map { (day, sessions) -> AnalyticsPoint(day.atStartOfDay(zone).toInstant().toEpochMilli(), sessions.sumOf { it.durationSec.toLong() }.toFloat()) }
+            val showersByDay = showers.groupBy { dateOf(it.time) }.filterKeys { it <= today }
+                .mapValues { (_, sessions) -> sessions.sumOf { it.durationSec.toLong() } }
+            val selectedShowers = if (from == null) showersByDay else showersByDay.filterKeys { it >= from }
+            val coldShowerDurationSec = selectedShowers.values.sum()
+            val showerSeries = selectedShowers.toSortedMap().map { (day, seconds) ->
+                AnalyticsPoint(day.atStartOfDay(zone).toInstant().toEpochMilli(), seconds.toFloat())
+            }
             return Analytics(
                 total = inPeriod.size,
                 thisWeek = weeks.last().workouts,
@@ -166,16 +154,15 @@ data class Analytics(
                 daysSinceLast = scoped.maxOfOrNull { it.startTime }?.let { ChronoUnit.DAYS.between(dateOf(it), today).toInt() },
                 weeks = weeks,
                 runs = runs,
-                currentWeek = summary(allRuns.filter { r -> dateOf(r.time).let { !it.isBefore(weekStart) } }),
-                previousWeek = summary(
-                    allRuns.filter { r -> dateOf(r.time).let { !it.isBefore(weekStart.minusWeeks(1)) && it.isBefore(weekStart) } },
+                runAverages = RunAverages(
+                    allRuns.asSequence().map { it.distanceM }.average().takeIf { it.isFinite() },
+                    allRuns.asSequence().mapNotNull { it.paceSecPerKm }.average().takeIf { it.isFinite() },
+                    allRuns.asSequence().mapNotNull { it.avgHr }.average().takeIf { it.isFinite() },
                 ),
-                records = Records(
-                    longest = allRuns.maxByOrNull { it.distanceM },
-                    fastest = allRuns.filter { it.distanceM >= MIN_RECORD_PACE_M && it.paceSecPerKm != null }
-                        .minByOrNull { it.paceSecPerKm!! },
-                    longestTime = allRuns.maxByOrNull { it.durationMs },
-                ),
+                weeklyDistanceAverageM = scoped.asSequence().filter { it.countsDistance() }
+                    .groupingBy { dateOf(it.startTime).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)) }
+                    .fold(0.0) { total, workout -> total + workout.distanceM }
+                    .values.average().takeIf { it.isFinite() },
                 programRuns = programs.size,
                 programCompleted = programs.count { it.programCompleted },
                 exercises = exerciseStats(sets.filter { it.workoutId in periodIds }),
@@ -183,19 +170,7 @@ data class Analytics(
                 steps = steps,
                 showerSeries = showerSeries,
                 stepSeries = stepSeries,
-            )
-        }
-
-        fun summary(runs: List<RunPoint>): WeekSummary {
-            val distance = runs.sumOf { it.distanceM }
-            val duration = runs.sumOf { it.durationMs }
-            val hr = runs.filter { it.avgHr != null }
-            return WeekSummary(
-                runs = runs.size,
-                distanceM = distance,
-                durationMs = duration,
-                paceSecPerKm = paceSecPerKm(duration, distance),
-                avgHr = if (hr.isEmpty()) null else (hr.sumOf { it.avgHr!!.toLong() * it.durationMs } / hr.sumOf { it.durationMs }.coerceAtLeast(1)).toInt(),
+                showerAverageSec = showersByDay.values.average().takeIf { it.isFinite() },
             )
         }
 

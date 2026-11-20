@@ -88,16 +88,16 @@ import ru.begunok.workout.WorkoutState
 import ru.begunok.workout.formatSpan
 
 @Composable
-internal fun DayTypePicker(selected: DayType?, onSelect: (DayType?) -> Unit) {
-    val options = listOf(null to "Бег", DayType.Run to DayType.Run.label, DayType.Strength to DayType.Strength.label)
+internal fun DayTypePicker(selected: DayType, onSelect: (DayType) -> Unit) {
+    val options = DayType.entries
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-        options.forEachIndexed { i, (type, label) ->
+        options.forEachIndexed { i, type ->
             SegmentedButton(
                 selected = selected == type,
                 onClick = { onSelect(type) },
                 shape = SegmentedButtonDefaults.itemShape(i, options.size),
                 icon = {},
-            ) { Text(label, textAlign = TextAlign.Center, maxLines = 2) }
+            ) { Text(type.label, textAlign = TextAlign.Center, maxLines = 2) }
         }
     }
 }
@@ -126,7 +126,7 @@ internal fun PlanCard(preview: PlanPreview, program: IntervalProgram?, onEdit: (
             }
         }
         val steps = buildList {
-            if (plan.warmupSec > 0) add(StageColors.Warmup to "Разминка ${formatSpan(plan.warmupSec)}, быстрый шаг")
+            if (program != null && plan.warmupSec > 0) add(StageColors.Warmup to "Разминка ${formatSpan(plan.warmupSec)}, быстрый шаг")
             if (plan.initialStage == ru.begunok.workout.Stage.Run) {
                 add(
                     StageColors.Run to (

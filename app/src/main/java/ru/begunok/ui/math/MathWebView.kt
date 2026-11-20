@@ -46,6 +46,92 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
+import org.json.JSONObject
+
+internal enum class MathReaderAction(slug: String) {
+    Previous("previous"),
+    Next("next"),
+    Complete("complete"),
+    Task("task"),
+    Retry("retry");
+
+    val path = "/assets/math/reader-action/$slug"
+}
+
+internal data class MathReaderControls(
+    val hasPrevious: Boolean,
+    val hasNext: Boolean,
+    val completed: Boolean,
+    val taskCount: Int,
+    val saving: Boolean,
+    val saveError: Boolean,
+)
+
+// In-document controls participate in the WebView's scroll and zoom, just like the article.
+// Their links are intercepted locally; no JavaScript interface is exposed to lesson pages.
+private fun WebView.updateReaderControls(controls: MathReaderControls) {
+    val state = JSONObject()
+        .put("previous", controls.hasPrevious)
+        .put("next", controls.hasNext)
+        .put("completed", controls.completed)
+        .put("tasks", controls.taskCount)
+        .put("saving", controls.saving)
+        .put("saveError", controls.saveError)
+    evaluateJavascript(
+        """
+        ((state) => {
+            let controls = document.getElementById('mylife-reader-actions');
+            if (!controls) {
+                controls = document.createElement('section');
+                controls.id = 'mylife-reader-actions';
+                controls.setAttribute('aria-label', 'Действия с уроком');
+                controls.innerHTML =
+                    '<style>' +
+                    '#mylife-reader-actions { margin-block-start: 2rem; }' +
+                    '#mylife-reader-actions a { display: inline-flex; align-items: center; min-height: 48px; font-weight: 600; }' +
+                    '#mylife-reader-actions a[aria-disabled=true] { color: var(--muted); text-decoration: none; }' +
+                    '#mylife-reader-actions [hidden] { display: none; }' +
+                    '#mylife-reader-actions .progress-links { display: flex; flex-wrap: wrap; column-gap: 1.25rem; }' +
+                    '#mylife-reader-actions p { color: var(--muted); font-size: .88em; margin-block: 0 .5rem; }' +
+                    '#mylife-reader-actions p:empty { margin: 0; }' +
+                    '#mylife-reader-actions nav {' +
+                    ' display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem;' +
+                    ' border-top: 1px solid var(--line); margin-block-start: 1rem; padding-block-start: .5rem; }' +
+                    '#mylife-reader-actions nav a:first-child { justify-self: start; }' +
+                    '#mylife-reader-actions nav a:last-child { justify-self: end; text-align: end; }' +
+                    '</style>' +
+                    '<div class="progress-links">' +
+                    '<a data-action="complete" href="${MathReaderAction.Complete.path}"></a>' +
+                    '<a data-action="task" href="${MathReaderAction.Task.path}">Отметить задачу (+1)</a>' +
+                    '</div>' +
+                    '<p data-tasks aria-live="polite"></p>' +
+                    '<p data-status role="status"></p>' +
+                    '<a data-action="retry" href="${MathReaderAction.Retry.path}">Повторить сохранение</a>' +
+                    '<nav aria-label="Порядок уроков">' +
+                    '<a data-action="previous" href="${MathReaderAction.Previous.path}">Предыдущий урок</a>' +
+                    '<a data-action="next" href="${MathReaderAction.Next.path}">Следующий урок</a>' +
+                    '</nav>';
+                document.querySelector('main').append(controls);
+            }
+
+            const action = (name, enabled) => {
+                const link = controls.querySelector('[data-action=' + name + ']');
+                link.setAttribute('aria-disabled', String(!enabled || state.saving));
+                return link;
+            };
+            action('previous', state.previous);
+            action('next', state.next);
+            action('complete', true).textContent = state.completed ? 'Урок пройден · снять отметку' : 'Отметить урок пройденным';
+            action('task', true);
+            controls.querySelector('[data-tasks]').textContent = 'Задач отмечено: ' + state.tasks;
+            controls.querySelector('[data-status]').textContent = state.saving ? 'Сохраняем…' :
+                state.saveError ? 'Не удалось сохранить действие.' : '';
+            action('retry', state.saveError).hidden = !state.saveError;
+        })($state);
+        """.trimIndent(),
+        null,
+    )
+}
 
 private class MathWebViewHolder {
     var view: WebView? = null
@@ -73,16 +159,20 @@ internal fun MathWebView(
     lessonId: String,
     lessonIds: Set<String>,
     isDark: Boolean,
+    controls: MathReaderControls,
     onOpenLesson: (String) -> Unit,
+    onAction: (MathReaderAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var attempt by remember(lessonId) { mutableIntStateOf(0) }
     val openLesson by rememberUpdatedState(onOpenLesson)
+    val handleAction by rememberUpdatedState(onAction)
     val background = MaterialTheme.colorScheme.surface.toArgb()
     key(lessonId, isDark, attempt) {
         val holder = remember { MathWebViewHolder() }
         val lifecycleOwner = LocalLifecycleOwner.current
         var loading by remember { mutableStateOf(true) }
+        var loadedPage by remember { mutableIntStateOf(0) }
         var error by remember { mutableStateOf<String?>(null) }
 
         DisposableEffect(lifecycleOwner, holder) {
@@ -108,6 +198,9 @@ internal fun MathWebView(
                     error = "Локальный просмотрщик не отвечает. Повторите открытие материала."
                 }
             }
+        }
+        LaunchedEffect(loadedPage, controls) {
+            if (loadedPage > 0 && !loading && error == null) holder.view?.updateReaderControls(controls)
         }
         Box(modifier) {
             AndroidView(
@@ -155,14 +248,25 @@ internal fun MathWebView(
                             webViewClient = object : WebViewClient() {
                                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                                     if (!request.isForMainFrame || request.method != "GET") return true
-                                    val targetId = provider.lessonId(request.url) ?: return true
+                                    val url = request.url
+                                    if (request.hasGesture() && view.url?.substringBefore('#') == selected.toString() &&
+                                        url.scheme == selected.scheme && url.encodedAuthority == selected.encodedAuthority &&
+                                        url.encodedQuery == null && url.encodedFragment == null
+                                    ) {
+                                        val action = MathReaderAction.entries.firstOrNull { it.path == url.encodedPath }
+                                        if (action != null) {
+                                            handleAction(action)
+                                            return true
+                                        }
+                                    }
+                                    val targetId = provider.lessonId(url) ?: return true
                                     if (targetId != lessonId) {
                                         openLesson(targetId)
                                         return true
                                     }
                                     // Preserve native theme even for a same-lesson relative href.
-                                    if (request.url.encodedQuery != selected.encodedQuery) {
-                                        view.loadUrl(selected.buildUpon().encodedFragment(request.url.encodedFragment).build().toString())
+                                    if (url.encodedQuery != selected.encodedQuery) {
+                                        view.loadUrl(selected.buildUpon().encodedFragment(url.encodedFragment).build().toString())
                                         return true
                                     }
                                     return false
@@ -174,7 +278,10 @@ internal fun MathWebView(
                                     if (!holder.released) loading = true
                                 }
                                 override fun onPageFinished(view: WebView, pageUrl: String?) {
-                                    if (!holder.released) loading = false
+                                    if (!holder.released) {
+                                        loading = false
+                                        loadedPage++
+                                    }
                                 }
                                 override fun onReceivedError(view: WebView, request: WebResourceRequest, webError: WebResourceError) {
                                     if (request.isForMainFrame && !holder.released) {

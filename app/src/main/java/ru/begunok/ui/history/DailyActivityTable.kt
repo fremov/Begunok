@@ -65,12 +65,12 @@ private val activityLocale = Locale.forLanguageTag("ru")
 private val activityDate = DateTimeFormatter.ofPattern("dd.MM.yyyy", activityLocale)
 private val activityMonthTitle = DateTimeFormatter.ofPattern("LLLL yyyy", activityLocale)
 private val activityMonths = listOf("янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
-private val activityLabels = listOf("Тренировки", "Учёба", "Чтение", "LoL", "Душ", "Шаги")
+private val activityLabels = listOf("Тренировки", "Учёба", "Чтение", "Душ", "Шаги")
 
 private fun DailyActivityRow.activityMask(): Int =
     (if (workouts > 0) 1 else 0) or (if (study.total > 0) 2 else 0) or
-        (if (pages > 0) 4 else 0) or (if ((games ?: 0) > 0) 8 else 0) or
-        (if (showerDurationSec > 0) 16 else 0) or (if ((steps ?: 0) > 0) 32 else 0)
+        (if (pages > 0) 4 else 0) or (if (showerDurationSec > 0) 8 else 0) or
+        (if ((steps ?: 0) > 0) 16 else 0)
 
 private fun dayDescription(date: LocalDate, mask: Int): String {
     val labels = activityLabels.filterIndexed { index, _ -> mask and (1 shl index) != 0 }
@@ -160,16 +160,11 @@ internal fun DailyActivityTable(
                     Text(if (selection.yearly) "За год" else "За месяц", style = MaterialTheme.typography.labelLarge)
                 }
                 val summaryRows = if (selected == null) rows else listOfNotNull(byDay[selected])
-                ActivityNumbers(summaryRows, colors, state.gamesLoading)
-                if (state.gamesLoading) Text("Загружаем игры LoL…", style = MaterialTheme.typography.bodySmall)
+                ActivityNumbers(summaryRows, colors)
                 if (state.stepsLoading) Text("Загружаем шаги…", style = MaterialTheme.typography.bodySmall)
                 state.stepsMessage?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     TextButton(onClick = onReload) { Text("Обновить шаги") }
-                }
-                state.gamesMessage?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
-                    TextButton(onClick = onReload) { Text("Обновить") }
                 }
             }
         }
@@ -315,14 +310,12 @@ private fun ActivityBands(mask: Int, colors: ActivityColors, modifier: Modifier)
 }
 
 @Composable
-private fun ActivityNumbers(rows: List<DailyActivityRow>, colors: ActivityColors, gamesLoading: Boolean) {
-    val gamesKnown = rows.isNotEmpty() && rows.all { it.games != null }
-    val games = if (gamesKnown) rows.sumOf { it.games ?: 0 }.toString() else if (gamesLoading) "…" else "—"
+private fun ActivityNumbers(rows: List<DailyActivityRow>, colors: ActivityColors) {
     val steps = rows.mapNotNull { it.steps }.takeIf { it.isNotEmpty() }?.sum()?.toString() ?: "—"
     val values = listOf(
         rows.sumOf { it.workouts }.toString(),
         rows.sumOf { it.study.total }.toString(),
-        "${rows.sumOf { it.pages }} стр.", games,
+        "${rows.sumOf { it.pages }} стр.",
         Format.duration(rows.sumOf { it.showerDurationSec } * 1000), steps,
     )
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -333,13 +326,10 @@ private fun ActivityNumbers(rows: List<DailyActivityRow>, colors: ActivityColors
                     Column(Modifier.weight(1f)) {
                         Text(if (index == 0) "Трен." else activityLabels[index], style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(value, style = numberStyle(if (index == 1) 18 else 23), color = colors.all[index])
-                        val detail = when (index) {
-                            1 -> "${rows.sumOf { it.study.topics }}т · ${rows.sumOf { it.study.tasks }}з · ${rows.sumOf { it.study.reviews }}п"
-                            3 -> if (gamesKnown && rows.any { (it.games ?: 0) > 0 })
-                                "${rows.sumOf { it.gameDurationSec ?: 0L } / 60} мин" else null
-                            else -> null
+                        if (index == 1) {
+                            val detail = "${rows.sumOf { it.study.topics }}т · ${rows.sumOf { it.study.tasks }}з · ${rows.sumOf { it.study.reviews }}п"
+                            Text(detail, style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = colors.study)
                         }
-                        detail?.let { Text(it, style = MaterialTheme.typography.labelSmall, fontSize = 10.sp, color = colors.all[index]) }
                     }
                 }
                 if (cells.size < 3) Spacer(Modifier.weight((3 - cells.size).toFloat()))

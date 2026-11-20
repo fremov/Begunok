@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import ru.begunok.alerts.VoicePack
+import ru.begunok.analytics.AnalyticsSync
+import ru.begunok.analytics.LocalAnalyticsSnapshots
 import ru.begunok.data.ReadingRepository
 import ru.begunok.data.FinanceRepository
 import ru.begunok.data.MentalRepository
@@ -45,11 +47,13 @@ class AppContainer(context: Context) {
     val math = MathRepository(appContext)
     val health = HealthRepository(appContext)
     val healthAutoSync = HealthAutoSync(appContext, health, settings)
+    internal val analyticsSync = AnalyticsSync(appContext, healthAutoSync, LocalAnalyticsSnapshots(showers, weight, mental))
     val voicePack = VoicePack(appContext)
     val lolSettings = LolSettings(appContext)
 
     init {
         healthAutoSync.schedule()
+        appScope.launch { analyticsSync.start() }
         appScope.launch {
             settings.settings.collect { reminderScheduler.schedule(it) }
         }

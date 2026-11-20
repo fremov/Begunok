@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -31,6 +30,8 @@ import ru.begunok.workout.WorkoutService
 import ru.begunok.workout.WorkoutState
 import ru.begunok.workout.WorkoutSummary
 
+internal val AppSettings.trainingDayType: DayType get() = dayType ?: DayType.Run
+
 data class PlanPreview(val plan: DayPlan, val targets: Map<String, Int>)
 
 data class RunProgress(val program: IntervalProgram, val streak: Int, val next: IntervalProgram?) {
@@ -47,28 +48,24 @@ class HomeViewModel(
 ) : ViewModel() {
     val sensor: StateFlow<SensorState> = monitor.state
     val workout: StateFlow<WorkoutState> = WorkoutService.state
-    val appSettings: StateFlow<AppSettings> =
-        settings.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings())
+    val appSettings: StateFlow<AppSettings?> =
+        settings.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val gps: StateFlow<GpsStatus> =
         locationClient.status().stateIn(viewModelScope, SharingStarted.WhileSubscribed(2_000), GpsStatus.Searching)
 
     val preview: StateFlow<PlanPreview?> = settings.settings
-        .map { s -> s.dayType?.let(s::dayPlan) }
+        .map { it.dayPlan(it.trainingDayType) }
         .distinctUntilChanged()
         .flatMapLatest { plan ->
-            if (plan == null) {
-                flowOf(null)
-            } else {
-                workouts.observeLastSessions(plan.strength.exercises.map { it.id })
-                    .map { PlanPreview(plan, Progression.targets(plan.strength, it)) }
-            }
+            workouts.observeLastSessions(plan.strength.exercises.map { it.id })
+                .map { PlanPreview(plan, Progression.targets(plan.strength, it)) }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val runProgress: StateFlow<RunProgress?> =
         combine(settings.settings, workouts.observeRecentPrograms(Progression.LEVEL_UP_SESSIONS)) { s, recent ->
             val current = s.selectedProgram ?: return@combine null
-            if (s.dayType == DayType.Strength) return@combine null
+            if (s.trainingDayType != DayType.Run) return@combine null
             RunProgress(
                 program = current,
                 streak = Progression.successStreak(recent.map { it.programName to it.programCompleted }, current.name),
@@ -112,10 +109,10 @@ class HomeViewModel(
         }
     }
 
-    fun start() {
+    fun start(type: DayType) {
         recovered.value = null
         WorkoutService.clearLastFinished()
-        WorkoutService.start(appContext)
+        WorkoutService.start(appContext, type)
     }
 
     fun pause() = WorkoutService.send(appContext, WorkoutService.ACTION_PAUSE)
@@ -142,7 +139,7 @@ class HomeViewModel(
 
     fun setRunResult(completed: Boolean) = WorkoutService.setRunResult(appContext, completed)
 
-    fun setDayType(type: DayType?) {
+    fun setDayType(type: DayType) {
         viewModelScope.launch { settings.setDayType(type) }
     }
 

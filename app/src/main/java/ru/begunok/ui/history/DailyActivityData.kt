@@ -10,13 +10,10 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import ru.begunok.activity.ActivityCalendarPeriod
 import ru.begunok.activity.DailyActivity
 import ru.begunok.activity.DailyActivityRow
-import ru.begunok.activity.DailyGameActivity
-import ru.begunok.data.GameActivityRepository
 import ru.begunok.data.MathRepository
 import ru.begunok.data.ReadingRepository
 import ru.begunok.data.ShowerRepository
@@ -26,7 +23,6 @@ import ru.begunok.data.db.ReadingEntryEntity
 import ru.begunok.data.db.WorkoutEntity
 import ru.begunok.health.HealthAutoSync
 import ru.begunok.health.StepHistory
-import ru.begunok.lol.LolSettings
 import ru.begunok.math.MathActivityEvent
 import ru.begunok.workout.Period
 import java.time.LocalDate
@@ -36,8 +32,6 @@ internal data class DailyActivityTableState(
     val rows: List<DailyActivityRow> = emptyList(),
     val loading: Boolean = true,
     val failed: Boolean = false,
-    val gamesLoading: Boolean = false,
-    val gamesMessage: String? = null,
     val stepsLoading: Boolean = false,
     val stepsMessage: String? = null,
     val selection: ActivityCalendarPeriod = ActivityCalendarPeriod(),
@@ -50,19 +44,12 @@ private data class LocalActivity(
     val showers: List<ColdShowerEntity>,
 )
 
-private data class GameHistory(
-    val games: List<DailyGameActivity>? = null,
-    val loading: Boolean = false,
-    val message: String? = null,
-)
-
 @OptIn(ExperimentalCoroutinesApi::class)
 internal fun observeDailyActivity(
     workouts: WorkoutRepository,
     reading: ReadingRepository,
     math: MathRepository,
     showers: ShowerRepository,
-    settings: LolSettings,
     health: HealthAutoSync,
     selection: Flow<ActivityCalendarPeriod>,
     reload: Flow<Int>,
@@ -94,31 +81,8 @@ internal fun observeDailyActivity(
                         .catch { emit(StepHistory(message = it.message ?: "Не удалось прочитать шаги.", failed = true)) }
                         .flowOn(Dispatchers.IO)
                 }
-                // Token registration must not restart an in-flight match-history request.
-                val connection = settings.prefs
-                    .map { Triple(it.serverUrl, it.myRiotId, it.demo) }
-                    .distinctUntilChanged()
-                val games = connection.flatMapLatest { config ->
-                    flow {
-                        val message = when {
-                            config.third -> "Игры LoL: демо-данные не учитываются. Отключите демо-режим в разделе LoL."
-                            config.first.isBlank() || config.second.isBlank() ->
-                                "Игры LoL: укажите сервер и свой Riot ID в разделе LoL."
-                            else -> null
-                        }
-                        if (message != null) {
-                            emit(GameHistory(message = message))
-                        } else {
-                            emit(GameHistory(loading = true))
-                            val history = GameActivityRepository(settings).load(start, end, zone)
-                            emit(GameHistory(games = history.games, message = history.message))
-                        }
-                    }.catch {
-                        emit(GameHistory(message = "Не удалось загрузить игры LoL. Остальные активности доступны."))
-                    }
-                }.onStart { emit(GameHistory(loading = true)) }
                 emitAll(
-                    combine(local, steps, games) { data, dailySteps, history ->
+                    combine(local, steps) { data, dailySteps ->
                         DailyActivityTableState(
                             rows = buildList {
                                 val rowsByDay = DailyActivity.build(
@@ -126,7 +90,6 @@ internal fun observeDailyActivity(
                                     reading = data.reading,
                                     learning = data.learning,
                                     showers = data.showers,
-                                    games = history.games,
                                     steps = dailySteps.days,
                                     today = end,
                                     period = Period.All,
@@ -134,19 +97,11 @@ internal fun observeDailyActivity(
                                 ).filter { it.day >= start && it.day <= end }.associateBy { it.day }
                                 var day = end
                                 while (day >= start) {
-                                    add(
-                                        rowsByDay[day] ?: DailyActivityRow(
-                                            day = day,
-                                            games = history.games?.let { 0 },
-                                            gameDurationSec = history.games?.let { 0L },
-                                        ),
-                                    )
+                                    add(rowsByDay[day] ?: DailyActivityRow(day = day))
                                     day = day.minusDays(1)
                                 }
                             },
                             loading = false,
-                            gamesLoading = history.loading,
-                            gamesMessage = history.message,
                             stepsLoading = dailySteps.loading,
                             stepsMessage = dailySteps.message,
                             selection = selected,

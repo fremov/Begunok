@@ -43,12 +43,30 @@ class AnalyticsTest {
         assertEquals(listOf(1_800.0, 2_000.0), a.runs.map { it.distanceM })
         assertEquals(2, a.programRuns)
         assertEquals(1, a.programCompleted)
-        assertEquals(125L, a.coldShowerDurationSec)
-        assertEquals(listOf(125f), a.showerSeries.map { it.value })
+        assertEquals(185L, a.coldShowerDurationSec)
+        assertEquals(listOf(60f, 125f), a.showerSeries.map { it.value })
         assertEquals(12_345L, a.steps)
         val pull = a.exercises.single()
         assertEquals(DayType.Run, pull.day)
         assertEquals(listOf(5, 6), pull.sessions.map { it.best })
         assertEquals(false, pull.last.success)
-}
+    }
+
+    @Test
+    fun yearIncludesBoundaryAndAllKeepsWorkoutsOlderThanAYear() {
+        val today = LocalDate.of(2026, 11, 10)
+        val recent = WorkoutEntity(1, millis(today), 1, 600_000, 2_000.0, 140, 160, 145, null)
+        val boundary = recent.copy(id = 2, startTime = millis(LocalDate.of(2025, 11, 11)))
+        val before = recent.copy(id = 3, startTime = boundary.startTime - 24 * 3_600_000, distanceM = 5_000.0, avgHr = null)
+        val future = recent.copy(id = 4, startTime = millis(today.plusDays(1)), distanceM = 7_000.0)
+        val workouts = listOf(recent, boundary, before, future)
+        val year = Analytics.build(workouts, emptyList(), today, zone, Period.Year)
+        val all = Analytics.build(workouts, emptyList(), today, zone, Period.All)
+
+        assertEquals(listOf(2L, 1L), year.runs.map { it.id })
+        assertEquals(3_000.0, requireNotNull(year.runAverages.distanceM), 0.01)
+        assertEquals(140.0, requireNotNull(year.runAverages.avgHr), 0.01)
+        assertEquals(listOf(3L, 2L, 1L), all.runs.map { it.id })
+        assertEquals(3, all.weeks.sumOf { it.workouts })
+    }
 }

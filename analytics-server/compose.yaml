@@ -1,0 +1,22 @@
+services:
+  analytics:
+    image: python:3.13-slim
+    network_mode: host
+    user: "${MYLIFE_UID:?}:${MYLIFE_GID:?}"
+    working_dir: /app
+    command: ["python", "-B", "server.py"]
+    env_file: analytics.env
+    environment:
+      MYLIFE_ANALYTICS_DB: /data/analytics.db
+      MYLIFE_ANALYTICS_HOST: 127.0.0.1
+      MYLIFE_ANALYTICS_PORT: "8786"
+      MYLIFE_ANALYTICS_WRITER_PORT: "8787"
+    volumes:
+      - .:/app:ro
+      - ./data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

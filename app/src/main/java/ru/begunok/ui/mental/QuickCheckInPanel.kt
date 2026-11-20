@@ -43,9 +43,7 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
     val save by viewModel.checkInSaveState.collectAsStateWithLifecycle()
     val deletion by viewModel.checkInDeleteState.collectAsStateWithLifecycle()
     var open by rememberSaveable { mutableStateOf(false) }
-    var mood by rememberSaveable { mutableStateOf(-1) }
     var tension by rememberSaveable { mutableStateOf(-1) }
-    var energy by rememberSaveable { mutableStateOf(-1) }
     var context by rememberSaveable { mutableStateOf("") }
     var discarding by rememberSaveable { mutableStateOf(false) }
     var saved by rememberSaveable { mutableStateOf(false) }
@@ -57,9 +55,7 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
         if (save.completed) {
             open = false
             discarding = false
-            mood = -1
             tension = -1
-            energy = -1
             context = ""
             saved = true
             // Keep the completion guard until the user explicitly starts another entry.
@@ -76,7 +72,7 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         MentalCard {
             Heading("Как вы сейчас?")
-            Text("Настроение, напряжение и энергия · 15–20 секунд")
+            Text("Напряжение по шкале от 0 до 10")
             Text("Можно отмечать несколько раз в день.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Button(onClick = {
                 viewModel.resetCheckInSave()
@@ -97,7 +93,7 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
         }
         Heading("История коротких отметок")
         if (!state.loading && state.error == null && state.checkIns.isEmpty()) {
-            Text("Здесь появятся время и три оценки каждой отметки.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Здесь появятся время и оценка напряжения каждой отметки.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         val visible = if (showAll) state.checkIns else state.checkIns.take(5)
         visible.forEach { entry ->
@@ -118,7 +114,7 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
 
     val requestClose = {
         if (!save.saving) {
-            if (mood >= 0 || tension >= 0 || energy >= 0 || context.isNotBlank()) discarding = true
+            if (tension >= 0 || context.isNotBlank()) discarding = true
             else open = false
         }
     }
@@ -127,17 +123,9 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 TextButton(onClick = requestClose, enabled = !save.saving) { Text("Закрыть") }
                 Heading("Состояние сейчас")
-                Text("Выберите от 0 до 10 для каждой оценки.", style = MaterialTheme.typography.bodyMedium)
-                CheckInMeasure("Настроение", "очень плохо", "отлично", mood, !save.saving) {
-                    mood = it
-                    viewModel.resetCheckInSave()
-                }
+                Text("Выберите оценку напряжения от 0 до 10.", style = MaterialTheme.typography.bodyMedium)
                 CheckInMeasure("Напряжение", "нет напряжения", "крайне сильное", tension, !save.saving) {
                     tension = it
-                    viewModel.resetCheckInSave()
-                }
-                CheckInMeasure("Энергия", "совсем нет сил", "много сил", energy, !save.saving) {
-                    energy = it
                     viewModel.resetCheckInSave()
                 }
                 OutlinedTextField(
@@ -152,8 +140,8 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
                 save.error?.let { ErrorText(it) }
                 if (save.saving) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                 Button(
-                    onClick = { viewModel.saveCheckIn(mood, tension, energy, context) },
-                    enabled = !save.saving && mood in 0..10 && tension in 0..10 && energy in 0..10,
+                    onClick = { viewModel.saveCheckIn(tension, context) },
+                    enabled = !save.saving && tension in 0..10,
                     modifier = Modifier.fillMaxWidth(),
                 ) { Text(if (save.saving) "Сохраняем…" else if (save.error != null) "Повторить сохранение" else "Сохранить отметку") }
             }
@@ -163,14 +151,12 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
         AlertDialog(
             onDismissRequest = { discarding = false },
             title = { Text("Удалить черновик отметки?") },
-            text = { Text("Выбранные оценки и контекст не сохранятся.") },
+            text = { Text("Оценка напряжения и контекст не сохранятся.") },
             confirmButton = {
                 TextButton(onClick = {
                     open = false
                     discarding = false
-                    mood = -1
                     tension = -1
-                    energy = -1
                     context = ""
                     viewModel.resetCheckInSave()
                 }) { Text("Удалить черновик") }
@@ -195,7 +181,7 @@ internal fun QuickCheckInPanel(viewModel: MentalViewModel, state: MentalUiState)
             title = { Text("Удалить отметку?") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Три оценки и контекст будут удалены. Отменить это действие нельзя.")
+                    Text("Оценка напряжения и контекст будут удалены. Отменить это действие нельзя.")
                     deletion.error?.let { ErrorText(it) }
                     if (deletion.deleting) Text("Удаляем…")
                 }
@@ -245,6 +231,6 @@ private fun CheckInMeasure(title: String, low: String, high: String, value: Int,
 @Composable
 private fun CheckInDetails(entry: QuickCheckIn) {
     Text(formatTime(entry.completedAt), style = MaterialTheme.typography.titleSmall)
-    Text("Настроение ${entry.mood}/10 · Напряжение ${entry.tension}/10 · Энергия ${entry.energy}/10", style = MaterialTheme.typography.bodyMedium)
+    Text("Напряжение ${entry.tension}/10", style = MaterialTheme.typography.bodyMedium)
     entry.context?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant) }
 }

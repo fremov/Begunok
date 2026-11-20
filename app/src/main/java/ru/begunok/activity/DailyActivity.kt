@@ -7,21 +7,16 @@ import ru.begunok.health.DailySteps
 import ru.begunok.math.MathActivityEvent
 import ru.begunok.math.MathDayActivity
 import ru.begunok.math.mathActivityByDay
-import ru.begunok.workout.Analytics
 import ru.begunok.workout.Period
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-
-data class DailyGameActivity(val id: String, val endedAt: Long, val durationSec: Int, val queueId: Int = 0)
 
 data class DailyActivityRow(
     val day: LocalDate,
     val workouts: Int = 0,
     val study: MathDayActivity = MathDayActivity(),
     val pages: Int = 0,
-    val games: Int? = null,
-    val gameDurationSec: Long? = null,
     val showerDurationSec: Long = 0,
     val steps: Long? = null,
 )
@@ -32,13 +27,12 @@ object DailyActivity {
         reading: List<ReadingEntryEntity>,
         learning: List<MathActivityEvent>,
         showers: List<ColdShowerEntity>,
-        games: List<DailyGameActivity>?,
         steps: List<DailySteps>,
         today: LocalDate,
         period: Period,
         zone: ZoneId = ZoneId.systemDefault(),
     ): List<DailyActivityRow> {
-        val start = if (period == Period.All) null else Analytics.periodStart(today, period)
+        val start = period.start(today)
         val days = mutableMapOf<LocalDate, DayTotals>()
         fun dateOf(millis: Long) = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
         fun totals(day: LocalDate): DayTotals? {
@@ -61,16 +55,6 @@ object DailyActivity {
         for (shower in showers) {
             totals(dateOf(shower.time))?.let { it.showerDurationSec += shower.durationSec.toLong() }
         }
-        if (games != null) {
-            val seen = mutableSetOf<String>()
-            for (game in games) {
-                if (!seen.add(game.id)) continue
-                totals(dateOf(game.endedAt))?.let {
-                    it.games++
-                    it.gameDurationSec += game.durationSec.toLong()
-                }
-            }
-        }
         for (step in steps) {
             totals(step.day)?.let { it.steps = (it.steps ?: 0L) + step.count }
         }
@@ -86,8 +70,6 @@ object DailyActivity {
                         workouts = totals?.workouts ?: 0,
                         study = totals?.study ?: MathDayActivity(),
                         pages = totals?.pages ?: 0,
-                        games = if (games == null) null else totals?.games ?: 0,
-                        gameDurationSec = if (games == null) null else totals?.gameDurationSec ?: 0L,
                         showerDurationSec = totals?.showerDurationSec ?: 0L,
                         steps = totals?.steps,
                     ),
@@ -102,8 +84,6 @@ object DailyActivity {
         var workouts = 0
         var study = MathDayActivity()
         var pages = 0
-        var games = 0
-        var gameDurationSec = 0L
         var showerDurationSec = 0L
         var steps: Long? = null
     }

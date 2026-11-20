@@ -122,13 +122,13 @@ class MentalViewModel(
         if (!_deleteState.value.deleting) _deleteState.value = MentalDeleteState()
     }
 
-    fun saveCheckIn(mood: Int, tension: Int, energy: Int, context: String?) {
+    fun saveCheckIn(tension: Int, context: String?) {
         if (_checkInSaveState.value.saving || _checkInSaveState.value.completed) return
-        if (mood !in 0..10 || tension !in 0..10 || energy !in 0..10) return
+        if (tension !in 0..10) return
         _checkInSaveState.value = CheckInSaveState(saving = true)
         viewModelScope.launch {
             try {
-                repository.recordCheckIn(mood, tension, energy, context)
+                repository.recordCheckIn(tension, context)
                 _checkInSaveState.value = CheckInSaveState(completed = true)
             } catch (error: CancellationException) {
                 throw error

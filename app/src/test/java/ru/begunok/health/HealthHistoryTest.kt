@@ -29,6 +29,34 @@ class HealthHistoryTest {
     }
 
     @Test
+    fun correctedStepsReplaceInflatedHistoryWithoutDiscardingLegacyMetrics() {
+        val legacy = recorded.copy(
+            totals = recorded.totals.copy(steps = 14200, sources = setOf("mi.fitness", "android")),
+            lastVitality = VitalitySample(time, 80.0, 6.0),
+        )
+        val absent = HealthDay(HealthTotals(), null, null, null)
+        assertEquals(legacy, mergeHealthDay(legacy, absent))
+
+        val recovered = absent.copy(totals = HealthTotals(steps = 7500, sources = setOf("mi.fitness")))
+        assertEquals(legacy.copy(totals = legacy.totals.copy(steps = 7500)), mergeHealthDay(legacy, recovered))
+    }
+
+    @Test
+    fun legacyStepCompletionIsReopenedWithoutRetryingOtherCompletedMetrics() {
+        val existing = setOf(HEALTH_STEPS_PERMISSION, "android.permission.health.READ_HEART_RATE")
+        assertEquals(setOf(HEALTH_STEPS_PERMISSION), pendingHealthPermissions(existing, existing, historyGranted = false))
+        assertEquals(setOf(HEALTH_STEPS_PERMISSION), pendingHealthPermissions(existing, existing, historyGranted = true))
+
+        val limited = existing + healthCompletionMarkers(setOf(HEALTH_STEPS_PERMISSION), historyGranted = false)
+        assertTrue(pendingHealthPermissions(existing, limited, historyGranted = false).isEmpty())
+        assertEquals(setOf(HEALTH_STEPS_PERMISSION), pendingHealthPermissions(existing, limited, historyGranted = true))
+
+        val complete = limited + healthCompletionMarkers(setOf(HEALTH_STEPS_PERMISSION), historyGranted = true)
+        assertTrue(pendingHealthPermissions(existing, complete, historyGranted = true).isEmpty())
+        assertTrue(pendingHealthPermissions(existing, complete, historyGranted = false).isEmpty())
+    }
+
+    @Test
     fun olderMeasurementsCannotLookLikeFreshOnesAndMergeIsIdempotent() {
         val incoming = HealthDay(
             HealthTotals(5100, sources = setOf("other")),
