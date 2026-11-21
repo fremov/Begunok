@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Psychology
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SportsEsports
@@ -86,8 +85,6 @@ import ru.begunok.ui.home.HomeScreen
 import ru.begunok.ui.home.HomeViewModel
 import ru.begunok.ui.lol.LolScreen
 import ru.begunok.ui.lol.LolViewModel
-import ru.begunok.ui.mental.MentalScreen
-import ru.begunok.ui.mental.MentalViewModel
 import ru.begunok.ui.math.MathReaderScreen
 import ru.begunok.ui.math.MathScreen
 import ru.begunok.ui.math.MathViewModel
@@ -125,7 +122,6 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
     Reading("Чтение", Icons.AutoMirrored.Filled.MenuBook, Group.Habits),
     Math("Математика", Icons.Filled.Calculate, Group.Learning),
     Weight("Вес", Icons.Filled.MonitorWeight, Group.Health),
-    Mental("Психологическое состояние", Icons.Filled.Psychology, Group.Health),
     Finance("Финансы", Icons.Filled.AccountBalanceWallet, Group.Money),
     Lol("League of Legends", Icons.Filled.SportsEsports, Group.Games),
     Settings("Настройки", Icons.Filled.Settings, Group.App),
@@ -142,8 +138,6 @@ fun BegunokNavigation(
     container: AppContainer,
     stopRequested: Boolean,
     onStopRequestHandled: () -> Unit,
-    mentalRequested: Boolean,
-    onMentalRequestHandled: () -> Unit,
 ) {
     val navController = rememberNavController()
     val drawer = rememberDrawerState(DrawerValue.Closed)
@@ -162,13 +156,6 @@ fun BegunokNavigation(
 
     LaunchedEffect(stopRequested) {
         if (stopRequested) open(Section.Workout)
-    }
-
-    LaunchedEffect(mentalRequested) {
-        if (mentalRequested) {
-            open(Section.Mental)
-            onMentalRequestHandled()
-        }
     }
 
     BackHandler(enabled = onTabs && section != Section.Workout) { open(Section.Workout) }
@@ -397,7 +384,6 @@ private fun SectionContent(
             onOpenLesson = { id -> navController.navigate("math/${Uri.encode(id)}") },
         )
         Section.Weight -> WeightScreen(viewModel { WeightViewModel(container.weight, container.settings) })
-        Section.Mental -> MentalScreen(viewModel { MentalViewModel(container.mental) })
         Section.Finance -> FinanceScreen(viewModel { FinanceViewModel(container.finance, container.appContext) })
         Section.Lol -> LolScreen(viewModel { LolViewModel(container.lolSettings) })
         Section.Settings -> SettingsScreen(

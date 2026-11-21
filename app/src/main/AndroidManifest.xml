@@ -98,17 +98,15 @@
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true" />
 
-        <service
-            android:name=".analytics.AnalyticsSyncJobService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="true" />
+        <provider
+            android:name=".analytics.AnalyticsUsbProvider"
+            android:authorities="${applicationId}.analytics"
+            android:exported="true"
+            android:readPermission="android.permission.DUMP"
+            android:writePermission="android.permission.DUMP" />
 
         <receiver
             android:name=".reminders.ReminderReceiver"
-            android:exported="false" />
-
-        <receiver
-            android:name=".reminders.MentalReminderReceiver"
             android:exported="false" />
 
         <receiver

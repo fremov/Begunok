@@ -1,40 +1,36 @@
-"""Private MyLife analytics ingest and dashboard server (Python standard library)."""
+"""Local MyLife dashboard and USB snapshot importer (Python standard library)."""
 
-import base64
-import binascii
 import calendar
 from collections import defaultdict
 from contextlib import closing
-from dataclasses import dataclass, replace
+from hashlib import sha256
 from datetime import date, datetime, timedelta, timezone
-import hmac
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-import ipaddress
 import json
 import logging
 import os
 from pathlib import Path
 import re
-import socket
+import shutil
 import sqlite3
-from threading import Thread
+import subprocess
+from tempfile import TemporaryFile
+from threading import Lock
 from urllib.parse import parse_qs, urlsplit
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 STREAMS = (
     "pulse", "oxygen", "stress", "steps", "active_kcal", "distance", "sleep",
-    "shower", "weight", "tension", "who5", "pss10", "gad7", "phq9",
+    "shower", "weight",
 )
 STAGES = {"unknown", "awake", "sleeping", "out_of_bed", "light", "deep", "rem"}
-ASSETS = {
-    "/": ("index.html", "text/html; charset=utf-8"),
-    "/index.html": ("index.html", "text/html; charset=utf-8"),
-    "/dashboard.css": ("dashboard.css", "text/css; charset=utf-8"),
-    "/dashboard.js": ("dashboard.js", "text/javascript; charset=utf-8"),
-}
-MAX_BODY = 64 * 1024 * 1024
+INDEX = ("index.html", "text/html; charset=utf-8")
+BUNDLE_ASSET = re.compile(r"/assets/[A-Za-z0-9_.-]+\.(js|css)")
+BUNDLE_MIME = {"js": "text/javascript; charset=utf-8", "css": "text/css; charset=utf-8"}
+RETIRED_STREAMS = ("tension", "who5", "pss10", "gad7", "phq9")
+TOTAL_STREAMS = {"steps", "active_kcal", "distance", "sleep", "shower"}
+MAX_BATCH = 64 * 1024 * 1024
 MAX_RECORDS = 300_000
 # Bound magnitudes well beyond any supported measurement so SQLite's SUM stays finite.
 MAX_VALUE = 1e100
@@ -52,63 +48,26 @@ class BadRequest(ValueError):
     pass
 
 
-def loopback_address(host):
-    try:
-        address = ipaddress.ip_address(host)
-    except ValueError:
-        raise ValueError("MYLIFE_ANALYTICS_HOST must be a loopback IP address") from None
-    if not address.is_loopback:
-        raise ValueError("MYLIFE_ANALYTICS_HOST must be a loopback IP address")
-    return address
+class UsbError(ValueError):
+    pass
 
 
-@dataclass(frozen=True)
-class Config:
-    database: Path
-    reader_user: str
-    reader_password: str
-    writer_token: str
-    host: str = "127.0.0.1"
-    port: int = 8786
-    local_timezone: ZoneInfo | None = None
-
-    def __post_init__(self):
-        loopback_address(self.host)
-        if not 0 <= self.port <= 65535:
-            raise ValueError("MYLIFE_ANALYTICS_PORT must be a valid TCP port")
-        if not self.reader_user.isprintable() or ":" in self.reader_user:
-            raise ValueError("invalid MYLIFE_ANALYTICS_READER_USER")
-        if not self.reader_password.isprintable():
-            raise ValueError("invalid MYLIFE_ANALYTICS_READER_PASSWORD")
-        if not re.fullmatch(r"[A-Za-z0-9._~+/-]+=*", self.writer_token):
-            raise ValueError("invalid MYLIFE_ANALYTICS_WRITER_TOKEN")
-        if self.reader_password == self.writer_token:
-            raise ValueError("reader password and writer token must be different")
-
-    @classmethod
-    def from_env(cls, env):
-        def required(key):
-            name = "MYLIFE_ANALYTICS_" + key
-            if not env.get(name):
-                raise ValueError(f"{name} is required")
-            return env[name]
-
+def read_usb(adb, store):
+    command = [adb, "-H", "127.0.0.1", "-P", "5037", "-d", "exec-out", "content", "read",
+               "--uri", "content://ru.begunok.analytics/snapshot"]
+    env = {key: value for key, value in os.environ.items() if key != "ADB_SERVER_SOCKET"}
+    with TemporaryFile() as snapshot:
         try:
-            port = int(env.get("MYLIFE_ANALYTICS_PORT", "8786"))
-        except ValueError:
-            raise ValueError("MYLIFE_ANALYTICS_PORT must be a valid TCP port") from None
-        if port == 0:
-            raise ValueError("MYLIFE_ANALYTICS_PORT must be a valid TCP port")
-        zone_name = env.get("MYLIFE_ANALYTICS_TIMEZONE")
-        try:
-            zone = ZoneInfo(zone_name) if zone_name else None
-        except (ValueError, ZoneInfoNotFoundError):
-            raise ValueError("MYLIFE_ANALYTICS_TIMEZONE must be an available IANA time zone") from None
-        return cls(
-            Path(required("DB")).resolve(), required("READER_USER"),
-            required("READER_PASSWORD"), required("WRITER_TOKEN"),
-            env.get("MYLIFE_ANALYTICS_HOST", "127.0.0.1"), port, zone,
-        )
+            result = subprocess.run(command, stdout=snapshot, stderr=subprocess.PIPE, timeout=120,
+                                    env=env, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except FileNotFoundError:
+            raise UsbError("ADB не найден. Установите Android Platform Tools или задайте путь к adb.") from None
+        except subprocess.TimeoutExpired:
+            raise UsbError("Телефон не ответил вовремя. Разблокируйте его и повторите импорт.") from None
+        if result.returncode:
+            raise UsbError("Подключите один телефон по USB и подтвердите разрешение на USB-отладку.")
+        snapshot.seek(0)
+        return store.import_snapshot(snapshot)
 
 
 def exact_date(value, field):
@@ -153,13 +112,18 @@ def json_text(payload):
     return json.dumps(payload, separators=(",", ":"), allow_nan=False)
 
 
-def parse_batch(body):
+def parse_json(body):
     try:
         data = json.loads(body.decode("utf-8"), object_pairs_hook=json_object, parse_constant=invalid_constant)
     except BadRequest:
         raise
     except (ValueError, RecursionError):
         raise BadRequest("invalid UTF-8 JSON body") from None
+    return data
+
+
+def parse_batch(body):
+    data = parse_json(body)
     if not isinstance(data, dict) or data.keys() != {"stream", "month", "records"}:
         raise BadRequest("body must contain stream, month and records")
     stream, month, records = data["stream"], data["month"], data["records"]
@@ -287,7 +251,19 @@ class Store:
                     PRIMARY KEY (stream, month, id)
                 ) WITHOUT ROWID;
                 CREATE INDEX IF NOT EXISTS records_by_date ON records(stream, date, sort_time, id);
+                CREATE TABLE IF NOT EXISTS usb_source (
+                    singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+                    source TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS usb_partitions (
+                    stream TEXT NOT NULL,
+                    month TEXT NOT NULL,
+                    digest BLOB NOT NULL,
+                    PRIMARY KEY (stream, month)
+                ) WITHOUT ROWID;
             """)
+            connection.executemany("DELETE FROM records WHERE stream = ?", ((s,) for s in RETIRED_STREAMS))
+            connection.executemany("DELETE FROM usb_partitions WHERE stream = ?", ((s,) for s in RETIRED_STREAMS))
 
     def connect(self):
         connection = sqlite3.connect(self.path, timeout=10)
@@ -298,14 +274,51 @@ class Store:
             raise
         return connection
 
-    def replace(self, stream, month, records):
+    def import_snapshot(self, snapshot):
+        try:
+            header = parse_json(snapshot.readline(256))
+        except BadRequest:
+            header = None
+        if (not isinstance(header, dict) or header.keys() != {"version", "source"} or
+                type(header["version"]) is not int or header["version"] != 1 or
+                not isinstance(header["source"], str) or not re.fullmatch(r"[0-9a-f]{1,16}", header["source"])):
+            raise UsbError("Снимок недоступен. Разблокируйте телефон и проверьте, что на нём установлена новая версия MyLife.")
+        count = 0
+        seen = set()
         with closing(self.connect()) as connection, connection:
             connection.execute("BEGIN IMMEDIATE")
-            connection.execute("DELETE FROM records WHERE stream = ? AND month = ?", (stream, month))
-            connection.executemany("""
-                INSERT INTO records (stream, month, id, date, sort_time, value, payload, stage_seconds)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, record_rows(stream, month, records))
+            source = connection.execute("SELECT source FROM usb_source").fetchone()
+            if source is None:
+                connection.execute("INSERT INTO usb_source VALUES (1, ?)", (header["source"],))
+            elif source[0] != header["source"]:
+                raise UsbError("Эта база уже связана с другим телефоном или профилем Android.")
+            previous = {(stream, month): digest for stream, month, digest in
+                        connection.execute("SELECT stream, month, digest FROM usb_partitions")}
+            while True:
+                line = snapshot.readline(MAX_BATCH + 1)
+                if line == b'{"complete":true}\n' and not snapshot.read(1):
+                    break
+                if not line.endswith(b"\n") or len(line) > MAX_BATCH:
+                    raise UsbError("Снимок получен не полностью или слишком велик. История на ПК не изменена.")
+                stream, month, records = parse_batch(line)
+                key = (stream, month)
+                if key in seen:
+                    raise BadRequest("duplicate snapshot partition")
+                seen.add(key)
+                count += len(records)
+                digest = sha256(line).digest()
+                if previous.get(key) == digest:
+                    continue
+                connection.execute("DELETE FROM records WHERE stream = ? AND month = ?", key)
+                connection.executemany("""
+                    INSERT INTO records (stream, month, id, date, sort_time, value, payload, stage_seconds)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, record_rows(stream, month, records))
+                connection.execute("INSERT OR REPLACE INTO usb_partitions VALUES (?, ?, ?)", (*key, digest))
+            removed = previous.keys() - seen
+            connection.executemany("DELETE FROM records WHERE stream = ? AND month = ?", removed)
+            connection.executemany("DELETE FROM usb_partitions WHERE stream = ? AND month = ?", removed)
+        return count
 
     @staticmethod
     def select(connection, columns, stream, bounds=None, *, ordered=False):
@@ -349,7 +362,7 @@ class Store:
     @classmethod
     def series_for(cls, connection, stream, period, current, previous, *, sleep_details=False):
         all_time = cls.summary(connection, stream, None)
-        aggregate = "TOTAL(value)" if stream in {"steps", "active_kcal", "distance", "sleep", "shower"} else "AVG(value)"
+        aggregate = "TOTAL(value)" if stream in TOTAL_STREAMS else "AVG(value)"
         all_time["daily_mean"] = connection.execute(f"""
             SELECT AVG(day_value) FROM (
                 SELECT {aggregate} AS day_value FROM records
@@ -383,6 +396,44 @@ class Store:
                 "period": period,
                 "series": {name: self.series_for(connection, name, period, current, previous) for name in STREAMS},
             }
+
+    @staticmethod
+    def daily(connection, stream, bounds):
+        aggregate = "TOTAL(value)" if stream in TOTAL_STREAMS else "AVG(value)"
+        return [
+            {"date": day, "value": value, "count": count}
+            for day, value, count in connection.execute(f"""
+                SELECT date, {aggregate}, COUNT(*) FROM records
+                WHERE stream = ? AND date BETWEEN ? AND ? AND value IS NOT NULL
+                GROUP BY date ORDER BY date
+            """, (stream, *bounds))
+        ]
+
+    def overview(self, end):
+        start = (end - 29 * ONE_DAY).isoformat()
+        recent = (start, end.isoformat())
+        result = {}
+        with closing(self.connect()) as connection, connection:
+            connection.execute("BEGIN")
+            for stream in STREAMS:
+                days = self.daily(connection, stream, recent)
+                row = connection.execute("""
+                    SELECT date, value, payload FROM records
+                    WHERE stream = ? AND value IS NOT NULL
+                    ORDER BY date DESC, sort_time DESC, id DESC LIMIT 1
+                """, (stream,)).fetchone()
+                latest = None
+                if row:
+                    day, value, payload = row
+                    if stream in TOTAL_STREAMS:
+                        value = connection.execute("""
+                            SELECT TOTAL(value) FROM records WHERE stream = ? AND date = ?
+                        """, (stream, day)).fetchone()[0]
+                    latest = {"date": day, "value": value}
+                    if recorded_at := json.loads(payload).get("time"):
+                        latest["time"] = recorded_at
+                result[stream] = {"latest": latest, "days": days}
+        return {"series": result}
 
     def sleep_on(self, day):
         bounds = (day, day)
@@ -421,7 +472,7 @@ class Handler(BaseHTTPRequestHandler):
         # Request paths, headers and bodies can be personal; don't put them in access logs.
         pass
 
-    def respond(self, status, body, mime, *, challenge=None, allow=None):
+    def respond(self, status, body, mime):
         self.send_response(status)
         self.send_header("Content-Type", mime)
         self.send_header("Content-Length", str(len(body)))
@@ -431,58 +482,37 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("Cross-Origin-Resource-Policy", "same-origin")
         self.send_header("Content-Security-Policy", "default-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
-        if challenge:
-            self.send_header("WWW-Authenticate", challenge)
-        if allow:
-            self.send_header("Allow", allow)
         self.send_header("Connection", "close")
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
 
-    def json_response(self, status, payload, **headers):
-        self.respond(status, json_text(payload).encode("utf-8"), "application/json; charset=utf-8", **headers)
+    def json_response(self, status, payload):
+        self.respond(status, json_text(payload).encode("utf-8"), "application/json; charset=utf-8")
 
     def send_error(self, code, message=None, explain=None):
         # Do not reflect client-supplied request text in protocol errors.
         self.json_response(code, {"error": HTTPStatus(code).phrase})
 
-    def authorized(self, *, producer):
-        values = self.headers.get_all("Authorization", [])
-        if len(values) == 1:
-            scheme, separator, credentials = values[0].partition(" ")
-            if separator and credentials.isascii():
-                if producer and scheme.lower() == "bearer":
-                    return hmac.compare_digest(credentials.encode("ascii"), self.server.writer_auth)
-                if not producer and scheme.lower() == "basic":
-                    try:
-                        return hmac.compare_digest(base64.b64decode(credentials, validate=True), self.server.reader_auth)
-                    except binascii.Error:
-                        pass
-        return False
-
-    def dispatch(self, *, producer):
-        if self.server.writer_only and not producer:
-            self.send_error(404)
+    def dispatch(self):
+        if self.headers.get_all("Host") != [self.server.authority]:
+            self.send_error(403)
             return
         try:
-            if not self.authorized(producer=producer):
-                challenge = ('Bearer realm="MyLife producer"' if producer else
-                             'Basic realm="MyLife analytics", charset="UTF-8"')
-                self.json_response(401, {"error": "authentication required"}, challenge=challenge)
-                return
             try:
                 target = urlsplit(self.path)
             except ValueError:
                 raise BadRequest("invalid request path") from None
             if target.scheme or target.netloc or target.fragment:
                 raise BadRequest("invalid request path")
-            if producer:
-                self.ingest(target)
+            if self.command == "POST":
+                self.import_usb(target)
             else:
                 self.read(target)
         except BadRequest as error:
             self.json_response(400, {"error": str(error)})
+        except UsbError as error:
+            self.json_response(409, {"error": str(error)})
         except TimeoutError:
             self.json_response(408, {"error": "request timed out"})
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
@@ -495,53 +525,54 @@ class Handler(BaseHTTPRequestHandler):
             self.json_response(500, {"error": "request could not be completed"})
 
     def do_GET(self):
-        self.dispatch(producer=False)
+        self.dispatch()
 
     def do_HEAD(self):
-        self.dispatch(producer=False)
+        self.dispatch()
 
     def do_POST(self):
-        self.dispatch(producer=True)
+        self.dispatch()
 
-    def ingest(self, target):
-        if target.path in ASSETS or target.path in {"/v1/series", "/v1/sleep"}:
-            self.json_response(405, {"error": "method not allowed"}, allow="GET, HEAD")
-            return
-        if target.path != "/v1/sync/batches":
+    def import_usb(self, target):
+        if target.path != "/v1/usb":
             self.send_error(404)
             return
-        if target.query or self.headers.get_all("Transfer-Encoding"):
-            raise BadRequest("snapshot requests require a Content-Length and no query parameters")
-        if self.headers.get_content_type() != "application/json":
-            self.json_response(415, {"error": "expected application/json"})
+        if self.headers.get_all("Origin") != [f"http://{self.server.authority}"]:
+            self.send_error(403)
             return
-        lengths = self.headers.get_all("Content-Length", [])
-        if len(lengths) != 1 or not re.fullmatch(r"[0-9]{1,20}", lengths[0]):
-            raise BadRequest("a valid Content-Length is required")
-        length = int(lengths[0])
-        if length > MAX_BODY:
-            self.json_response(413, {"error": "snapshot exceeds the request size limit"})
-            return
-        body = self.rfile.read(length)
-        if len(body) != length:
-            raise BadRequest("incomplete request body")
-        stream, month, records = parse_batch(body)
-        del body
-        self.server.store.replace(stream, month, records)
-        self.json_response(200, {"stream": stream, "month": month, "count": len(records)})
+        if (target.query or self.headers.get_all("Transfer-Encoding") or
+                self.headers.get_all("Content-Length") not in (None, ["0"])):
+            raise BadRequest("USB import does not accept a request body")
+        if not self.server.import_lock.acquire(blocking=False):
+            raise UsbError("Импорт уже выполняется.")
+        try:
+            count = read_usb(self.server.adb, self.server.store)
+        finally:
+            self.server.import_lock.release()
+        self.json_response(200, {"count": count})
 
     def read(self, target):
-        if target.path in ASSETS:
-            filename, mime = ASSETS[target.path]
+        asset = INDEX if target.path in {"/", "/index.html"} else None
+        if match := BUNDLE_ASSET.fullmatch(target.path):
+            asset = (target.path[1:], BUNDLE_MIME[match[1]])
+        if asset:
+            filename, mime = asset
+            path = (self.server.site_root / filename).resolve()
+            if not path.is_relative_to(self.server.site_root):
+                self.send_error(404)
+                return
             try:
-                body = (self.server.site_root / filename).read_bytes()
+                body = path.read_bytes()
             except FileNotFoundError:
                 self.send_error(404)
                 return
             self.respond(200, body, mime)
             return
-        if target.path == "/v1/sync/batches":
-            self.json_response(405, {"error": "method not allowed"}, allow="POST")
+        if target.path == "/v1/usb":
+            self.json_response(200, {"app": "MyLifeAnalyticsUSB"})
+            return
+        if target.path == "/v1/overview" and not target.query:
+            self.json_response(200, self.server.store.overview(date.today()))
             return
         if target.path not in {"/v1/series", "/v1/sleep"}:
             self.send_error(404)
@@ -565,47 +596,37 @@ class Handler(BaseHTTPRequestHandler):
         period = query.get("period", ["month"])[0]
         if period not in {"week", "all"} and period not in MONTHS_PER_PERIOD:
             raise BadRequest("unknown period")
-        end = (exact_date(query["end"][0], "end date") if "end" in query else
-               datetime.now(self.server.local_timezone).date())
+        end = exact_date(query["end"][0], "end date") if "end" in query else date.today()
         self.json_response(200, self.server.store.series(stream, period, end, sleep_details=target.path == "/v1/sleep"))
 
 
 class Server(ThreadingHTTPServer):
-    def __init__(self, config, site_root=Path(__file__).resolve().parent, *, writer_only=False, store=None):
-        address = loopback_address(config.host)
-        if address.version == 6:
-            self.address_family = socket.AF_INET6
+    def __init__(self, database, site_root, *, adb="adb", port=8786):
         self.site_root = site_root.resolve()
-        self.writer_only = writer_only
-        if any((self.site_root / filename).resolve() == config.database.resolve() for filename, _mime in ASSETS.values()):
-            raise ValueError("database path must not be a dashboard asset")
-        self.reader_auth = f"{config.reader_user}:{config.reader_password}".encode("utf-8")
-        self.writer_auth = config.writer_token.encode("ascii")
-        self.local_timezone = config.local_timezone
-        self.store = Store(config.database) if store is None else store
-        super().__init__((str(address), config.port), Handler)
+        self.adb = adb
+        self.import_lock = Lock()
+        self.store = Store(database)
+        super().__init__(("127.0.0.1", port), Handler)
+        self.authority = f"127.0.0.1:{self.server_port}"
 
 
 def main():
     # All newly created files (including database journals) are owner-only on POSIX.
     os.umask(0o077)
     try:
-        config = Config.from_env(os.environ)
-        writer_port = int(os.environ.get("MYLIFE_ANALYTICS_WRITER_PORT", "8787"))
-        if not 1 <= writer_port <= 65535 or writer_port == config.port:
-            raise ValueError("MYLIFE_ANALYTICS_WRITER_PORT must be a separate TCP port")
-        with Server(config) as server, Server(
-            replace(config, port=writer_port), writer_only=True, store=server.store,
-        ) as writer:
-            worker = Thread(target=writer.serve_forever, daemon=True)
-            worker.start()
-            try:
-                LOGGER.warning("MyLife analytics listening on %s ports %d (site) and %d (USB)",
-                               config.host, config.port, writer_port)
-                server.serve_forever()
-            finally:
-                writer.shutdown()
-                worker.join()
+        root = Path(__file__).resolve().parent
+        site_root = root / "dist"
+        if not (site_root / INDEX[0]).is_file():
+            raise ValueError("dashboard build missing: run npm ci and npm run build")
+        data = root / "data"
+        data.mkdir(exist_ok=True)
+        adb_file = root / "adb-path.txt"
+        adb = os.environ.get("MYLIFE_ADB") or (adb_file.read_text(encoding="utf-8-sig").strip() if adb_file.is_file() else None)
+        sdk = os.environ.get("ANDROID_HOME") or str(Path(os.environ.get("LOCALAPPDATA", "")) / "Android" / "Sdk")
+        adb = adb or shutil.which("adb") or str(Path(sdk) / "platform-tools" / ("adb.exe" if os.name == "nt" else "adb"))
+        with Server(data / "analytics.db", site_root, adb=adb) as server:
+            LOGGER.warning("MyLife analytics: http://%s/", server.authority)
+            server.serve_forever()
     except KeyboardInterrupt:
         pass
     except (ValueError, OSError, sqlite3.Error) as error:

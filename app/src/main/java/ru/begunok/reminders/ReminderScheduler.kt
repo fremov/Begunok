@@ -29,7 +29,7 @@ class ReminderScheduler(context: Context) {
         NotificationManagerCompat.from(context).createNotificationChannel(
             NotificationChannelCompat.Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
                 .setName("Напоминания")
-                .setDescription("Взвешивание, разминки и быстрые отметки состояния")
+                .setDescription("Взвешивание и разминки")
                 .setShowBadge(false)
                 .build(),
         )
@@ -45,10 +45,6 @@ class ReminderScheduler(context: Context) {
                 schedule(Kind.Movement, slot, ReminderSchedule.nextMovement(slot, now))
             }
         }
-        if (settings.checkInReminderEnabled) {
-            schedule(Kind.CheckInMorning, 0, ReminderSchedule.nextCheckIn(now, settings.checkInMorningMinute))
-            schedule(Kind.CheckInEvening, 0, ReminderSchedule.nextCheckIn(now, settings.checkInEveningMinute))
-        }
     }
 
     private fun schedule(kind: Kind, slot: Int, dateTime: LocalDateTime) {
@@ -63,8 +59,6 @@ class ReminderScheduler(context: Context) {
     private fun cancelAll() {
         alarmManager.cancel(pendingIntent(Kind.Weight, 0))
         ReminderSchedule.MOVEMENT_TIMES.indices.forEach { slot -> alarmManager.cancel(pendingIntent(Kind.Movement, slot)) }
-        alarmManager.cancel(pendingIntent(Kind.CheckInMorning, 0))
-        alarmManager.cancel(pendingIntent(Kind.CheckInEvening, 0))
     }
 
     private fun pendingIntent(kind: Kind, slot: Int): PendingIntent = PendingIntent.getBroadcast(
@@ -79,15 +73,11 @@ class ReminderScheduler(context: Context) {
     enum class Kind {
         Weight,
         Movement,
-        CheckInMorning,
-        CheckInEvening,
         ;
 
         fun requestCode(slot: Int): Int = when (this) {
             Weight -> WEIGHT_REQUEST
             Movement -> WALK_REQUEST_BASE + slot
-            CheckInMorning -> 4400
-            CheckInEvening -> 4401
         }
     }
 
@@ -96,24 +86,18 @@ class ReminderScheduler(context: Context) {
         const val EXTRA_SLOT = "slot"
         private const val WEIGHT_REQUEST = 4100
         private const val WALK_REQUEST_BASE = 4200
-        private const val CHANNEL_ID = "reminders"
+        internal const val CHANNEL_ID = "reminders"
 
         fun notification(context: Context, kind: Kind, slot: Int): android.app.Notification {
             val (title, text, id) = when (kind) {
                 Kind.Weight -> Triple("Время взвеситься", "Взвесьтесь утром и запишите результат.", 4100)
                 Kind.Movement -> Triple("Пора размяться", "Встаньте и немного походите после сидения.", 4200 + slot)
-                Kind.CheckInMorning, Kind.CheckInEvening -> Triple(
-                    "Как ты себя сейчас чувствуешь?",
-                    "Отметь уровень напряжения.",
-                    kind.requestCode(slot),
-                )
             }
             val open = PendingIntent.getActivity(
                 context,
                 id,
                 Intent(context, MainActivity::class.java)
-                    .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    .putExtra(MainActivity.EXTRA_OPEN_MENTAL, kind == Kind.CheckInMorning || kind == Kind.CheckInEvening),
+                    .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             return NotificationCompat.Builder(context, CHANNEL_ID)
@@ -142,7 +126,6 @@ class ReminderReceiver : BroadcastReceiver() {
                 val enabled = when (kind) {
                     ReminderScheduler.Kind.Weight -> settings.weightReminderEnabled
                     ReminderScheduler.Kind.Movement -> settings.movementReminderEnabled
-                    ReminderScheduler.Kind.CheckInMorning, ReminderScheduler.Kind.CheckInEvening -> settings.checkInReminderEnabled
                 }
                 if (enabled && BuildConfigCompat.notificationsAllowed(context)) {
                     NotificationManagerCompat.from(context).notify(

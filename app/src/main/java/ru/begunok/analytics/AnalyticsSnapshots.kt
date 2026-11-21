@@ -1,19 +1,14 @@
 package ru.begunok.analytics
 
 import kotlinx.coroutines.flow.first
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.RequestBody
-import okio.Buffer
 import okio.BufferedSink
 import org.json.JSONArray
 import org.json.JSONObject
-import ru.begunok.data.MentalRepository
 import ru.begunok.data.ShowerRepository
 import ru.begunok.data.WeightRepository
 import ru.begunok.health.HealthDay
 import ru.begunok.health.HealthHistory
 import ru.begunok.health.normalizeSleepNights
-import ru.begunok.mental.MentalTest
 import java.time.Instant
 import java.time.LocalDate
 import java.time.YearMonth
@@ -23,7 +18,7 @@ import java.time.format.DateTimeFormatter
 
 internal enum class AnalyticsStream(val health: Boolean = true) {
     pulse, oxygen, stress, steps, active_kcal, distance, sleep,
-    shower(false), weight(false), tension(false), who5(false), pss10(false), gad7(false), phq9(false),
+    shower(false), weight(false),
 }
 
 internal data class AnalyticsPartition(val stream: AnalyticsStream, val month: YearMonth)
@@ -99,7 +94,6 @@ internal fun healthRecords(
 internal class LocalAnalyticsSnapshots(
     private val showers: ShowerRepository,
     private val weight: WeightRepository,
-    private val mental: MentalRepository,
 ) {
     suspend fun read(zone: ZoneId): Map<YearMonth, Map<AnalyticsStream, List<AnalyticsRecord>>> {
         val result = mutableMapOf<YearMonth, MutableMap<AnalyticsStream, MutableList<AnalyticsRecord>>>()
@@ -120,45 +114,17 @@ internal class LocalAnalyticsSnapshots(
             add(record(AnalyticsStream.weight, date.toString(), date, entry.kg,
                 Instant.ofEpochMilli(entry.time).atZone(zone)))
         }
-        for (entry in mental.observeCheckIns().first()) {
-            timed(AnalyticsStream.tension, entry.id, entry.completedAt, entry.tension)
-        }
-        for (entry in mental.observeResults().first()) {
-            val stream = when (entry.test) {
-                MentalTest.WHO5 -> AnalyticsStream.who5
-                MentalTest.PSS10 -> AnalyticsStream.pss10
-                MentalTest.GAD7 -> AnalyticsStream.gad7
-                MentalTest.PHQ9 -> AnalyticsStream.phq9
-            }
-            timed(stream, entry.id, entry.completedAt, entry.score)
-        }
         return result
     }
 }
 
-internal class AnalyticsBatch(val partition: AnalyticsPartition, records: Sequence<AnalyticsRecord>) : RequestBody() {
-    private val payload = Buffer()
-    val count: Int
-    val digest: String
-
-    init {
-        payload.writeUtf8("""{"stream":"${partition.stream}","month":"${partition.month}","records":[""")
-        var size = 0
-        for (entry in records) {
-            check(entry.stream == partition.stream && entry.date.year == partition.month.year &&
-                entry.date.monthValue == partition.month.monthValue)
-            if (size > 0) payload.writeByte(','.code)
-            payload.writeUtf8(entry.json.toString())
-            size++
-        }
-        payload.writeUtf8("]}")
-        count = size
-        digest = payload.sha256().hex()
+internal fun writeAnalyticsBatch(sink: BufferedSink, partition: AnalyticsPartition, records: Iterator<AnalyticsRecord>) {
+    sink.writeUtf8("""{"stream":"${partition.stream}","month":"${partition.month}","records":[""")
+    while (records.hasNext()) {
+        val entry = records.next()
+        check(entry.stream == partition.stream && YearMonth.from(entry.date) == partition.month)
+        sink.writeUtf8(entry.json.toString())
+        if (records.hasNext()) sink.writeByte(','.code)
     }
-
-    override fun contentType() = "application/json".toMediaType()
-    override fun contentLength() = payload.size
-    override fun writeTo(sink: BufferedSink) {
-        sink.writeAll(payload.copy())
-    }
+    sink.writeUtf8("]}")
 }

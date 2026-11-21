@@ -1,3 +1,5 @@
-/analytics.env
+/adb-path.txt
 /data/
 __pycache__/
+/dist/
+/node_modules/

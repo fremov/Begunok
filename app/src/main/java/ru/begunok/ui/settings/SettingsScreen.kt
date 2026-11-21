@@ -72,7 +72,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import ru.begunok.BegunokApp
 import ru.begunok.alerts.AlertPlayer
 import ru.begunok.alerts.Cue
 import ru.begunok.alerts.CueId
@@ -158,9 +157,6 @@ class SettingsViewModel(
     fun setSound(value: Boolean) = launch { repository.setSound(value) }
     fun setWeightReminderEnabled(value: Boolean) = launch { repository.setWeightReminderEnabled(value) }
     fun setMovementReminderEnabled(value: Boolean) = launch { repository.setMovementReminderEnabled(value) }
-    fun setMentalReminderEnabled(value: Boolean) = launch { repository.setMentalReminderEnabled(value) }
-    fun setCheckInReminderEnabled(value: Boolean) = launch { repository.setCheckInReminderEnabled(value) }
-    fun setCheckInReminderTime(morning: Boolean, minute: Int) = launch { repository.setCheckInReminderTime(morning, minute) }
 
     fun setThemeMode(value: ThemeMode) = launch { repository.setThemeMode(value) }
     fun saveProgram(program: IntervalProgram) = launch { repository.saveProgram(program) }
@@ -259,8 +255,8 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit, healt
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         HealthConnectSettings(healthSync)
-        Section("Синхронизация аналитики") {
-            AnalyticsSyncSettings((LocalContext.current.applicationContext as BegunokApp).container.analyticsSync)
+        Section("Аналитика по USB") {
+            Text("Подключите телефон к ПК по USB, разрешите отладку и нажмите «Импорт по USB» на сайте «MyLife — графики».")
         }
         Section("Тема") {
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -332,22 +328,9 @@ fun SettingsScreen(viewModel: SettingsViewModel, onOpenSensor: () -> Unit, healt
                 checked = settings.movementReminderEnabled,
                 onCheckedChange = viewModel::setMovementReminderEnabled,
             )
-            SwitchRow(
-                title = "Повторные психологические тесты",
-                subtitle = "После прохождения: через 14 дней, PSS-10 — через 30 дней",
-                checked = settings.mentalReminderEnabled,
-                onCheckedChange = viewModel::setMentalReminderEnabled,
-            )
-            SwitchRow(
-                title = "Быстрые отметки состояния",
-                subtitle = "Два напоминания в день — настроение, напряжение и энергия",
-                checked = settings.checkInReminderEnabled,
-                onCheckedChange = viewModel::setCheckInReminderEnabled,
-            )
-            if (settings.checkInReminderEnabled) {
-                CheckInReminderTimes(settings.checkInMorningMinute, settings.checkInEveningMinute, viewModel::setCheckInReminderTime)
+            if (settings.weightReminderEnabled || settings.movementReminderEnabled) {
+                ReminderPermissionNotice()
             }
-            MentalReminderPermissionNotice(settings.mentalReminderEnabled, settings.checkInReminderEnabled)
         }
 
         VoiceSection(settings, engines, voices, viewModel)
