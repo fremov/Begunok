@@ -72,7 +72,7 @@ class HealthAutoSync(private val context: Context, private val repository: Healt
 
     /** Calendar projection: daily rows only, no raw measurement arrays or provider requests. */
     suspend fun dailySteps(start: LocalDate?, end: LocalDate): List<DailySteps> = withContext(Dispatchers.IO) {
-        initializeHistory(LocalDate.now(ZoneId.systemDefault()))
+        initializeHistory(LocalDate.now(ZoneId.systemDefault()))?.let { error(it) }
         historyStore.dailySteps(start, end)
     }
 

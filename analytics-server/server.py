@@ -1,5 +1,6 @@
 """Local MyLife dashboard and USB snapshot importer (Python standard library)."""
 
+from base64 import urlsafe_b64encode
 import calendar
 from collections import defaultdict
 from contextlib import closing
@@ -13,11 +14,15 @@ import os
 from pathlib import Path
 import re
 import shutil
+import socket
 import sqlite3
 import subprocess
 from tempfile import TemporaryFile
 from threading import Lock
+import time
 from urllib.parse import parse_qs, urlsplit
+
+import aw_calendar
 
 
 STREAMS = (
@@ -42,6 +47,12 @@ TIMESTAMP = re.compile(
     r"(?:\.([0-9]{1,9}))?(?:Z|[+-](?:[01][0-9]|2[0-3]):?[0-5][0-9])?"
 )
 LOGGER = logging.getLogger(__name__)
+ADB_ENDPOINT = ("127.0.0.1", 5037)
+PROVIDER = "content://ru.begunok.analytics"
+PHONE_FIELDS = {"workouts", "topics", "tasks", "reviews", "pages", "showerDurationSec", "steps"}
+PC_GROUPS = {"ai", "study", "development", "games", "leisure", "other"}
+# Base64 expands this to at most 3200 ASCII bytes, below adb shell's 4 KiB service limit.
+PC_CHUNK_BYTES = 2400
 
 
 class BadRequest(ValueError):
@@ -52,22 +63,226 @@ class UsbError(ValueError):
     pass
 
 
-def read_usb(adb, store):
-    command = [adb, "-H", "127.0.0.1", "-P", "5037", "-d", "exec-out", "content", "read",
-               "--uri", "content://ru.begunok.analytics/snapshot"]
-    env = {key: value for key, value in os.environ.items() if key != "ADB_SERVER_SOCKET"}
-    with TemporaryFile() as snapshot:
+def _adb_options():
+    overrides = {"ADB_SERVER_SOCKET", "ANDROID_ADB_SERVER_ADDRESS", "ANDROID_ADB_SERVER_PORT"}
+    return {"env": {k: v for k, v in os.environ.items() if k not in overrides},
+            "stdin": subprocess.DEVNULL, "creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0)}
+
+
+def _adb_launch_error(error):
+    if isinstance(error, FileNotFoundError):
+        return UsbError("ADB не найден. Установите Android Platform Tools или проверьте путь в adb-path.txt.")
+    if isinstance(error, PermissionError):
+        return UsbError("Нет разрешения на запуск ADB. Проверьте права на файл adb.")
+    return UsbError("Не удалось запустить программу adb. Проверьте путь в adb-path.txt и установку Android Platform Tools.")
+
+
+def _daemon_version():
+    # A normal adb command is not a harmless probe: it may start or kill a daemon.
+    try:
+        sock = socket.create_connection(ADB_ENDPOINT, timeout=3)
+    except ConnectionRefusedError:
+        return None
+    with sock, sock.makefile("rb") as reply:
+        sock.sendall(b"000chost:version")
+        if reply.read(8) == b"OKAY0004":
+            version = reply.read(4)
+            if re.fullmatch(b"[0-9a-fA-F]{4}", version):
+                return int(version, 16)
+    raise UsbError("Порт 5037 занят службой, которая не отвечает как ADB. Проверьте, какая программа использует порт.")
+
+
+class LocalAdb:
+    def __init__(self, executable):
+        self.executable = executable
+        self.owned = None
+        self.start_error = None
+
+    def start(self):
         try:
-            result = subprocess.run(command, stdout=snapshot, stderr=subprocess.PIPE, timeout=120,
-                                    env=env, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-        except FileNotFoundError:
-            raise UsbError("ADB не найден. Установите Android Platform Tools или задайте путь к adb.") from None
+            self._ensure_running()
+        except UsbError as error:
+            self.start_error = str(error)
+            raise
+        self.start_error = None
+
+    def _ensure_running(self):
+        try:
+            result = subprocess.run([self.executable, "version"], capture_output=True, timeout=5, **_adb_options())
+        except OSError as error:
+            raise _adb_launch_error(error) from None
         except subprocess.TimeoutExpired:
-            raise UsbError("Телефон не ответил вовремя. Разблокируйте его и повторите импорт.") from None
-        if result.returncode:
-            raise UsbError("Подключите один телефон по USB и подтвердите разрешение на USB-отладку.")
+            raise UsbError("Программа adb не ответила. Проверьте установку Android Platform Tools.") from None
+        version = re.search(rb"(?m)^Android Debug Bridge version 1\.0\.(\d{1,5})\s*$", result.stdout)
+        if result.returncode or not version:
+            raise UsbError("Не удалось определить версию ADB. Проверьте путь в adb-path.txt и обновите Android Platform Tools.")
+        client_version = int(version[1])
+        deadline = time.monotonic() + 12
+        launched = False
+        while True:
+            try:
+                running_version = _daemon_version()
+            except TimeoutError:
+                if self.owned is not None and self.owned.poll() is None and time.monotonic() < deadline:
+                    continue  # The foreground daemon can be bound while its USB scan is still running.
+                raise UsbError("Служба на порту 5037 не ответила вовремя. Проверьте локальный ADB и повторите попытку.") from None
+            except OSError:
+                raise UsbError("Не удалось связаться с локальным ADB на порту 5037. Проверьте, какая программа использует порт.") from None
+            if self.owned is not None and self.owned.poll() is not None:
+                self.owned = None
+            if running_version is not None:
+                # adb exec-out would kill even an unrelated daemon on a version mismatch.
+                if running_version != client_version:
+                    raise UsbError("Версии программы и работающего сервера ADB различаются. Укажите тот же adb, что использует Android Studio.")
+                return
+            if self.owned is None:
+                if launched:
+                    raise UsbError("Сервер ADB завершился при запуске. Проверьте Android Platform Tools и доступность порта 5037.")
+                try:
+                    # nodaemon keeps the exact process handle: never kill whatever later owns 5037.
+                    self.owned = subprocess.Popen([self.executable, "-L", "tcp:localhost:5037", "server", "nodaemon"],
+                                                  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, **_adb_options())
+                except OSError as error:
+                    raise _adb_launch_error(error) from None
+                launched = True
+            if time.monotonic() >= deadline:
+                raise UsbError("Сервер ADB не запустился вовремя. Проверьте порт 5037 и повторите попытку.")
+            time.sleep(0.1)
+
+    def stop_after_commit(self):
+        if self.owned is not None:
+            try:
+                if self.owned.poll() is None:
+                    self.owned.terminate()
+                    self.owned.wait(timeout=5)
+            except (OSError, subprocess.TimeoutExpired):
+                return "Данные сохранены, но не удалось остановить запущенный сайтом сервер ADB."
+            self.owned = None
+        return None
+
+
+def _usb_diagnostic(detail):
+    text = detail.lower()
+    if b"unauthorized" in text:
+        return "Телефон не разрешил USB-отладку. Разблокируйте его и подтвердите запрос на экране."
+    if b"offline" in text:
+        return "Телефон виден ADB, но не отвечает (offline). Переподключите кабель и разблокируйте экран."
+    if b"more than one" in text:
+        return "Подключено несколько USB-устройств. Оставьте подключённым только нужный телефон."
+    if b"no device" in text or b"device not found" in text:
+        return "ADB не видит телефон. Проверьте USB-кабель, драйвер и включите USB-отладку на телефоне."
+    if b"no permissions" in text:
+        return "На ПК нет прав для доступа к USB-устройству. Проверьте разрешения для ADB."
+    if b"cannot connect to daemon" in text or b"cannot start server on remote host" in text:
+        return "Соединение с локальным сервером ADB потеряно. Повторите импорт, чтобы запустить его снова."
+    if b"securityexception" in text or b"permission denial" in text:
+        return "Android запретил чтение снимка MyLife. Разблокируйте телефон и проверьте версию приложения и профиль Android."
+    if b"could not find provider" in text or b"no content provider" in text or b"no provider found" in text:
+        return "На телефоне не найден источник данных MyLife. Проверьте установку и версию приложения в текущем профиле Android."
+    if b"error while accessing provider" in text:
+        return "Не удалось прочитать данные у приложения MyLife. Разблокируйте телефон, откройте приложение и повторите импорт."
+    return None
+
+
+def _run_usb(adb, args, stdout):
+    command = [adb, "-H", ADB_ENDPOINT[0], "-P", str(ADB_ENDPOINT[1]), "-d", *args]
+    try:
+        result = subprocess.run(command, stdout=stdout, stderr=subprocess.PIPE, timeout=120, **_adb_options())
+    except OSError as error:
+        raise _adb_launch_error(error) from None
+    except subprocess.TimeoutExpired:
+        raise UsbError("Телефон не ответил вовремя. Разблокируйте его и повторите импорт.") from None
+    if result.returncode:
+        raise UsbError(_usb_diagnostic(result.stderr) or
+                       f"Ошибка обмена с MyLife через ADB (код {result.returncode}). Проверьте подключение и версию приложения.")
+    return result.stdout
+
+
+def _read_provider(adb, path, consume):
+    with TemporaryFile() as snapshot:
+        _run_usb(adb, ["exec-out", "content", "read", "--uri", f"{PROVIDER}/{path}"], snapshot)
         snapshot.seek(0)
-        return store.import_snapshot(snapshot)
+        # exec-out can return success with an Android content-provider exception on stdout.
+        if snapshot.read(1) != b"{":
+            snapshot.seek(0)
+            diagnostic = _usb_diagnostic(snapshot.read(4096))
+            if diagnostic:
+                raise UsbError(diagnostic)
+        snapshot.seek(0)
+        return consume(snapshot)
+
+
+def read_usb(adb, store):
+    try:
+        return _read_provider(adb, "snapshot", store.import_snapshot)
+    except BadRequest:
+        raise UsbError("Некорректный формат данных в снимке MyLife. Проверьте версию приложения. История на ПК не изменена.") from None
+
+
+def _pc_chunks(source, rows):
+    # All strings here are validated ASCII (dates, Android ID, compact group JSON).
+    prefix = '{"source":' + json_text(source) + ',"days":{'
+    entries = []
+    size = len(prefix) + 2
+    for day, payload in rows:
+        entry = f'"{day}":{payload or "{}"}'
+        if size + len(entry) + bool(entries) > PC_CHUNK_BYTES:
+            yield (prefix + ",".join(entries) + "}}").encode("ascii"), len(entries)
+            entries.clear()
+            size = len(prefix) + 2
+        size += len(entry) + bool(entries)
+        entries.append(entry)
+    if entries:
+        yield (prefix + ",".join(entries) + "}}").encode("ascii"), len(entries)
+
+
+def _push_pc_chunk(adb, payload):
+    arg = urlsafe_b64encode(payload).rstrip(b"=").decode("ascii")
+    output = _run_usb(adb, ["shell", "content", "call", "--uri", PROVIDER, "--method", "calendar-pc",
+                            "--arg", arg], subprocess.PIPE)
+    digest = sha256(payload).hexdigest().encode("ascii")
+    if output.strip() != b"Result: Bundle[{ack=" + digest + b"}]":
+        raise UsbError(_usb_diagnostic(output[:4096]) or
+                       "Телефон не подтвердил получение пакета. Проверьте подключение и версию приложения.")
+
+
+def _sync_calendars(adb, store):
+    # The metrics snapshot already committed. Report subsequent failures as partial, not as a lost import.
+    try:
+        source = _read_provider(adb, "calendar", store.import_phone_calendar)
+    except UsbError as error:
+        return f"Показатели сохранены. Календарь телефона не импортирован: {error}"
+    except BadRequest:
+        return "Показатели сохранены. Календарь телефона неполный или имеет неверный формат; прежний календарь не изменён."
+    except (sqlite3.Error, OSError):
+        return "Показатели сохранены. Не удалось сохранить календарь телефона на ПК. Проверьте место на диске и повторите обмен."
+
+    warnings = []
+    try:
+        days, details = aw_calendar.collect_detailed()
+        store.replace_pc_calendar(days, details)
+    except aw_calendar.ActivityUnavailable:
+        warnings.append("ActivityWatch недоступен. Время ПК не пересчитано.")
+    except BadRequest:
+        warnings.append("Некорректные суточные итоги ActivityWatch. Время ПК не пересчитано.")
+    except (sqlite3.Error, OSError):
+        return "Календарь телефона сохранён на ПК. Не удалось обновить базу активности ПК. Повторите обмен."
+    try:
+        rows = store.pc_calendar_rows()
+    except sqlite3.Error:
+        return "Календарь телефона сохранён на ПК. Не удалось прочитать итоги ПК для отправки на телефон."
+    confirmed = 0
+    try:
+        for payload, count in _pc_chunks(source, rows):
+            _push_pc_chunk(adb, payload)
+            confirmed += count
+    except UsbError as error:
+        warnings.append(f"Телефон подтвердил дней ПК: {confirmed} из {len(rows)}. {error} Повторите синхронизацию.")
+    else:
+        if warnings:
+            warnings.append(f"На телефон переданы сохранённые итоги ПК: {confirmed} дн." if confirmed else
+                            "Сохранённых итогов ПК для передачи на телефон нет.")
+    return " ".join(["Календарь телефона сохранён на ПК.", *warnings]) if warnings else None
 
 
 def exact_date(value, field):
@@ -77,6 +292,64 @@ def exact_date(value, field):
         except ValueError:
             pass
     raise BadRequest(f"invalid {field}: expected YYYY-MM-DD")
+
+
+def _pc_detail_json(groups, details):
+    if not isinstance(details, dict) or details.keys() != groups.keys():
+        raise BadRequest("invalid PC calendar detail groups")
+    for group, items in details.items():
+        if not isinstance(items, list):
+            raise BadRequest("invalid PC calendar detail list")
+        seconds = 0
+        names = set()
+        for item in items:
+            if not isinstance(item, dict) or item.keys() != {"name", "seconds"}:
+                raise BadRequest("invalid PC calendar detail fields")
+            name, duration = item["name"], item["seconds"]
+            if (not isinstance(name, str) or not name or not name.isprintable() or "/" in name or "\\" in name
+                    or name in names or type(duration) is not int or duration <= 0):
+                raise BadRequest("invalid PC calendar detail item")
+            names.add(name)
+            seconds += duration
+        if seconds != groups[group]:
+            raise BadRequest("PC calendar detail duration mismatch")
+    return json_text(details) if groups else None
+
+
+def _calendar_rows(days, *, phone, details=None):
+    if not isinstance(days, dict) or len(days) > MAX_RECORDS:
+        raise BadRequest("invalid calendar days")
+    if not phone and (not isinstance(details, dict) or details.keys() != days.keys()):
+        raise BadRequest("invalid PC calendar detail days")
+    for day, row in days.items():
+        exact_date(day, "calendar date")
+        if not isinstance(row, dict):
+            raise BadRequest("invalid calendar day")
+        if phone:
+            if row.keys() != PHONE_FIELDS:
+                raise BadRequest("invalid phone calendar fields")
+        elif not row.keys() <= PC_GROUPS:
+            raise BadRequest("unknown PC calendar group")
+        for key, value in row.items():
+            if phone and key == "steps" and value is None:
+                continue
+            if type(value) is not int or not 0 <= value < 2**63:
+                raise BadRequest("invalid calendar count or duration")
+        if not phone and sum(row.values()) > 48 * 3600:
+            raise BadRequest("invalid PC calendar day duration")
+        payload = json_text(row) if row else None
+        if phone:
+            yield day, payload
+        else:
+            yield day, payload, _pc_detail_json(row, details[day])
+
+
+def _calendar_bounds(period):
+    if re.fullmatch(r"[0-9]{4}", period):
+        first = exact_date(period + "-01-01", "calendar year")
+        return first.isoformat(), period + "-12-31"
+    first = exact_date(period + "-01", "calendar month")
+    return first.isoformat(), period + f"-{calendar.monthrange(first.year, first.month)[1]:02d}"
 
 
 def instant(value, field, *, require_offset=True):
@@ -261,7 +534,17 @@ class Store:
                     digest BLOB NOT NULL,
                     PRIMARY KEY (stream, month)
                 ) WITHOUT ROWID;
+                CREATE TABLE IF NOT EXISTS calendar_phone (
+                    date TEXT PRIMARY KEY, payload TEXT NOT NULL
+                ) WITHOUT ROWID;
+                CREATE TABLE IF NOT EXISTS calendar_pc (
+                    date TEXT PRIMARY KEY, payload TEXT, details TEXT
+                ) WITHOUT ROWID;
             """)
+            connection.execute("BEGIN IMMEDIATE")
+            if "details" not in {row[1] for row in connection.execute("PRAGMA table_info(calendar_pc)")}:
+                # Old totals have no recoverable item breakdown until the next successful collection.
+                connection.execute("ALTER TABLE calendar_pc ADD COLUMN details TEXT")
             connection.executemany("DELETE FROM records WHERE stream = ?", ((s,) for s in RETIRED_STREAMS))
             connection.executemany("DELETE FROM usb_partitions WHERE stream = ?", ((s,) for s in RETIRED_STREAMS))
 
@@ -319,6 +602,64 @@ class Store:
             connection.executemany("DELETE FROM records WHERE stream = ? AND month = ?", removed)
             connection.executemany("DELETE FROM usb_partitions WHERE stream = ? AND month = ?", removed)
         return count
+
+    def import_phone_calendar(self, snapshot):
+        body = snapshot.read(MAX_BATCH + 1)
+        if len(body) > MAX_BATCH:
+            raise BadRequest("calendar snapshot too large")
+        data = parse_json(body)
+        if (not isinstance(data, dict) or data.keys() != {"source", "days", "complete"} or
+                data["complete"] is not True or not isinstance(data["source"], str)):
+            raise BadRequest("invalid or incomplete calendar snapshot")
+        with closing(self.connect()) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            if connection.execute("SELECT source FROM usb_source").fetchone() != (data["source"],):
+                raise UsbError("Подключён другой телефон или профиль Android. Повторите обмен с исходным телефоном.")
+            self._replace_calendar(connection, data["days"], phone=True)
+        return data["source"]
+
+    @staticmethod
+    def _replace_calendar(connection, days, *, phone, details=None):
+        if phone:
+            table = "calendar_phone"
+            upsert = """INSERT INTO calendar_phone (date, payload) VALUES (?, ?)
+                        ON CONFLICT (date) DO UPDATE SET payload = excluded.payload
+                        WHERE payload IS NOT excluded.payload"""
+            remove = "DELETE FROM calendar_phone"
+        else:
+            table = "calendar_pc"
+            upsert = """INSERT INTO calendar_pc (date, payload, details) VALUES (?, ?, ?)
+                        ON CONFLICT (date) DO UPDATE SET payload = excluded.payload, details = excluded.details
+                        WHERE payload IS NOT excluded.payload OR details IS NOT excluded.details"""
+            # Replay deletions over USB, without keeping removed names in the calendar.
+            remove = "UPDATE calendar_pc SET payload = NULL, details = NULL"
+        existing = {day for day, in connection.execute(f"SELECT date FROM {table} WHERE payload IS NOT NULL")}
+        connection.executemany(upsert, _calendar_rows(days, phone=phone, details=details))
+        connection.executemany(remove + " WHERE date = ?", ((day,) for day in existing - days.keys()))
+
+    def replace_pc_calendar(self, days, details):
+        with closing(self.connect()) as connection, connection:
+            connection.execute("BEGIN IMMEDIATE")
+            self._replace_calendar(connection, days, phone=False, details=details)
+
+    def pc_calendar_rows(self):
+        with closing(self.connect()) as connection:
+            return connection.execute("SELECT date, payload FROM calendar_pc ORDER BY date").fetchall()
+
+    def calendar(self, period):
+        bounds = _calendar_bounds(period)
+        days = {}
+        with closing(self.connect()) as connection:
+            for day, side, payload, details in connection.execute("""
+                SELECT date, 'phone', payload, NULL FROM calendar_phone WHERE date BETWEEN ? AND ?
+                UNION ALL
+                SELECT date, 'pc', payload, details FROM calendar_pc WHERE date BETWEEN ? AND ? AND payload IS NOT NULL
+            """, bounds + bounds):
+                row = days.setdefault(day, {"phone": None, "pc": None, "details": None})
+                row[side] = json.loads(payload)
+                if details is not None:
+                    row["details"] = json.loads(details)
+        return {"days": days}
 
     @staticmethod
     def select(connection, columns, stream, bounds=None, *, ordered=False):
@@ -519,10 +860,10 @@ class Handler(BaseHTTPRequestHandler):
             pass
         except sqlite3.OperationalError as error:
             LOGGER.error("Analytics database operation failed (%s)", type(error).__name__)
-            self.json_response(503, {"error": "database unavailable"})
+            self.json_response(503, {"error": "База данных на ПК недоступна. Проверьте свободное место и права доступа к папке данных."})
         except (sqlite3.Error, OSError) as error:
             LOGGER.error("Analytics request failed (%s)", type(error).__name__)
-            self.json_response(500, {"error": "request could not be completed"})
+            self.json_response(500, {"error": "Не удалось обработать данные на ПК. Проверьте свободное место и права доступа к папке сайта."})
 
     def do_GET(self):
         self.dispatch()
@@ -534,7 +875,7 @@ class Handler(BaseHTTPRequestHandler):
         self.dispatch()
 
     def import_usb(self, target):
-        if target.path != "/v1/usb":
+        if target.path not in {"/v1/usb", "/v1/usb/start"}:
             self.send_error(404)
             return
         if self.headers.get_all("Origin") != [f"http://{self.server.authority}"]:
@@ -542,14 +883,22 @@ class Handler(BaseHTTPRequestHandler):
             return
         if (target.query or self.headers.get_all("Transfer-Encoding") or
                 self.headers.get_all("Content-Length") not in (None, ["0"])):
-            raise BadRequest("USB import does not accept a request body")
+            raise BadRequest("USB requests do not accept a query or body")
         if not self.server.import_lock.acquire(blocking=False):
-            raise UsbError("Импорт уже выполняется.")
+            raise UsbError("Операция USB уже выполняется. Дождитесь её завершения и повторите попытку.")
         try:
-            count = read_usb(self.server.adb, self.server.store)
+            adb = self.server.adb
+            adb.start()
+            response = {}
+            if target.path == "/v1/usb":
+                response["count"] = read_usb(adb.executable, self.server.store)
+                if warning := _sync_calendars(adb.executable, self.server.store):
+                    response.update(partial=True, warning=warning)
+                elif warning := adb.stop_after_commit():
+                    response["warning"] = warning
         finally:
             self.server.import_lock.release()
-        self.json_response(200, {"count": count})
+        self.json_response(200, response)
 
     def read(self, target):
         asset = INDEX if target.path in {"/", "/index.html"} else None
@@ -569,12 +918,15 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(200, body, mime)
             return
         if target.path == "/v1/usb":
-            self.json_response(200, {"app": "MyLifeAnalyticsUSB"})
+            status = {"app": "MyLifeAnalyticsUSB"}
+            if error := self.server.adb.start_error:
+                status["error"] = error
+            self.json_response(200, status)
             return
         if target.path == "/v1/overview" and not target.query:
             self.json_response(200, self.server.store.overview(date.today()))
             return
-        if target.path not in {"/v1/series", "/v1/sleep"}:
+        if target.path not in {"/v1/calendar", "/v1/series", "/v1/sleep"}:
             self.send_error(404)
             return
         allowed = {"period", "end", "date" if target.path == "/v1/sleep" else "stream"}
@@ -582,6 +934,11 @@ class Handler(BaseHTTPRequestHandler):
             query = parse_qs(target.query, keep_blank_values=True, strict_parsing=True, max_num_fields=3)
         except ValueError:
             raise BadRequest("invalid query parameters") from None
+        if target.path == "/v1/calendar":
+            if query.keys() != {"period"} or len(query["period"]) != 1:
+                raise BadRequest("calendar requires one period: YYYY or YYYY-MM")
+            self.json_response(200, self.server.store.calendar(query["period"][0]))
+            return
         if not query.keys() <= allowed or any(len(values) != 1 for values in query.values()):
             raise BadRequest("unexpected or repeated query parameter")
         if target.path == "/v1/sleep" and "date" in query:
@@ -603,7 +960,7 @@ class Handler(BaseHTTPRequestHandler):
 class Server(ThreadingHTTPServer):
     def __init__(self, database, site_root, *, adb="adb", port=8786):
         self.site_root = site_root.resolve()
-        self.adb = adb
+        self.adb = LocalAdb(adb)
         self.import_lock = Lock()
         self.store = Store(database)
         super().__init__(("127.0.0.1", port), Handler)

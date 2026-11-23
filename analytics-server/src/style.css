@@ -18,6 +18,12 @@
   --sleep: #a5b7ff;
   --stress: #ffae79;
   --previous: #92aecf;
+  --training: #ff8a50;
+  --math: #78adff;
+  --reading: #64d98b;
+  --shower: #b59aff;
+  --steps: #54d9e4;
+  --pc: #ffcb62;
 }
 @media (prefers-color-scheme: light) {
   :root {
@@ -37,6 +43,12 @@
     --sleep: #514eb0;
     --stress: #a24117;
     --previous: #4d6c91;
+    --training: #c4400b;
+    --math: #215db9;
+    --reading: #17753e;
+    --shower: #7043bd;
+    --steps: #00717a;
+    --pc: #855c00;
   }
 }
 
@@ -63,7 +75,8 @@ main:focus { outline: none; }
 .usb-compact-status { display: none; }
 .status-dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: currentColor; }
 .usb-status[data-state='ready'], .usb-status[data-state='success'] { color: var(--ok); }
-.usb-status[data-state='busy'] { color: var(--accent); }
+.usb-status[data-state='busy'], .usb-status:is([data-state='warning'], [data-state='partial']),
+.usb-notice:is([data-state='warning'], [data-state='partial']) { color: var(--accent); }
 .usb-status[data-state='error'], .usb-notice[data-state='error'], .error-text { color: var(--error); }
 .usb-notice { padding: 7px 0 3px; color: var(--muted); font-size: .8125rem; }
 
@@ -169,18 +182,86 @@ input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--accent);
 .sleep-legend li { display: inline-flex; align-items: center; gap: 4px; }
 .sleep-legend strong { color: var(--text); font-weight: 630; }
 
+.calendar-heading, .calendar-layout { max-width: 100rem; }
+.calendar-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.calendar-layout { display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(310px, 1fr); gap: clamp(12px, 1.4vw, 24px); align-items: start; }
+.calendar-overview .panel-heading, .day-orientation, .day-section-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 4px 12px; }
+.calendar-title::first-letter { text-transform: uppercase; }
+.calendar-overview h2, .calendar-detail h2 { font-size: clamp(1.3rem, 2vw, 1.8rem); }
+.calendar-view-label, .day-orientation, .calendar-key { color: var(--muted); font-size: .8125rem; }
+[data-activity='training'] { --activity: var(--training); }
+[data-activity='math'] { --activity: var(--math); }
+[data-activity='reading'] { --activity: var(--reading); }
+[data-activity='shower'] { --activity: var(--shower); }
+[data-activity='steps'] { --activity: var(--steps); }
+[data-activity='pc'] { --activity: var(--pc); }
+.activity-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.activity-legend li, .day-values dt, .day-section-head h3 { display: flex; align-items: center; gap: 7px; }
+.activity-legend li { color: var(--muted); font-size: .875rem; }
+.activity-legend i, .day-values i, .day-section-head i { width: 11px; height: 5px; flex: none; border-radius: 1px; background: var(--activity); }
+.calendar-months { margin-top: 12px; }
+.calendar-year { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 20px 18px; }
+.calendar-year h3 { margin-bottom: 5px; font-size: 1rem; font-weight: 670; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(3px, .45vw, 7px); }
+.calendar-weekday { padding: 3px 0; color: var(--muted); text-align: center; font-size: .8125rem; }
+.calendar-day { display: grid; grid-template-rows: 1fr auto; align-items: center; justify-items: stretch; min-width: 0; min-height: clamp(46px, 5.2vw, 75px); padding: 4px clamp(2px, .45vw, 7px); border: 1px solid transparent; border-radius: 6px; background: var(--control); font-size: clamp(1rem, 1.3vw, 1.25rem); font-variant-numeric: tabular-nums; }
+.calendar-day[data-active='true'] { font-weight: 720; }
+.calendar-day[data-observed='false']:not(:disabled) { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+.calendar-day:not(:disabled):hover { background: var(--raised); }
+.calendar-day[aria-current='date'] .day-number { text-decoration: underline; text-underline-offset: 3px; }
+.calendar-day[aria-pressed='true']:not(:disabled) { outline: 2px solid var(--accent); outline-offset: -2px; border-style: solid; background: var(--accent-bg); color: var(--text); }
+.calendar-day:focus-visible { box-shadow: 0 0 0 3px var(--focus); }
+.calendar-day:disabled { background: transparent; color: var(--muted); opacity: .5; }
+.day-number { color: var(--activity, inherit); }
+.day-marks { display: flex; height: 5px; gap: 1px; overflow: hidden; border-radius: 2px; }
+.day-marks i { flex: 1; background: var(--activity); }
+.calendar-year .calendar-grid { gap: 2px; }
+.calendar-year .calendar-weekday { padding: 1px 0; font-size: .6875rem; }
+.calendar-year .calendar-day { min-height: 28px; padding: 2px; border-radius: 3px; font-size: .8125rem; line-height: 1.1; }
+.calendar-year .day-marks { height: 3px; }
+.calendar-key { margin-top: 12px; }
+.calendar-detail { position: sticky; top: 10px; }
+.day-orientation { margin-bottom: 4px; }
+.calendar-return { text-decoration: underline; text-underline-offset: 3px; }
+.day-section { margin-top: 22px; }
+.day-section-head { padding-bottom: 6px; border-bottom: 1px solid var(--line); margin-bottom: 3px; }
+.day-section-head h3 { font-size: 1.0625rem; font-weight: 680; }
+.pc-total { color: var(--pc); font-weight: 680; font-variant-numeric: tabular-nums; }
+.pc-group + .pc-group { border-top: 1px solid var(--line); }
+.pc-group summary { display: grid; grid-template-columns: 9px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 4px; cursor: pointer; font-size: .9375rem; }
+.pc-group summary::-webkit-details-marker { display: none; }
+.pc-group summary::before { content: ''; width: 7px; height: 7px; border: solid var(--muted); border-width: 0 1.5px 1.5px 0; transform: rotate(-45deg); }
+.pc-group[open] summary::before { transform: rotate(45deg); }
+.pc-group summary:hover { background: var(--raised); }
+.pc-group summary strong, .day-values dd { font-weight: 620; text-align: right; font-variant-numeric: tabular-nums; }
+.pc-items, .group-note { margin: 0 4px 10px 7px; padding-left: 15px; border-left: 2px solid var(--line); color: var(--muted); font-size: .875rem; }
+.pc-items li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 10px; padding-block: 4px; }
+.pc-items bdi { overflow-wrap: anywhere; }
+.pc-items span { font-variant-numeric: tabular-nums; }
+.day-values > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: .9375rem; }
+.day-values .math-details { padding: 1px 0 1px 18px; color: var(--muted); font-size: .8125rem; }
+
+@media (max-width: 980px) {
+  .usb-button-qualifier { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+}
 @media (max-width: 800px) {
-  .brand-product, .usb-button-preposition { display: none; }
+  .brand-product { display: none; }
   .masthead { column-gap: 18px; }
 }
 @media (max-width: 850px) {
   .metric-grid { grid-template-columns: minmax(0, 1fr); }
 }
+@media (max-width: 780px) {
+  .calendar-layout { grid-template-columns: minmax(0, 1fr); }
+  .calendar-detail { position: static; }
+}
+@media (max-width: 900px) {
+  .masthead { grid-template-columns: minmax(0, 1fr) auto; min-height: 0; grid-template-rows: 48px auto; column-gap: 8px; }
+  .site-nav { grid-column: 1 / -1; grid-row: 2; flex-wrap: wrap; gap: 0 clamp(10px, 4vw, 22px); }
+  .site-nav a { min-height: 36px; font-size: .9375rem; }
+}
 @media (max-width: 645px) {
   .shell { width: calc(100% - 26px); }
-  .masthead { grid-template-columns: minmax(0, 1fr) auto; min-height: 0; grid-template-rows: 48px 36px; column-gap: 8px; }
-  .site-nav { grid-column: 1 / -1; grid-row: 2; gap: clamp(10px, 4vw, 22px); }
-  .site-nav a { font-size: .9375rem; }
   .page { padding-top: 16px; }
   .insight-grid { grid-template-columns: minmax(0, 1fr); }
   .history-workspace { grid-template-columns: minmax(0, 1fr); gap: 10px; }
@@ -195,4 +276,8 @@ input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--accent);
   .usb-compact-status { display: inline; }
   .period-buttons { width: 100%; }
   .period-buttons button { flex: 1 1 auto; padding-inline: 5px; }
+}
+@media (max-width: 380px) {
+  .masthead { grid-template-rows: auto auto; }
+  .usb-tools { flex-direction: column; align-items: flex-end; gap: 3px; padding-block: 6px; }
 }

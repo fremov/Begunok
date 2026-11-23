@@ -12,24 +12,17 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import ru.begunok.activity.ActivityCalendarPeriod
-import ru.begunok.activity.DailyActivity
+import ru.begunok.activity.ActivityCalendar
 import ru.begunok.activity.DailyActivityRow
-import ru.begunok.data.MathRepository
-import ru.begunok.data.ReadingRepository
-import ru.begunok.data.ShowerRepository
-import ru.begunok.data.WorkoutRepository
-import ru.begunok.data.db.ColdShowerEntity
-import ru.begunok.data.db.ReadingEntryEntity
-import ru.begunok.data.db.WorkoutEntity
+import ru.begunok.data.db.PcCalendarDay
 import ru.begunok.health.HealthAutoSync
 import ru.begunok.health.StepHistory
-import ru.begunok.math.MathActivityEvent
-import ru.begunok.workout.Period
 import java.time.LocalDate
 import java.time.ZoneId
 
 internal data class DailyActivityTableState(
     val rows: List<DailyActivityRow> = emptyList(),
+    val pcDays: Map<LocalDate, PcCalendarDay> = emptyMap(),
     val loading: Boolean = true,
     val failed: Boolean = false,
     val stepsLoading: Boolean = false,
@@ -37,19 +30,9 @@ internal data class DailyActivityTableState(
     val selection: ActivityCalendarPeriod = ActivityCalendarPeriod(),
 )
 
-private data class LocalActivity(
-    val workouts: List<WorkoutEntity>,
-    val reading: List<ReadingEntryEntity>,
-    val learning: List<MathActivityEvent>,
-    val showers: List<ColdShowerEntity>,
-)
-
 @OptIn(ExperimentalCoroutinesApi::class)
 internal fun observeDailyActivity(
-    workouts: WorkoutRepository,
-    reading: ReadingRepository,
-    math: MathRepository,
-    showers: ShowerRepository,
+    calendar: ActivityCalendar,
     health: HealthAutoSync,
     selection: Flow<ActivityCalendarPeriod>,
     reload: Flow<Int>,
@@ -63,16 +46,6 @@ internal fun observeDailyActivity(
                 val today = LocalDate.now(zone)
                 val start = selected.start
                 val end = minOf(selected.end, today)
-                val learning = flow { emit(math.catalog()) }
-                    .flatMapLatest { math.observeProgress(it) }
-                val local = combine(
-                    workouts.observeFinished(),
-                    reading.observeEntries(),
-                    learning,
-                    showers.observeAll(),
-                ) { sessions, pages, progress, cold ->
-                    LocalActivity(sessions, pages, progress.events, cold)
-                }
                 val steps: Flow<StepHistory> = healthChanges.flatMapLatest {
                     flow {
                         emit(StepHistory(days = health.dailySteps(start, end)))
@@ -82,25 +55,10 @@ internal fun observeDailyActivity(
                         .flowOn(Dispatchers.IO)
                 }
                 emitAll(
-                    combine(local, steps) { data, dailySteps ->
+                    combine(calendar.phone, steps, calendar.observePc(start, end)) { data, dailySteps, pc ->
                         DailyActivityTableState(
-                            rows = buildList {
-                                val rowsByDay = DailyActivity.build(
-                                    workouts = data.workouts,
-                                    reading = data.reading,
-                                    learning = data.learning,
-                                    showers = data.showers,
-                                    steps = dailySteps.days,
-                                    today = end,
-                                    period = Period.All,
-                                    zone = zone,
-                                ).filter { it.day >= start && it.day <= end }.associateBy { it.day }
-                                var day = end
-                                while (day >= start) {
-                                    add(rowsByDay[day] ?: DailyActivityRow(day = day))
-                                    day = day.minusDays(1)
-                                }
-                            },
+                            rows = data.rows(dailySteps.days, start, end, zone),
+                            pcDays = pc.associateBy { LocalDate.parse(it.day) },
                             loading = false,
                             stepsLoading = dailySteps.loading,
                             stepsMessage = dailySteps.message,

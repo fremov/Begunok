@@ -9,6 +9,7 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'overview', component: OverviewView },
     { path: '/history', name: 'history', component: () => import('./HistoryView.vue') },
+    { path: '/calendar', name: 'calendar', component: () => import('./CalendarView.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
   scrollBehavior: (to, from, savedPosition) => savedPosition ?? (to.name === from.name ? undefined : { top: 0 }),

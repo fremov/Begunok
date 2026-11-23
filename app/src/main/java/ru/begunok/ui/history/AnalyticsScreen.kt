@@ -40,8 +40,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.map
 import ru.begunok.health.HealthAutoSync
 import ru.begunok.activity.ActivityCalendarPeriod
-import ru.begunok.data.MathRepository
-import ru.begunok.data.ReadingRepository
+import ru.begunok.activity.ActivityCalendar
 import ru.begunok.data.ShowerRepository
 import ru.begunok.data.WorkoutRepository
 import ru.begunok.ui.Format
@@ -60,11 +59,10 @@ import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class AnalyticsViewModel(
+class AnalyticsViewModel internal constructor(
     repository: WorkoutRepository,
     showers: ShowerRepository,
-    reading: ReadingRepository,
-    math: MathRepository,
+    calendar: ActivityCalendar,
     healthAutoSync: HealthAutoSync,
 ) : ViewModel() {
     private val _kind = MutableStateFlow(WorkoutKind.All)
@@ -87,7 +85,7 @@ class AnalyticsViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     internal val dailyActivity = observeDailyActivity(
-        repository, reading, math, showers, healthAutoSync, activitySelection, activityReload, healthChanges,
+        calendar, healthAutoSync, activitySelection, activityReload, healthChanges,
     ).flowOn(Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DailyActivityTableState())
 

@@ -25,4 +25,10 @@ if (-not (Test-Dashboard)) {
     if (-not $ready) { throw "MyLife Analytics could not start. See $log." }
 }
 
+try {
+    Invoke-RestMethod -Uri "$url/v1/usb/start" -Method Post -Headers @{ Origin = $url } -UseBasicParsing | Out-Null
+} catch {
+    # The dashboard exposes the latest ADB startup error and still serves local history.
+    Write-Warning $_.Exception.Message
+}
 Start-Process "$url/"

@@ -57,10 +57,8 @@ export interface SleepDetails {
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { cache: 'no-store', ...init })
   if (!response.ok) {
-    if (response.status === 409) {
-      const result = await response.json() as { error?: string }
-      if (result.error) throw new Error(result.error)
-    }
+    const result = await response.json().catch(() => null)
+    if (typeof result?.error === 'string' && result.error.trim()) throw new Error(result.error)
     throw new Error(`Ошибка локального сервера (${response.status}).`)
   }
   return await response.json() as T

@@ -7,6 +7,7 @@ import { numberLabel } from './metrics'
 const menu = [
   { name: 'overview', label: 'Обзор' },
   { name: 'history', label: 'История' },
+  { name: 'calendar', label: 'Календарь активности' },
 ] as const
 const route = useRoute()
 const main = ref<HTMLElement>()
@@ -19,22 +20,23 @@ watch(() => route.name, (name, previous) => {
   if (previous) main.value?.focus({ preventScroll: true })
 }, { flush: 'post', immediate: true })
 
-const usb = ref<'checking' | 'ready' | 'busy' | 'success' | 'error'>('checking')
+const usb = ref<'checking' | 'ready' | 'busy' | 'success' | 'partial' | 'warning' | 'error'>('checking')
 const notice = ref('')
 const labels = {
-  checking: 'Проверяем USB', ready: 'Импорт доступен', busy: 'Импортируем…',
-  success: 'Импорт завершён', error: 'Ошибка импорта',
+  checking: 'Проверяем службу USB', ready: 'Служба USB готова', busy: 'Синхронизация…',
+  success: 'Готово', partial: 'Обновлено частично', warning: 'Есть предупреждение', error: 'Ошибка USB',
 }
 const status = computed(() => labels[usb.value])
-const compactLabels = { checking: 'Проверка', ready: 'Доступен', busy: 'Импорт…', success: 'Готово', error: 'Ошибка' }
+const compactLabels = { checking: 'Проверка', ready: 'Готово', busy: 'Обмен…', success: 'Готово', partial: 'Частично', warning: 'Внимание', error: 'Ошибка' }
 const compactStatus = computed(() => compactLabels[usb.value])
 const controller = new AbortController()
 const hint = 'Подключите телефон кабелем и разрешите USB-отладку.'
 
 onMounted(async () => {
   try {
-    const data = await request<{ app: string }>('/v1/usb', { signal: controller.signal })
-    if (data.app !== 'MyLifeAnalyticsUSB') throw new Error('Служба импорта по USB недоступна.')
+    const data = await request<{ app: string; error?: string }>('/v1/usb', { signal: controller.signal })
+    if (data.app !== 'MyLifeAnalyticsUSB') throw new Error('Служба синхронизации по USB недоступна.')
+    if (data.error) throw new Error(data.error)
     usb.value = 'ready'
   } catch (error) {
     if (controller.signal.aborted) return
@@ -44,13 +46,14 @@ onMounted(async () => {
 })
 onUnmounted(() => controller.abort())
 
-async function importUsb() {
+async function syncUsb() {
   usb.value = 'busy'
-  notice.value = 'Читаем историю с телефона. Не отключайте USB-кабель.'
+  notice.value = 'Читаем данные телефона и передаём на него дневные итоги ПК. Не отключайте USB-кабель.'
   try {
-    const { count } = await request<{ count: number }>('/v1/usb', { method: 'POST' })
-    usb.value = 'success'
-    notice.value = count ? `Импорт завершён. Записей в снимке: ${numberLabel(count)}.` : 'На телефоне пока нет показателей.'
+    const { count, partial, warning } = await request<{ count: number; partial?: boolean; warning?: string }>('/v1/usb', { method: 'POST' })
+    usb.value = partial ? 'partial' : warning ? 'warning' : 'success'
+    const result = partial ? 'Синхронизация выполнена частично.' : 'Синхронизация завершена.'
+    notice.value = [result, warning, `Записей в снимке показателей: ${numberLabel(count)}.`].filter(Boolean).join(' ')
     refresh.value++
   } catch (error) {
     usb.value = 'error'
@@ -77,9 +80,9 @@ async function importUsb() {
           <span class="status-dot" aria-hidden="true"></span>
           <span class="usb-full-status">{{ status }}</span><span class="usb-compact-status" aria-hidden="true">{{ compactStatus }}</span>
         </span>
-        <button class="button usb-button" type="button" :disabled="usb === 'busy' || usb === 'checking'" :title="hint" @click="importUsb">
-          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M10 3v9m-3-3 3 3 3-3M4 12v4h12v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-          <span>Импорт<span class="usb-button-preposition"> по</span> USB</span>
+        <button class="button usb-button" type="button" :disabled="usb === 'busy' || usb === 'checking'" :title="hint" @click="syncUsb">
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" width="16" height="16"><path d="M3 7h13l-3-3m4 9H4l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          <span>Синхронизировать<span class="usb-button-qualifier"> по USB</span></span>
         </button>
       </div>
     </div>

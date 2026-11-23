@@ -87,7 +87,7 @@ const hasData = computed(() => groups.value.some(group => group.cards.some(card 
   <RequestState v-if="state.status === 'loading'" loading />
   <RequestState v-else-if="state.status === 'error'" :message="state.message" @retry="retry" />
   <template v-else-if="state.status === 'ready'">
-    <p v-if="!hasData" class="empty-notice">Пока нет показателей. Подключите телефон кабелем, разрешите USB-отладку и запустите импорт.</p>
+    <p v-if="!hasData" class="empty-notice">Пока нет показателей. Подключите телефон кабелем, разрешите USB-отладку и нажмите «Синхронизировать по USB».</p>
     <div class="grid gap-9">
       <section v-for="(group, index) in groups" :key="group.name" :aria-labelledby="`overview-group-${index}`">
         <h2 :id="`overview-group-${index}`" class="group-title">{{ group.name }}</h2>

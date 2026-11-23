@@ -1,6 +1,8 @@
 package ru.begunok
 
 import android.content.Context
+import android.provider.Settings
+import ru.begunok.activity.ActivityCalendar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,6 +45,9 @@ class AppContainer(context: Context) {
     val health = HealthRepository(appContext)
     val healthAutoSync = HealthAutoSync(appContext, health, settings)
     internal val analyticsExport = AnalyticsExport(healthAutoSync, LocalAnalyticsSnapshots(showers, weight))
+    internal val activityCalendar = ActivityCalendar(workouts, reading, math, showers, healthAutoSync, database.pcCalendarDao()) {
+        checkNotNull(Settings.Secure.getString(appContext.contentResolver, Settings.Secure.ANDROID_ID))
+    }
     val voicePack = VoicePack(appContext)
     val lolSettings = LolSettings(appContext)
 

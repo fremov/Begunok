@@ -7,7 +7,6 @@ import ru.begunok.health.DailySteps
 import ru.begunok.math.MathActivityEvent
 import ru.begunok.math.MathDayActivity
 import ru.begunok.math.mathActivityByDay
-import ru.begunok.workout.Period
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -29,10 +28,9 @@ object DailyActivity {
         showers: List<ColdShowerEntity>,
         steps: List<DailySteps>,
         today: LocalDate,
-        period: Period,
+        start: LocalDate?,
         zone: ZoneId = ZoneId.systemDefault(),
     ): List<DailyActivityRow> {
-        val start = period.start(today)
         val days = mutableMapOf<LocalDate, DayTotals>()
         fun dateOf(millis: Long) = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
         fun totals(day: LocalDate): DayTotals? {

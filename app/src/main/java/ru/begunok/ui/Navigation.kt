@@ -371,7 +371,7 @@ private fun SectionContent(
             viewModel {
                 AnalyticsViewModel(
                     container.workouts, container.showers,
-                    container.reading, container.math, container.healthAutoSync,
+                    container.activityCalendar, container.healthAutoSync,
                 )
             },
         )

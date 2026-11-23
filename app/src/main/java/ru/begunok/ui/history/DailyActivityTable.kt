@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.begunok.activity.ActivityCalendarPeriod
 import ru.begunok.activity.DailyActivityRow
+import ru.begunok.data.db.PcCalendarDay
 import ru.begunok.ui.Format
 import ru.begunok.ui.theme.numberStyle
 import java.time.LocalDate
@@ -65,7 +66,7 @@ private val activityLocale = Locale.forLanguageTag("ru")
 private val activityDate = DateTimeFormatter.ofPattern("dd.MM.yyyy", activityLocale)
 private val activityMonthTitle = DateTimeFormatter.ofPattern("LLLL yyyy", activityLocale)
 private val activityMonths = listOf("янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек")
-private val activityLabels = listOf("Тренировки", "Учёба", "Чтение", "Душ", "Шаги")
+private val activityLabels = listOf("Тренировки", "Учёба", "Чтение", "Душ", "Шаги", "ПК")
 
 private fun DailyActivityRow.activityMask(): Int =
     (if (workouts > 0) 1 else 0) or (if (study.total > 0) 2 else 0) or
@@ -93,6 +94,12 @@ internal fun DailyActivityTable(
     val ready = state.selection == selection
     val rows = if (ready) state.rows else emptyList()
     val byDay = remember(rows) { rows.associateBy { it.day } }
+    val masks = remember(byDay, state.pcDays, ready) {
+        byDay.mapValues { (day, row) ->
+            val pc = state.pcDays[day]
+            row.activityMask() or (if (pc != null && pc.ai + pc.study + pc.development + pc.games + pc.leisure + pc.other > 0) 32 else 0)
+        }
+    }
     if (pickingMonth) {
         ActivityMonthPicker(selection, currentMonth, onDismiss = { pickingMonth = false }) {
             onSelection(it)
@@ -127,9 +134,9 @@ internal fun DailyActivityTable(
             TextButton(onClick = { onSelection(ActivityCalendarPeriod(currentMonth, selection.yearly)) }) { Text("К текущему ${if (selection.yearly) "году" else "месяцу"}") }
         }
         if (selection.yearly) {
-            ActivityYearGrid(selection, today, selected, byDay, colors) { selectedDate = if (it == selected) null else it.toString() }
+            ActivityYearGrid(selection, today, selected, masks, colors) { selectedDate = if (it == selected) null else it.toString() }
         } else {
-            ActivityMonthGrid(selection.month, today, selected, byDay, colors) { selectedDate = if (it == selected) null else it.toString() }
+            ActivityMonthGrid(selection.month, today, selected, masks, colors) { selectedDate = if (it == selected) null else it.toString() }
         }
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             activityLabels.chunked(3).forEachIndexed { row, labels ->
@@ -161,6 +168,7 @@ internal fun DailyActivityTable(
                 }
                 val summaryRows = if (selected == null) rows else listOfNotNull(byDay[selected])
                 ActivityNumbers(summaryRows, colors)
+                PcNumbers(if (selected == null) state.pcDays.values else listOfNotNull(state.pcDays[selected]))
                 if (state.stepsLoading) Text("Загружаем шаги…", style = MaterialTheme.typography.bodySmall)
                 state.stepsMessage?.let {
                     Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
@@ -176,7 +184,7 @@ private fun ActivityMonthGrid(
     month: YearMonth,
     today: LocalDate,
     selected: LocalDate?,
-    byDay: Map<LocalDate, DailyActivityRow>,
+    masks: Map<LocalDate, Int>,
     colors: ActivityColors,
     onSelect: (LocalDate) -> Unit,
 ) {
@@ -198,7 +206,7 @@ private fun ActivityMonthGrid(
                         Spacer(Modifier.weight(1f).height(40.dp))
                     } else {
                         val date = month.atDay(number)
-                        val mask = byDay[date]?.activityMask() ?: 0
+                        val mask = masks[date] ?: 0
                         val future = date > today
                         val shape = RoundedCornerShape(7.dp)
                         val numberColor = when {
@@ -231,7 +239,7 @@ private fun ActivityYearGrid(
     period: ActivityCalendarPeriod,
     today: LocalDate,
     selected: LocalDate?,
-    byDay: Map<LocalDate, DailyActivityRow>,
+    masks: Map<LocalDate, Int>,
     colors: ActivityColors,
     onSelect: (LocalDate) -> Unit,
 ) {
@@ -274,7 +282,7 @@ private fun ActivityYearGrid(
                             if (date !in period.start..period.end) {
                                 Spacer(Modifier.size(cell))
                             } else {
-                                val mask = byDay[date]?.activityMask() ?: 0
+                                val mask = masks[date] ?: 0
                                 ActivityBands(
                                     mask, colors,
                                     Modifier.size(cell).background(empty.copy(alpha = if (date > today) 0.3f else 1f))
@@ -305,6 +313,26 @@ private fun ActivityBands(mask: Int, colors: ActivityColors, modifier: Modifier)
                 drawRect(colors.all[index], topLeft = Offset(width * band, 0f), size = Size(width, size.height))
                 band++
             }
+        }
+    }
+}
+
+@Composable
+private fun PcNumbers(days: Collection<PcCalendarDay>) {
+    Text("Время за ПК", style = MaterialTheme.typography.titleSmall)
+    if (days.isEmpty()) {
+        Text("Нет данных ПК за выбранный период", style = MaterialTheme.typography.bodySmall)
+        return
+    }
+    val groups = listOf(
+        "Нейросети" to days.sumOf { it.ai }, "Обучение" to days.sumOf { it.study },
+        "Разработка" to days.sumOf { it.development }, "Игры" to days.sumOf { it.games },
+        "Досуг" to days.sumOf { it.leisure }, "Без группы" to days.sumOf { it.other },
+    )
+    for ((label, seconds) in groups) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(label, style = MaterialTheme.typography.bodySmall)
+            Text(Format.duration(seconds * 1000L), style = MaterialTheme.typography.bodySmall)
         }
     }
 }

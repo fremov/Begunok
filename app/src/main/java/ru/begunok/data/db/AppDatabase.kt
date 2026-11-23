@@ -13,8 +13,9 @@ import ru.begunok.workout.IntervalProgram
         WorkoutEntity::class, SampleEntity::class, RrIntervalEntity::class, ExerciseSetEntity::class, ColdShowerEntity::class,
         BookEntity::class, ReadingEntryEntity::class, WeightEntryEntity::class,
         FinanceTransactionEntity::class, FinanceRuleEntity::class,
+        PcCalendarDay::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -28,10 +29,12 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun financeDao(): FinanceDao
 
+    abstract fun pcCalendarDao(): PcCalendarDao
+
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "begunok.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11, MIGRATION_11_12)
                 .build()
 
         private val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -151,6 +154,16 @@ abstract class AppDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("DROP TABLE IF EXISTS `mental_results`")
                 db.execSQL("DROP TABLE IF EXISTS `mental_check_ins`")
+            }
+        }
+
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE calendar_pc (source TEXT NOT NULL, day TEXT NOT NULL, " +
+                        "ai INTEGER NOT NULL, study INTEGER NOT NULL, development INTEGER NOT NULL, " +
+                        "games INTEGER NOT NULL, leisure INTEGER NOT NULL, other INTEGER NOT NULL, PRIMARY KEY(source, day))",
+                )
             }
         }
     }

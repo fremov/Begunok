@@ -48,7 +48,7 @@ class DailyActivityTest {
         steps: List<DailySteps> = emptyList(),
         period: Period = Period.All,
         zone: ZoneId = this.zone,
-    ) = DailyActivity.build(workouts, reading, learning, showers, steps, today, period, zone)
+    ) = DailyActivity.build(workouts, reading, learning, showers, steps, today, period.start(today), zone)
 
     @Test
     fun mixedSourcesSumWithinDay() {
