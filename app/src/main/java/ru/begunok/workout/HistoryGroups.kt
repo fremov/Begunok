@@ -17,9 +17,9 @@ enum class Grouping(val label: String) {
 }
 
 data class HistoryGroup(val key: String, val title: String, val subtitle: String?, val workouts: List<WorkoutEntity>) {
-    val distanceM: Double get() = workouts.sumOf { it.distanceM }
+    val distanceM: Double get() = workouts.sumOf { if (it.countsDistance()) it.distanceM else 0.0 }
     val durationMs: Long get() = workouts.sumOf { it.durationMs }
-    val strengthDays: Int get() = workouts.count { it.dayType == DayType.Strength.name }
+    val strengthDays: Int get() = workouts.count { WorkoutKind.recorded(it.dayType).isStrength }
 }
 
 private val ru = Locale.forLanguageTag("ru")

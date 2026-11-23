@@ -57,6 +57,7 @@ import ru.begunok.activity.DailyActivityRow
 import ru.begunok.data.db.PcCalendarDay
 import ru.begunok.ui.Format
 import ru.begunok.ui.theme.numberStyle
+import ru.begunok.workout.WorkoutKind
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -362,6 +363,14 @@ private fun ActivityNumbers(rows: List<DailyActivityRow>, colors: ActivityColors
                 }
                 if (cells.size < 3) Spacer(Modifier.weight((3 - cells.size).toFloat()))
             }
+        }
+        val breakdown = WorkoutKind.entries.mapNotNull { kind ->
+            val key = kind.key ?: return@mapNotNull null
+            val count = rows.sumOf { it.workoutKinds[key] ?: 0 }
+            if (count > 0) "${kind.label}: $count" else null
+        }
+        if (breakdown.isNotEmpty()) {
+            Text(breakdown.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = colors.training)
         }
     }
 }

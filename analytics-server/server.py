@@ -50,6 +50,8 @@ LOGGER = logging.getLogger(__name__)
 ADB_ENDPOINT = ("127.0.0.1", 5037)
 PROVIDER = "content://ru.begunok.analytics"
 PHONE_FIELDS = {"workouts", "topics", "tasks", "reviews", "pages", "showerDurationSec", "steps"}
+PHONE_KIND_FIELDS = PHONE_FIELDS | {"workoutKinds"}
+WORKOUT_KINDS = {"run", "strength", "strength_upper", "strength_lower", "stretching", "other"}
 PC_GROUPS = {"ai", "study", "development", "games", "leisure", "other"}
 # Base64 expands this to at most 3200 ASCII bytes, below adb shell's 4 KiB service limit.
 PC_CHUNK_BYTES = 2400
@@ -326,11 +328,17 @@ def _calendar_rows(days, *, phone, details=None):
         if not isinstance(row, dict):
             raise BadRequest("invalid calendar day")
         if phone:
-            if row.keys() != PHONE_FIELDS:
+            if row.keys() not in (PHONE_FIELDS, PHONE_KIND_FIELDS):
                 raise BadRequest("invalid phone calendar fields")
         elif not row.keys() <= PC_GROUPS:
             raise BadRequest("unknown PC calendar group")
         for key, value in row.items():
+            if phone and key == "workoutKinds":
+                if (not isinstance(value, dict) or not value.keys() <= WORKOUT_KINDS or
+                        any(type(n) is not int or not 0 <= n < 2**63 for n in value.values()) or
+                        sum(value.values()) != row["workouts"]):
+                    raise BadRequest("invalid workout breakdown")
+                continue
             if phone and key == "steps" and value is None:
                 continue
             if type(value) is not int or not 0 <= value < 2**63:

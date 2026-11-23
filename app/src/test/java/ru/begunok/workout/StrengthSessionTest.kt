@@ -6,6 +6,62 @@ import org.junit.Test
 
 class StrengthSessionTest {
     @Test
+    fun splitCircuitsPrescribeSixMovementsAndBothRestIntervals() {
+        val upper = DayPlan.of(DayType.StrengthUpper)
+        val lower = DayPlan.of(DayType.StrengthLower)
+        assertEquals(listOf(6..12, 8..15, 12..20, 10..15, 10..15, 10..15),
+            upper.strength.exercises.map { it.startTarget..it.maxTarget })
+        assertEquals(listOf(8..12, 10..12, 12..15, 15..20, 8..12, 15..20),
+            lower.strength.exercises.map { it.startTarget..it.maxTarget })
+        assertEquals(listOf(true, true, false, false, false, true), lower.strength.exercises.map { it.perSide })
+        for ((plan, shortRest) in listOf(upper to 30, lower to 45)) {
+            assertEquals(Stage.Strength, plan.initialStage)
+            assertEquals(null, plan.runProgram(IntervalProgram.defaults.first()))
+            val steps = StrengthSession.buildSteps(plan.strength)
+            assertEquals(18, steps.count { !it.rest })
+            assertEquals(15, steps.count { it.restSec == shortRest })
+            assertEquals(2, steps.count { it.restSec == 120 })
+            assertEquals(StrengthStep(true, 0, 2, 120), steps[11])
+        }
+    }
+
+    @Test
+    fun lowerCanDoFourStraightSetsWithOneMinuteRest() {
+        val type = DayType.StrengthLower
+        val config = DayConfig.default(type).copy(sets = 4, lowerCircuit = false, restBetweenSetsSec = 60)
+        val steps = StrengthSession.buildSteps(DayPlan.of(type, config).strength)
+        assertEquals(listOf(1, 2, 3, 4), steps.filter { it.exerciseIndex == 0 && !it.rest }.map { it.set })
+        assertEquals(23, steps.count { it.restSec == 60 })
+        assertEquals(StrengthStep(false, 1, 1), steps[8])
+    }
+
+    @Test
+    fun chosenUpperVariantsKeepSeparateTargetsWithinTheirPrescribedRange() {
+        val type = DayType.StrengthUpper
+        val config = DayConfig.default(type)
+        val slots = config.slots.toMutableList()
+        slots[0] = slots[0].copy(variationId = "upper_assisted_rows")
+        slots[2] = slots[2].copy(variationId = "upper_bench_pushups")
+        val block = DayPlan.of(type, config.copy(slots = slots)).strength
+        val first = block.exercises.first()
+        assertEquals("StrengthUpper:upper_assisted_rows", first.id)
+        assertEquals("StrengthUpper:upper_bench_pushups", block.exercises[2].id)
+        assertEquals("StrengthUpper:upper_rows", block.exercises[3].id)
+        val done = List(3) { DoneSet(first.id, 13, 12) }
+        assertEquals(12, Progression.nextTarget(first, done, 3))
+        assertTrue(Progression.levelUps(block, done).isEmpty())
+    }
+
+    @Test
+    fun onlyNewStrengthProgramsAndRunningCanBeStarted() {
+        assertEquals(listOf(DayType.Run, DayType.StrengthUpper, DayType.StrengthLower), DayType.selectable)
+        assertEquals(DayType.Strength, DayType.fromStorage("Strength"))
+        assertEquals(DayType.StrengthUpper, DayType.fromStorage("strength_upper"))
+        assertEquals(DayType.StrengthLower, DayType.fromStorage("strength_lower"))
+        assertEquals(null, DayType.fromStorage(STRETCHING_KEY))
+    }
+
+    @Test
     fun strengthDayStartsWithExerciseWithoutJogOrSelectedRunProgram() {
         val plan = DayPlan.of(DayType.Strength)
         assertEquals(Stage.Strength, plan.initialStage)

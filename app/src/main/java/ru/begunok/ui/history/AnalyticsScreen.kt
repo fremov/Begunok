@@ -1,5 +1,6 @@
 package ru.begunok.ui.history
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,9 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -118,7 +117,7 @@ class AnalyticsViewModel internal constructor(
                 millis += workout.durationMs
             }
             val showerSeconds = showerSessions.sumOf { if (day(it.time) in start..today) it.durationSec.toLong() else 0L }
-            ActivitySummary(weekCount, kind.weekPlan, count, meters, millis, showerSeconds, steps)
+            ActivitySummary(weekCount, count, meters, millis, showerSeconds, steps)
         }.flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
@@ -129,7 +128,6 @@ class AnalyticsViewModel internal constructor(
 
 internal data class ActivitySummary(
     val thisWeek: Int,
-    val weekPlan: Int,
     val total: Int,
     val totalDistanceM: Double,
     val totalTimeMs: Long,
@@ -169,22 +167,19 @@ private fun ActivityContent(viewModel: AnalyticsViewModel) {
             Text("Загружаем тренировки…")
             return@Column
         }
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            WorkoutKind.entries.forEachIndexed { i, k ->
-                SegmentedButton(
-                    selected = k == kind,
-                    onClick = { viewModel.setKind(k) },
-                    shape = SegmentedButtonDefaults.itemShape(i, WorkoutKind.entries.size),
-                    icon = {},
-                ) { Text(k.label) }
+        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            WorkoutKind.entries.forEach { k ->
+                FilterChip(selected = k == kind, onClick = { viewModel.setKind(k) }, label = { Text(k.label) })
             }
         }
         Row(Modifier.fillMaxWidth().appear(0), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Tile("${a.thisWeek}/${a.weekPlan}", "на этой неделе", Modifier.weight(1f), StageColors.Done)
-            Tile("${a.total}", "тренировок", Modifier.weight(1f), activityColors.training)
+            Tile("${a.thisWeek}", "на этой неделе", Modifier.weight(1f), StageColors.Done)
+            Tile("${a.total}", "за месяц", Modifier.weight(1f), activityColors.training)
         }
-        Row(Modifier.fillMaxWidth().appear(1), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Tile(km(a.totalDistanceM), "км за период", Modifier.weight(1f), StageColors.Run)
+        if (kind != WorkoutKind.Stretching) Row(Modifier.fillMaxWidth().appear(1), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            if (kind == WorkoutKind.Run || kind == WorkoutKind.All) {
+                Tile(km(a.totalDistanceM), "км за месяц", Modifier.weight(1f), StageColors.Run)
+            }
             Tile(Format.duration(a.totalTimeMs), "время", Modifier.weight(1f), MaterialTheme.colorScheme.secondary)
         }
         Row(Modifier.fillMaxWidth().appear(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {

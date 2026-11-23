@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -29,8 +31,18 @@ import ru.begunok.workout.Progression
 import ru.begunok.workout.WorkoutService
 import ru.begunok.workout.WorkoutState
 import ru.begunok.workout.WorkoutSummary
+import java.time.Duration
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
-internal val AppSettings.trainingDayType: DayType get() = dayType ?: DayType.Run
+internal val AppSettings.trainingDayType: DayType get() = when (dayType) {
+    null -> DayType.Run
+    DayType.Strength -> DayType.StrengthUpper // Only the selection changes; historical workouts keep their type.
+    else -> dayType
+}
+
+data class StretchingToday(val date: LocalDate, val zone: ZoneId, val conducted: Boolean)
 
 data class PlanPreview(val plan: DayPlan, val targets: Map<String, Int>)
 
@@ -52,6 +64,22 @@ class HomeViewModel(
         settings.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
     val gps: StateFlow<GpsStatus> =
         locationClient.status().stateIn(viewModelScope, SharingStarted.WhileSubscribed(2_000), GpsStatus.Searching)
+
+    val stretching = flow {
+        while (true) {
+            val now = ZonedDateTime.now()
+            val date = now.toLocalDate()
+            emit(date to now.zone)
+            val midnight = date.plusDays(1).atStartOfDay(now.zone)
+            delay(Duration.between(now, midnight).toMillis().coerceIn(1L, 60_000L))
+        }
+    }.distinctUntilChanged().flatMapLatest { (date, zone) ->
+        workouts.observeStretching(date, zone).map { StretchingToday(date, zone, it) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(replayExpirationMillis = 0), null)
+
+    fun setStretching(today: StretchingToday, conducted: Boolean) {
+        viewModelScope.launch { workouts.setStretching(today.date, today.zone, conducted) }
+    }
 
     val preview: StateFlow<PlanPreview?> = settings.settings
         .map { it.dayPlan(it.trainingDayType) }

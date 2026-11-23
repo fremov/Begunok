@@ -239,7 +239,7 @@ input[type='checkbox'] { width: 16px; height: 16px; accent-color: var(--accent);
 .pc-items bdi { overflow-wrap: anywhere; }
 .pc-items span { font-variant-numeric: tabular-nums; }
 .day-values > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 4px 0; font-size: .9375rem; }
-.day-values .math-details { padding: 1px 0 1px 18px; color: var(--muted); font-size: .8125rem; }
+.day-values .day-subtotal { padding: 1px 0 1px 18px; color: var(--muted); font-size: .8125rem; }
 
 @media (max-width: 980px) {
   .usb-button-qualifier { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }

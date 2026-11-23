@@ -18,6 +18,7 @@ internal fun writePhoneCalendar(sink: BufferedSink, source: String, rows: List<D
         sink.writeUtf8(JSONObject.quote(row.day.toString())).writeByte(':'.code)
         sink.writeUtf8(JSONObject().apply {
             put("workouts", row.workouts)
+            if (row.workouts > 0) put("workoutKinds", JSONObject(row.workoutKinds))
             put("topics", row.study.topics)
             put("tasks", row.study.tasks)
             put("reviews", row.study.reviews)

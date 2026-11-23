@@ -137,6 +137,7 @@ object Cues {
                 }
                 val first = plan.strength.exercises.first()
                 if (plan.strength.restBetweenSetsSec > 0) add(rest(plan.strength.restBetweenSetsSec, first, true))
+                if (plan.strength.restBetweenExercisesSec > 0) add(rest(plan.strength.restBetweenExercisesSec, first, true))
             }
             for (p in programs) {
                 for (i in 1..p.repeats) {

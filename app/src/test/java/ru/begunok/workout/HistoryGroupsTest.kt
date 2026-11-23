@@ -37,6 +37,16 @@ class HistoryGroupsTest {
     }
 
     @Test
+    fun mixedWeekCountsStrengthWithoutAddingNonRunningDistance() {
+        val kinds = listOf("Run", "Strength", "strength_upper", "strength_lower", "stretching")
+        val sessions = kinds.mapIndexed { i, kind -> workout(i.toLong(), today, 1.0).copy(dayType = kind) }
+        val group = groupWorkouts(sessions, Grouping.Week, today, zone).single()
+        assertEquals(5, group.workouts.size)
+        assertEquals(3, group.strengthDays)
+        assertEquals(1000.0, group.distanceM, 0.0)
+    }
+
+    @Test
     fun monthsAndYears() {
         assertEquals(
             listOf("Октябрь", "Сентябрь", "Декабрь 2025"),

@@ -53,7 +53,7 @@ class DailyActivityTest {
     @Test
     fun mixedSourcesSumWithinDay() {
         val rows = build(
-            workouts = listOf(workout(today), workout(today, "Strength")),
+            workouts = listOf("Run", "Strength", "strength_upper", "strength_lower", "stretching", "stretching", "unknown").map { workout(today, it) },
             reading = listOf(reading(today, 0, 12), reading(today, 12, 19), reading(today, 19, 10), reading(today, 10, 10)),
             learning = listOf(
                 event(today, MathActivityKind.Topic),
@@ -68,7 +68,8 @@ class DailyActivityTest {
         assertEquals(
             DailyActivityRow(
                 day = today,
-                workouts = 2,
+                workouts = 7,
+                workoutKinds = mapOf("run" to 1, "strength" to 1, "strength_upper" to 1, "strength_lower" to 1, "stretching" to 2, "other" to 1),
                 study = MathDayActivity(topics = 1, tasks = 2, reviews = 1),
                 pages = 19,
                 showerDurationSec = 75L,

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -55,7 +56,7 @@ import ru.begunok.ui.common.sharedBounds
 import ru.begunok.ui.theme.StageColors
 import ru.begunok.ui.theme.ZoneColors
 import ru.begunok.ui.theme.numberStyle
-import ru.begunok.workout.DayType
+import ru.begunok.workout.WorkoutKind
 import ru.begunok.workout.Grouping
 import ru.begunok.workout.HistoryGroup
 import ru.begunok.workout.groupWorkouts
@@ -157,10 +158,11 @@ private fun GroupHeader(group: HistoryGroup, open: Boolean, modifier: Modifier =
 
 @Composable
 private fun WorkoutCard(workout: WorkoutEntity, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    val (icon, color) = when (workout.dayType) {
-        DayType.Strength.name -> Icons.Filled.FitnessCenter to StageColors.Warmup
-        DayType.Run.name -> Icons.AutoMirrored.Filled.DirectionsRun to StageColors.Run
-        else -> Icons.AutoMirrored.Filled.DirectionsRun to StageColors.Walk
+    val kind = WorkoutKind.recorded(workout.dayType)
+    val (icon, color) = when {
+        kind.isStrength -> Icons.Filled.FitnessCenter to StageColors.Warmup
+        kind == WorkoutKind.Run -> Icons.AutoMirrored.Filled.DirectionsRun to StageColors.Run
+        else -> Icons.Filled.SelfImprovement to StageColors.Walk
     }
     Card(
         onClick = onClick,
@@ -183,18 +185,18 @@ private fun WorkoutCard(workout: WorkoutEntity, modifier: Modifier = Modifier, o
                 contentAlignment = Alignment.Center,
             ) { Icon(icon, contentDescription = null, tint = color) }
             Column(Modifier.weight(1f)) {
-                Text(Format.workoutTitle(workout) ?: "Пробежка", style = MaterialTheme.typography.titleMedium)
+                Text(Format.workoutTitle(workout) ?: kind.label, style = MaterialTheme.typography.titleMedium)
                 Text(
                     Format.dateTime(workout.startTime),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 4.dp)) {
+                if (kind != WorkoutKind.Stretching) Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(top = 4.dp)) {
                     Text(Format.duration(workout.durationMs), style = MaterialTheme.typography.labelLarge)
                     Text("♥ ${Format.heartRate(workout.avgHr)}", style = MaterialTheme.typography.labelLarge, color = ZoneColors.Above)
                 }
             }
-            Column(horizontalAlignment = Alignment.End) {
+            if (kind == WorkoutKind.Run) Column(horizontalAlignment = Alignment.End) {
                 Text(Format.distanceKm(workout.distanceM), style = numberStyle(30))
                 Text("км", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

@@ -89,7 +89,7 @@ import ru.begunok.workout.formatSpan
 
 @Composable
 internal fun DayTypePicker(selected: DayType, onSelect: (DayType) -> Unit) {
-    val options = DayType.entries
+    val options = DayType.selectable
     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
         options.forEachIndexed { i, type ->
             SegmentedButton(
@@ -97,7 +97,12 @@ internal fun DayTypePicker(selected: DayType, onSelect: (DayType) -> Unit) {
                 onClick = { onSelect(type) },
                 shape = SegmentedButtonDefaults.itemShape(i, options.size),
                 icon = {},
-            ) { Text(type.label, textAlign = TextAlign.Center, maxLines = 2) }
+            ) { Text(when (type) {
+                DayType.Run -> "Бег"
+                DayType.StrengthUpper -> "Верх тела"
+                DayType.StrengthLower -> "Низ тела"
+                DayType.Strength -> type.label
+            }, textAlign = TextAlign.Center, maxLines = 2) }
         }
     }
 }
@@ -119,7 +124,7 @@ internal fun PlanCard(preview: PlanPreview, program: IntervalProgram?, onEdit: (
     val strength = plan.strength
     PanelCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("План", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+            Text("Программа", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
             TextButton(onClick = onEdit) {
                 Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                 Text("  Упражнения")
@@ -159,7 +164,10 @@ internal fun PlanCard(preview: PlanPreview, program: IntervalProgram?, onEdit: (
             ExerciseLine(exercise, target, if (strength.circuit) null else strength.sets)
         }
         Text(
-            "Сделали все подходы — цель +1. Дошли до верхней границы ступени — следующая тренировка начнётся " +
+            if (plan.type.isSplit) {
+                if (plan.type == DayType.StrengthLower) "Оставляйте 1–2 повтора в запасе." else
+                    "Хват в подтягиваниях и опору в отжиманиях можно выбрать в упражнениях."
+            } else "Сделали все подходы — цель +1. Дошли до верхней границы ступени — следующая тренировка начнётся " +
                 "со следующей, более сложной ступени.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -190,6 +198,12 @@ private fun ExerciseLine(exercise: Exercise, target: Int, sets: Int?) {
                 style = numberStyle(22),
                 color = MaterialTheme.colorScheme.primary,
             )
+        }
+        if (exercise.fixedRange) {
+            Text("${exercise.startTarget}–${exercise.maxTarget} " + if (exercise.perSide) "на ногу" else "повторений",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(exercise.hint, style = MaterialTheme.typography.bodySmall)
+            return@Column
         }
         val span = (exercise.maxTarget - exercise.startTarget).coerceAtLeast(1)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -488,7 +502,7 @@ private fun WorkButtons(view: StrengthView, exercise: Exercise, onDone: (Int, Bo
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-        ) { Text("Не получилось", fontSize = 18.sp) }
+        ) { Text(if (exercise.fixedRange) "Указать повторения" else "Не получилось", fontSize = 18.sp) }
     } else {
         Card(
             shape = RoundedCornerShape(28.dp),
@@ -525,7 +539,8 @@ private fun ReplaceExerciseButton(view: StrengthView, exercise: Exercise, onRepl
     val own = ExerciseCatalog.ladderOf(exercise.variationId)
     val taken = view.exercises.map { it.variationId }.toSet()
     // Своя лесенка первой, остальные следом; упражнения, которые уже есть в тренировке, не предлагаем.
-    val ladders = ExerciseCatalog.ladders.sortedByDescending { it.id == own?.id }
+    val choices = if (exercise.fixedRange) listOfNotNull(own) else ExerciseCatalog.ladders.sortedByDescending { it.id == own?.id }
+    val ladders = choices
         .map { ladder -> ladder to ladder.variations.filter { it.id !in taken } }
         .filter { it.second.isNotEmpty() }
     if (ladders.isEmpty()) return
@@ -547,13 +562,13 @@ private fun ReplaceExerciseButton(view: StrengthView, exercise: Exercise, onRepl
                     )
                     ladders.forEach { (ladder, variations) ->
                         Text(
-                            ladder.name + if (ladder.id == own?.id) " · та же лесенка" else "",
+                            ladder.name + if (!exercise.fixedRange && ladder.id == own?.id) " · та же лесенка" else "",
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(top = 10.dp),
                         )
                         variations.forEach { option ->
-                            val mark = if (ladder.id == own?.id) {
+                            val mark = if (!exercise.fixedRange && ladder.id == own?.id) {
                                 if (ladder.variations.indexOf(option) < currentIndex) " · легче" else " · сложнее"
                             } else {
                                 ""

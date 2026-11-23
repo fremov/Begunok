@@ -87,6 +87,11 @@ fun PlanEditorScreen(viewModel: PlanEditorViewModel, onBack: () -> Unit) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            if (viewModel.type.isSplit) {
+                SplitSettings(viewModel, config)
+                TextButton(onClick = viewModel::reset) { Text("Вернуть настройки программы") }
+                return@Column
+            }
             Text(
                 "Только турник, брусья и пол. У каждого движения есть ступени от лёгкой к сложной. " +
                     "Выберите ступень, с которой начать: когда цель дойдёт до верхней границы, приложение само " +
@@ -122,6 +127,61 @@ fun PlanEditorScreen(viewModel: PlanEditorViewModel, onBack: () -> Unit) {
                 onPlus = { viewModel.update { it.copy(restBetweenExercisesSec = (it.restBetweenExercisesSec + REST_STEP).coerceAtMost(MAX_REST)) } },
             )
             TextButton(onClick = viewModel::reset) { Text("Сбросить к стандартному плану") }
+        }
+    }
+}
+
+@Composable
+private fun SplitSettings(viewModel: PlanEditorViewModel, config: DayConfig) {
+    val lower = viewModel.type == DayType.StrengthLower
+    val circuit = !lower || config.lowerCircuit
+    val minRest = if (lower) 45 else 30
+    if (lower) {
+        Text("Формат тренировки", style = MaterialTheme.typography.titleMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            listOf(true to "Кругами", false to "По подходам").forEach { (value, label) ->
+                Row(Modifier.clickable { viewModel.update { it.copy(lowerCircuit = value) } },
+                    verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = config.lowerCircuit == value, onClick = null)
+                    Text(label, Modifier.padding(8.dp))
+                }
+            }
+        }
+        Text("Оставляйте 1–2 повтора в запасе.")
+    }
+    Stepper(if (circuit) "Кругов (3–4)" else "Подходов (3–4)", config.sets.toString(),
+        onMinus = { viewModel.update { it.copy(sets = (it.sets - 1).coerceAtLeast(3)) } },
+        onPlus = { viewModel.update { it.copy(sets = (it.sets + 1).coerceAtMost(4)) } },
+        canDecrease = config.sets > 3, canIncrease = config.sets < 4,
+    )
+    val restTitle = if (circuit) "Между упражнениями" else "Между подходами"
+    Stepper("$restTitle ($minRest–60 с)", restLabel(config.restBetweenSetsSec),
+        onMinus = { viewModel.update { it.copy(restBetweenSetsSec = (it.restBetweenSetsSec - REST_STEP).coerceAtLeast(minRest)) } },
+        onPlus = { viewModel.update { it.copy(restBetweenSetsSec = (it.restBetweenSetsSec + REST_STEP).coerceAtMost(60)) } },
+        canDecrease = config.restBetweenSetsSec > minRest, canIncrease = config.restBetweenSetsSec < 60,
+    )
+    if (circuit) Stepper("Между кругами (2–3 мин)", restLabel(config.restBetweenExercisesSec),
+        onMinus = { viewModel.update { it.copy(restBetweenExercisesSec = (it.restBetweenExercisesSec - REST_STEP).coerceAtLeast(120)) } },
+        onPlus = { viewModel.update { it.copy(restBetweenExercisesSec = (it.restBetweenExercisesSec + REST_STEP).coerceAtMost(180)) } },
+        canDecrease = config.restBetweenExercisesSec > 120, canIncrease = config.restBetweenExercisesSec < 180,
+    )
+    config.slots.forEachIndexed { index, slot ->
+        val group = ExerciseCatalog.ladder(slot.ladderId) ?: return@forEachIndexed
+        Text("${index + 1}. ${group.variations.first().name}", style = MaterialTheme.typography.titleMedium)
+        group.variations.forEach { exercise ->
+            val range = "${exercise.startTarget}–${exercise.maxTarget}" + if (exercise.perSide) " на ногу" else ""
+            if (group.variations.size == 1) {
+                Text("$range · ${exercise.hint}")
+            } else {
+                Row(Modifier.fillMaxWidth().clickable {
+                    viewModel.update { c -> c.copy(slots = c.slots.map {
+                        if (it.ladderId == group.id) it.copy(variationId = exercise.id) else it
+                    }) }
+                }, verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = exercise.id == slot.variationId, onClick = null)
+                    Text("${exercise.name} · $range", Modifier.padding(8.dp))
+                }
+            }
         }
     }
 }
@@ -198,12 +258,13 @@ private fun AddExercise(config: DayConfig, onAdd: (Ladder) -> Unit) {
 }
 
 @Composable
-private fun Stepper(title: String, value: String, onMinus: () -> Unit, onPlus: () -> Unit) {
+private fun Stepper(title: String, value: String, onMinus: () -> Unit, onPlus: () -> Unit,
+                    canDecrease: Boolean = true, canIncrease: Boolean = true) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(title, Modifier.weight(1f))
-        FilledTonalIconButton(onClick = onMinus) { Icon(Icons.Filled.Remove, contentDescription = "Меньше") }
+        FilledTonalIconButton(onClick = onMinus, enabled = canDecrease) { Icon(Icons.Filled.Remove, contentDescription = "Меньше") }
         Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        FilledTonalIconButton(onClick = onPlus) { Icon(Icons.Filled.Add, contentDescription = "Больше") }
+        FilledTonalIconButton(onClick = onPlus, enabled = canIncrease) { Icon(Icons.Filled.Add, contentDescription = "Больше") }
     }
 }
 

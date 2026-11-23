@@ -39,7 +39,9 @@ class WorkoutNotifications(private val context: Context) {
             Stage.Cooldown -> "Заминка · "
         }
         val title = (if (paused) "Пауза · " else "") + stage + Format.duration(state.activeMs)
-        val text = "♥ ${Format.heartRate(state.heartRate)} · ${Format.distanceKm(state.distanceM)} км"
+        val text = if (state.day?.isSplit == true) {
+            "${state.day.label} · ♥ ${Format.heartRate(state.heartRate)}"
+        } else "♥ ${Format.heartRate(state.heartRate)} · ${Format.distanceKm(state.distanceM)} км"
         val toggle = if (paused) {
             NotificationCompat.Action(0, "Продолжить", servicePendingIntent(WorkoutService.ACTION_RESUME))
         } else {

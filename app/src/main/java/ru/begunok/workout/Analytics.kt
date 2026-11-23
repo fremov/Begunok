@@ -19,29 +19,32 @@ enum class Period(val label: String, private val months: Long?) {
     fun start(today: LocalDate): LocalDate? = months?.let { today.plusDays(1).minusMonths(it) }
 }
 
-/** Какие тренировки показывать: все, беговые (и просто бег) или силовые. */
-enum class WorkoutKind(val label: String) {
-    All("Все"),
-    Run("Бег"),
-    Strength("Силовой"),
-    ;
+enum class WorkoutKind(val label: String, val key: String?) {
+    All("Все", null),
+    Run("Бег", "run"),
+    Strength("Силовая", "strength"),
+    StrengthUpper("Силовая · верх", "strength_upper"),
+    StrengthLower("Силовая · низ", "strength_lower"),
+    Stretching("Растяжка", STRETCHING_KEY),
+    Other("Другое", "other");
 
-    /** План на неделю: 3 беговых и 2 силовых, всего 5. */
-    val weekPlan: Int get() = when (this) {
-        All -> Analytics.WEEK_PLAN
-        Run -> Analytics.RUN_PLAN
-        Strength -> Analytics.STRENGTH_PLAN
-    }
+    fun includes(w: WorkoutEntity): Boolean = this == All || this == recorded(w.dayType)
 
-    fun includes(w: WorkoutEntity): Boolean = when (this) {
-        All -> true
-        Run -> w.dayType != DayType.Strength.name
-        Strength -> w.dayType == DayType.Strength.name
+    val isStrength: Boolean get() = this == Strength || this == StrengthUpper || this == StrengthLower
+
+    companion object {
+        fun recorded(raw: String?): WorkoutKind = when (raw) {
+            null, DayType.Run.storageKey -> Run
+            DayType.Strength.storageKey -> Strength
+            DayType.StrengthUpper.storageKey -> StrengthUpper
+            DayType.StrengthLower.storageKey -> StrengthLower
+            STRETCHING_KEY -> Stretching
+            else -> Other
+        }
     }
 }
 
-/** Километры считаются только в беге: в силовой день GPS пишет шаги между снарядами. */
-fun WorkoutEntity.countsDistance(): Boolean = dayType != DayType.Strength.name
+fun WorkoutEntity.countsDistance(): Boolean = WorkoutKind.Run.includes(this)
 
 data class WeekStat(val start: LocalDate, val workouts: Int, val distanceM: Double)
 data class AnalyticsPoint(val time: Long, val value: Float)
@@ -75,7 +78,6 @@ data class ExerciseStat(
 data class Analytics(
     val total: Int,
     val thisWeek: Int,
-    val weekPlan: Int,
     val totalDistanceM: Double,
     val totalTimeMs: Long,
     val daysSinceLast: Int?,
@@ -94,9 +96,6 @@ data class Analytics(
     val stepAverage: Double? = null,
 ) {
     companion object {
-        const val RUN_PLAN = 3
-        const val STRENGTH_PLAN = 2
-        const val WEEK_PLAN = RUN_PLAN + STRENGTH_PLAN
         const val MIN_RUN_M = 500.0
 
         fun build(
@@ -112,7 +111,7 @@ data class Analytics(
         ): Analytics {
             fun dateOf(millis: Long) = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
             val weekStart = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val scoped = workouts.filter { kind.includes(it) && dateOf(it.startTime) <= today }
+            val scoped = workouts.filter { it.endTime != null && kind.includes(it) && dateOf(it.startTime) <= today }
             val from = period.start(today)
             val inPeriod = if (from == null) scoped else scoped.filter { dateOf(it.startTime) >= from }
             val firstWeek = (from ?: inPeriod.minOfOrNull { dateOf(it.startTime) } ?: today)
@@ -137,7 +136,7 @@ data class Analytics(
                     )
                 }
             val runs = allRuns.filter { it.id in periodIds }
-            val programs = inPeriod.filter { it.programName != null && it.dayType != DayType.Strength.name }
+            val programs = inPeriod.filter { it.programName != null && it.countsDistance() }
             val showersByDay = showers.groupBy { dateOf(it.time) }.filterKeys { it <= today }
                 .mapValues { (_, sessions) -> sessions.sumOf { it.durationSec.toLong() } }
             val selectedShowers = if (from == null) showersByDay else showersByDay.filterKeys { it >= from }
@@ -148,7 +147,6 @@ data class Analytics(
             return Analytics(
                 total = inPeriod.size,
                 thisWeek = weeks.last().workouts,
-                weekPlan = kind.weekPlan,
                 totalDistanceM = inPeriod.filter { it.countsDistance() }.sumOf { it.distanceM },
                 totalTimeMs = inPeriod.sumOf { it.durationMs },
                 daysSinceLast = scoped.maxOfOrNull { it.startTime }?.let { ChronoUnit.DAYS.between(dateOf(it), today).toInt() },

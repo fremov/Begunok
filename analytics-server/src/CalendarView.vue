@@ -4,9 +4,15 @@ import { useResource } from './api'
 import { dateLabel, dayStamp, durationLabel, isoDate, localToday, numberLabel, shiftDate } from './metrics'
 import RequestState from './RequestState.vue'
 
+const workoutKinds = [
+  ['run', 'Бег'], ['strength_upper', 'Силовая · Верх тела'], ['strength_lower', 'Силовая · Низ тела'],
+  ['strength', 'Силовая'], ['stretching', 'Растяжка'], ['other', 'Другая тренировка'],
+] as const
+type WorkoutKind = typeof workoutKinds[number][0]
 interface PhoneDay {
   workouts: number; topics: number; tasks: number; reviews: number
   pages: number; showerDurationSec: number; steps: number | null
+  workoutKinds?: Partial<Record<WorkoutKind, number>>
 }
 const groups = [
   ['ai', 'Нейросети'], ['study', 'Обучение'], ['development', 'Разработка'],
@@ -20,6 +26,12 @@ interface CalendarDay {
   details: Partial<Record<Group, ActivityItem[]>> | null
 }
 
+function workoutDetails(phone?: PhoneDay | null) {
+  return workoutKinds.flatMap(([key, label]) => {
+    const count = phone?.workoutKinds?.[key] ?? 0
+    return count > 0 ? [{ key, label, count }] : []
+  })
+}
 const mathTotal = (phone: PhoneDay) => phone.topics + phone.tasks + phone.reviews
 const activities = [
   { key: 'training', label: 'Тренировки', active: ({ phone }) => (phone?.workouts ?? 0) > 0 },
@@ -75,7 +87,8 @@ const months = computed(() => {
         const observed = day?.phone != null || day?.pc != null
         const marks = day ? activities.filter(activity => activity.active(day)) : []
         const description = date > today ? 'будущий день' : !observed ? 'нет данных'
-          : marks.length ? marks.map(activity => activity.label).join(', ') : 'нет отмеченной активности'
+          : marks.length ? marks.map(activity => activity.key === 'training' && day.phone?.workoutKinds
+            ? workoutDetails(day.phone).map(item => item.label).join(', ') : activity.label).join(', ') : 'нет отмеченной активности'
         return { date, marks, observed, label: `${dateLabel(date)}: ${description}` }
       }),
     }
@@ -188,10 +201,11 @@ async function navigateDays(event: KeyboardEvent) {
         <div class="day-section-head"><h3 id="phone-heading">Телефон</h3></div>
         <dl v-if="phone" class="day-values">
           <div><dt><i data-activity="training" aria-hidden="true"></i>Завершённые тренировки</dt><dd>{{ numberLabel(phone.workouts) }}</dd></div>
+          <div v-for="kind in workoutDetails(phone)" :key="kind.key" class="day-subtotal"><dt>{{ kind.label }}</dt><dd>{{ numberLabel(kind.count) }}</dd></div>
           <div><dt><i data-activity="math" aria-hidden="true"></i>Математика</dt><dd>{{ numberLabel(mathTotal(phone)) }}</dd></div>
-          <div class="math-details"><dt>Пройдено тем</dt><dd>{{ numberLabel(phone.topics) }}</dd></div>
-          <div class="math-details"><dt>Решено задач</dt><dd>{{ numberLabel(phone.tasks) }}</dd></div>
-          <div class="math-details"><dt>Повторений</dt><dd>{{ numberLabel(phone.reviews) }}</dd></div>
+          <div class="day-subtotal"><dt>Пройдено тем</dt><dd>{{ numberLabel(phone.topics) }}</dd></div>
+          <div class="day-subtotal"><dt>Решено задач</dt><dd>{{ numberLabel(phone.tasks) }}</dd></div>
+          <div class="day-subtotal"><dt>Повторений</dt><dd>{{ numberLabel(phone.reviews) }}</dd></div>
           <div><dt><i data-activity="reading" aria-hidden="true"></i>Чтение</dt><dd>{{ numberLabel(phone.pages) }} стр.</dd></div>
           <div><dt><i data-activity="shower" aria-hidden="true"></i>Холодный душ</dt><dd>{{ durationLabel(phone.showerDurationSec, true) }}</dd></div>
           <div><dt><i data-activity="steps" aria-hidden="true"></i>Шаги</dt><dd>{{ phone.steps == null ? 'Нет данных' : numberLabel(phone.steps) }}</dd></div>

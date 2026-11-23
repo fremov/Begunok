@@ -78,6 +78,8 @@ import ru.begunok.data.db.WorkoutEntity
 import ru.begunok.ui.Format
 import ru.begunok.workout.GpxWriter
 import ru.begunok.workout.RouteSegment
+import ru.begunok.workout.STRETCHING_KEY
+import ru.begunok.workout.countsDistance
 import ru.begunok.workout.buildRouteSegments
 import ru.begunok.workout.gpsCoverage
 import ru.begunok.workout.paceSecPerKm
@@ -113,6 +115,9 @@ class WorkoutDetailViewModel(
         .filterNotNull()
         .combine(repository.observeSets(workoutId)) { workout, sets -> workout to sets }
         .map { (workout, sets) ->
+            if (workout.dayType == STRETCHING_KEY) {
+                return@map WorkoutDetail(workout, emptyList(), emptyList(), null, null, emptyList())
+            }
             val samples = repository.samples(workout.id)
             var bandMessage: String? = null
             val band = try {
@@ -206,7 +211,9 @@ fun WorkoutDetailScreen(
                     }
                 }
                 if (detail != null) {
-                    IconButton(onClick = ::share) { Icon(Icons.Filled.Share, contentDescription = "Экспорт GPX") }
+                    if (detail?.workout?.countsDistance() == true || detail?.segments?.isNotEmpty() == true) {
+                        IconButton(onClick = ::share) { Icon(Icons.Filled.Share, contentDescription = "Экспорт GPX") }
+                    }
                     IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Filled.Delete, contentDescription = "Удалить") }
                 }
             }
@@ -217,7 +224,9 @@ fun WorkoutDetailScreen(
                 }
                 return@Column
             }
-            DetailContent(d, celebrate, onShare = ::share, onHome = onHome)
+            if (d.workout.dayType == STRETCHING_KEY) {
+                Text("Растяжка проведена", Modifier.padding(16.dp), style = MaterialTheme.typography.titleMedium)
+            } else DetailContent(d, celebrate, onShare = ::share, onHome = onHome)
         }
         if (celebrate && detail != null) Confetti(trigger = workoutId, modifier = Modifier.fillMaxSize())
     }
@@ -225,8 +234,9 @@ fun WorkoutDetailScreen(
     if (confirmDelete) {
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
-            title = { Text("Удалить тренировку?") },
-            text = { Text("Маршрут, пульс и все записи этой тренировки будут удалены без возможности восстановления.") },
+            title = { Text(if (detail?.workout?.dayType == STRETCHING_KEY) "Снять отметку о растяжке?" else "Удалить тренировку?") },
+            text = { Text(if (detail?.workout?.dayType == STRETCHING_KEY) "Остальные тренировки за эту дату не изменятся."
+                else "Маршрут, пульс и все записи этой тренировки будут удалены без возможности восстановления.") },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false
@@ -243,6 +253,7 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
     val route = remember { Animatable(0f) }
     LaunchedEffect(Unit) { route.animateTo(1f, tween(1_800, easing = FastOutSlowInEasing)) }
     val w = d.workout
+    val showRoute = w.countsDistance() || d.segments.isNotEmpty()
     Column(
         Modifier
             .fillMaxSize()
@@ -263,7 +274,7 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
                 Text("Отличная работа! Вот что получилось:", color = Color.White.copy(alpha = 0.9f))
             }
         }
-        RouteShape(
+        if (showRoute) RouteShape(
             d.segments,
             Modifier
                 .fillMaxWidth()
@@ -273,15 +284,17 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
             progress = route.value,
         )
         Row(Modifier.fillMaxWidth().appear(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            val km = rememberCountUp(w.distanceM.toFloat())
             val ms = rememberCountUp(w.durationMs.toFloat())
-            StatCard("Дистанция, км", Format.distanceKm(km.toDouble()), Modifier.weight(1f), large = true)
+            if (showRoute) {
+                val km = rememberCountUp(w.distanceM.toFloat())
+                StatCard("Дистанция, км", Format.distanceKm(km.toDouble()), Modifier.weight(1f), large = true)
+            }
             StatCard("Время", Format.duration(ms.toLong()), Modifier.weight(1f), large = true)
         }
         Row(Modifier.fillMaxWidth().appear(3), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             val avg = rememberCountUp((w.avgHr ?: 0).toFloat())
             val max = rememberCountUp((w.maxHr ?: 0).toFloat())
-            StatCard("Ср. темп", Format.pace(paceSecPerKm(w.durationMs, w.distanceM)), Modifier.weight(1f))
+            if (showRoute) StatCard("Ср. темп", Format.pace(paceSecPerKm(w.durationMs, w.distanceM)), Modifier.weight(1f))
             StatCard("Ср. пульс", if (w.avgHr == null) "—" else avg.roundToInt().toString(), Modifier.weight(1f))
             StatCard("Макс.", if (w.maxHr == null) "—" else max.roundToInt().toString(), Modifier.weight(1f))
         }
@@ -299,7 +312,7 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
                     color = ZoneColors.Above,
                     trackColor = ZoneColors.Normal.copy(alpha = 0.6f),
                 )
-                Text(
+                if (showRoute) Text(
                     "Цвет линии маршрута: зелёный — ниже границы, жёлтый — у границы, красный — выше",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -323,7 +336,7 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
             }
         }
 
-        if (d.sets.isNotEmpty()) DetailCard("Площадка", Modifier.appear(6)) { ExerciseSets(d.sets) }
+        if (d.sets.isNotEmpty()) DetailCard("Упражнения", Modifier.appear(6)) { ExerciseSets(d.sets) }
 
         d.band?.let { band -> DetailCard("Браслет · Health Connect", Modifier.appear(7)) { BandStats(band) } }
         d.bandMessage?.let { message ->
@@ -332,14 +345,14 @@ private fun DetailContent(d: WorkoutDetail, celebrate: Boolean, onShare: () -> U
             }
         }
 
-        d.gpsCoverage?.let {
+        if (showRoute) d.gpsCoverage?.let {
             Text(
                 "GPS: точные координаты в ${(it * 100).roundToInt()}% времени тренировки",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        OutlinedButton(onClick = onShare, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+        if (showRoute) OutlinedButton(onClick = onShare, modifier = Modifier.fillMaxWidth().height(52.dp)) {
             Icon(Icons.Filled.Share, contentDescription = null)
             Text("  Экспорт в GPX")
         }

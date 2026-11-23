@@ -315,6 +315,32 @@ class AnalyticsIntegrationTest(unittest.TestCase):
             with self.subTest(query=query):
                 self.get("/v1/calendar?" + quote(query, safe="=&-"), expected_status=400)
 
+    def test_workout_kinds_replay_and_stretch_removal(self):
+        self.mock_usb(41, 41, 41)
+        day, stretch_only, legacy = "2026-03-04", "2026-03-02", "2026-02-01"
+        self.collect.return_value = pc_snapshot({stretch_only: {"study": 90}})
+        kinds = {"run": 2, "strength_upper": 1, "strength_lower": 1, "strength": 1, "stretching": 1, "other": 1}
+        combined = dict(PHONE_DAY, workouts=sum(kinds.values()), workoutKinds=kinds)
+        self.calendar_output = phone_calendar({
+            day: combined, stretch_only: dict(PHONE_DAY, workoutKinds={"stretching": 1}), legacy: PHONE_DAY,
+        })
+        for _ in range(2):
+            self.assertEqual(self.usb_post(IMPORT), {"count": 0})
+            rows = self.get("/v1/calendar?period=2026")["days"]
+            self.assertEqual(rows[day]["phone"], combined)
+            self.assertEqual(rows[stretch_only]["phone"]["workoutKinds"], {"stretching": 1})
+            self.assertEqual(rows[legacy]["phone"], PHONE_DAY)
+
+        del kinds["stretching"]
+        combined["workouts"] -= 1
+        self.calendar_output = phone_calendar({day: combined, legacy: PHONE_DAY})
+        self.assertEqual(self.usb_post(IMPORT), {"count": 0})
+        rows = self.get("/v1/calendar?period=2026")["days"]
+        self.assertEqual(rows[day]["phone"], combined)
+        self.assertEqual(rows[legacy]["phone"], PHONE_DAY)
+        self.assertIsNone(rows[stretch_only]["phone"])
+        self.assertEqual(rows[stretch_only]["pc"], {"study": 90})
+
     def test_usb_sends_only_totals_while_local_calendar_keeps_safe_item_names(self):
         collect = aw_calendar.collect_detailed
         self.mock_usb(41)
@@ -373,6 +399,9 @@ class AnalyticsIntegrationTest(unittest.TestCase):
                     phone_calendar({"2024-01-01": dict(PHONE_DAY, pages=-1)}),
                     phone_calendar({"2024-01-01": dict(PHONE_DAY, title="private-title")}),
                     phone_calendar({"2024-01-01": {"steps": 3}})]
+        failures.extend(phone_calendar({"2024-01-01": dict(PHONE_DAY, workoutKinds=kinds)})
+                        for kinds in (None, [], {}, {"run": 2}, {"unknown": 1}, {"run": True},
+                                      {"strength": -1, "stretching": 2}))
         self.mock_usb(None, *([41] * (len(failures) + 1)))
         self.calendar_output = phone_calendar(initial)
         self.collect.return_value = pc_snapshot({"2024-02-29": {"ai": 90}})

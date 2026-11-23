@@ -1,8 +1,19 @@
 package ru.begunok.workout
 
-enum class DayType(val label: String) {
-    Run("Беговой день"),
-    Strength("Силовой день"),
+const val STRETCHING_KEY = "stretching"
+
+enum class DayType(val label: String, val storageKey: String) {
+    Run("Беговой день", "Run"),
+    Strength("Силовой день", "Strength"),
+    StrengthUpper("Силовая · Верх тела", "strength_upper"),
+    StrengthLower("Силовая · Низ тела", "strength_lower");
+
+    val isSplit: Boolean get() = this == StrengthUpper || this == StrengthLower
+
+    companion object {
+        val selectable = listOf(Run, StrengthUpper, StrengthLower)
+        fun fromStorage(value: String?): DayType? = entries.firstOrNull { it.storageKey == value }
+    }
 }
 
 data class Exercise(
@@ -14,6 +25,7 @@ data class Exercise(
     val timed: Boolean = false,
     val perSide: Boolean = false,
     val variationId: String = id,
+    val fixedRange: Boolean = false,
 ) {
     val step: Int get() = if (timed) TIMED_STEP_SEC else 1
 
@@ -91,11 +103,45 @@ object ExerciseCatalog {
         ),
     )
 
-    fun ladder(id: String): Ladder? = ladders.firstOrNull { it.id == id }
+    private val upper = listOf(
+        group("Верх · Подтягивания",
+            Exercise("upper_pullups", "Подтягивания прямым хватом", "Без раскачки, подбородок выше перекладины", 6, 12),
+            Exercise("upper_chinups", "Подтягивания обратным хватом", "Ладони к себе, корпус неподвижен", 6, 12),
+            Exercise("upper_assisted_rows", "Австралийские подтягивания", "Облегчённый вариант на низкой перекладине", 6, 12)),
+        group("Верх · Брусья", Exercise("upper_dips", "Отжимания на брусьях", "Опускайтесь подконтрольно", 8, 15)),
+        group("Верх · Отжимания",
+            Exercise("upper_pushups", "Отжимания от земли", "Держите тело в одну линию", 12, 20),
+            Exercise("upper_bench_pushups", "Отжимания от лавки", "Поставьте руки на устойчивую лавку", 12, 20)),
+        group("Верх · Тяга", Exercise("upper_rows", "Австралийская тяга", "Подтягивайте грудь к низкой перекладине", 10, 15)),
+        group("Верх · Трицепс", Exercise("upper_french", "Французские отжимания", "На низком турнике, сгибайте и разгибайте локти", 10, 15)),
+        group("Верх · Пресс", Exercise("upper_leg_raises", "Подъём ног в висе", "Поднимайте ноги без раскачки", 10, 15)),
+    )
 
-    fun ladderOf(variationId: String): Ladder? = ladders.firstOrNull { l -> l.variations.any { it.id == variationId } }
+    private val lower = listOf(
+        group("Низ · Сплит-присед", Exercise("lower_split_squats", "Болгарские сплит-приседания с опорой", "Используйте низкий турник или брусья как опору", 8, 12, perSide = true)),
+        group("Низ · Выпады", Exercise("lower_lunges", "Обратные выпады с места", "Шагните назад, передняя стопа полностью на земле", 10, 12, perSide = true)),
+        group("Низ · Присед", Exercise("lower_sumo", "Приседания плие / сумо", "Широкая стойка, пауза 2 секунды внизу", 12, 15)),
+        group("Низ · Наклоны", Exercise("lower_good_mornings", "Наклоны «Доброе утро» на двух ногах", "Отводите таз назад, держите спину ровно", 15, 20)),
+        group("Низ · Прыжки", Exercise("lower_jumps", "Приседания с выпрыгиванием", "Мягко приземляйтесь на обе ноги", 8, 12)),
+        group("Низ · Икры", Exercise("lower_calves", "Подъёмы на носок одной ноги", "Выполняйте с земли, держась за опору", 15, 20, perSide = true)),
+    )
 
-    fun variation(id: String): Exercise? = ladders.firstNotNullOfOrNull { l -> l.variations.firstOrNull { it.id == id } }
+    private fun group(name: String, vararg choices: Exercise) =
+        Ladder(choices.first().id, name, choices.map { it.copy(fixedRange = true) })
+
+    fun groups(type: DayType): List<Ladder> = when (type) {
+        DayType.StrengthUpper -> upper
+        DayType.StrengthLower -> lower
+        else -> ladders
+    }
+
+    private val all = ladders + upper + lower
+
+    fun ladder(id: String): Ladder? = all.firstOrNull { it.id == id }
+
+    fun ladderOf(variationId: String): Ladder? = all.firstOrNull { l -> l.variations.any { it.id == variationId } }
+
+    fun variation(id: String): Exercise? = all.firstNotNullOfOrNull { l -> l.variations.firstOrNull { it.id == id } }
 
     fun next(variationId: String): Exercise? {
         val ladder = ladderOf(variationId) ?: return null
@@ -116,6 +162,7 @@ data class DayConfig(
     val sets: Int,
     val restBetweenSetsSec: Int,
     val restBetweenExercisesSec: Int,
+    val lowerCircuit: Boolean = true,
 ) {
     companion object {
         fun default(type: DayType): DayConfig = when (type) {
@@ -137,6 +184,12 @@ data class DayConfig(
                 restBetweenSetsSec = 90,
                 restBetweenExercisesSec = 90,
             )
+            DayType.StrengthUpper, DayType.StrengthLower -> DayConfig(
+                slots = ExerciseCatalog.groups(type).map { Slot(it.id, it.variations.first().id) },
+                sets = 3,
+                restBetweenSetsSec = if (type == DayType.StrengthLower) 45 else 30,
+                restBetweenExercisesSec = 120,
+            )
         }
     }
 }
@@ -151,7 +204,9 @@ data class StrengthBlock(
 ) {
     val description: String
         get() = if (circuit) {
-            "$title × $sets" + if (restBetweenExercisesSec > 0) ", между кругами отдых ${formatSpan(restBetweenExercisesSec)}" else ""
+            "$title × $sets" +
+                (if (restBetweenSetsSec > 0) ", между упражнениями ${formatSpan(restBetweenSetsSec)}" else "") +
+                (if (restBetweenExercisesSec > 0) ", между кругами отдых ${formatSpan(restBetweenExercisesSec)}" else "")
         } else {
             "$sets ${plural(sets, "подход", "подхода", "подходов")}, отдых ${formatSpan(restBetweenSetsSec)} между подходами, " +
                 "${formatSpan(restBetweenExercisesSec)} между упражнениями"
@@ -163,7 +218,7 @@ data class DayPlan(
     val warmupSec: Int,
     val strength: StrengthBlock,
 ) {
-    val initialStage: Stage get() = if (type == DayType.Strength) Stage.Strength else Stage.Run
+    val initialStage: Stage get() = if (type == DayType.Run) Stage.Run else Stage.Strength
 
     fun runProgram(selected: IntervalProgram?): IntervalProgram? =
         if (initialStage == Stage.Run) selected?.copy(warmupSec = warmupSec) else null
@@ -192,6 +247,15 @@ data class DayPlan(
                         config.restBetweenSetsSec, config.restBetweenExercisesSec,
                     ),
                 )
+                DayType.StrengthUpper, DayType.StrengthLower -> DayPlan(
+                    type = type,
+                    warmupSec = 0,
+                    strength = StrengthBlock(
+                        "Круг", exercises, config.sets, circuit = type == DayType.StrengthUpper || config.lowerCircuit,
+                        config.restBetweenSetsSec,
+                        if (type == DayType.StrengthLower && !config.lowerCircuit) config.restBetweenSetsSec else config.restBetweenExercisesSec,
+                    ),
+                )
             }
         }
     }
@@ -207,11 +271,12 @@ object Progression {
         val target = lastSession.maxOf { it.target }
         val minDone = lastSession.minOf { it.reps }
         val maxDone = lastSession.maxOf { it.reps }
-        return if (minDone >= target && lastSession.size >= plannedSets) {
+        val next = if (minDone >= target && lastSession.size >= plannedSets) {
             maxOf(target + exercise.step, minDone)
         } else {
             maxOf(exercise.step, minOf(target, maxDone))
         }
+        return if (exercise.fixedRange) next.coerceIn(exercise.startTarget, exercise.maxTarget) else next
     }
 
     fun targets(block: StrengthBlock, lastSessions: Map<String, List<DoneSet>>): Map<String, Int> =

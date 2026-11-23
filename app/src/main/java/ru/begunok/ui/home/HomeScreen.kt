@@ -104,8 +104,8 @@ import ru.begunok.workout.Stage
 import ru.begunok.workout.WorkoutPhase
 import ru.begunok.workout.WorkoutState
 import ru.begunok.workout.hrZone
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -171,13 +171,16 @@ fun HomeScreen(
                         onFinish = viewModel::stop,
                     )
                 } else if (settings != null) {
-                    val gps by viewModel.gps.collectAsStateWithLifecycle()
+                    val gps = if (settings.trainingDayType == DayType.Run) viewModel.gps.collectAsStateWithLifecycle().value else GpsStatus.Searching
+                    val stretching by viewModel.stretching.collectAsStateWithLifecycle()
                     PreStart(
                         sensor = sensor,
                         gps = gps,
                         settings = settings,
                         preview = preview,
                         runProgress = runProgress,
+                        stretching = stretching,
+                        onSetStretching = viewModel::setStretching,
                         onSelectDayType = viewModel::setDayType,
                         onEditPlan = onEditPlan,
                         onStart = viewModel::start,
@@ -214,6 +217,7 @@ fun HomeScreen(
 }
 
 private val ru = Locale.forLanguageTag("ru")
+private val homeDateFormat = DateTimeFormatter.ofPattern("EEEE, d MMMM", ru)
 
 @Composable
 private fun PreStart(
@@ -222,6 +226,8 @@ private fun PreStart(
     settings: AppSettings,
     preview: PlanPreview?,
     runProgress: RunProgress?,
+    stretching: StretchingToday?,
+    onSetStretching: (StretchingToday, Boolean) -> Unit,
     onSelectDayType: (DayType) -> Unit,
     onEditPlan: (DayType) -> Unit,
     onStart: (DayType) -> Unit,
@@ -239,11 +245,21 @@ private fun PreStart(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Column(Modifier.appear(0)) {
-            val today = remember { SimpleDateFormat("EEEE, d MMMM", ru).format(Date()).replaceFirstChar { it.titlecase(ru) } }
+            val today = (stretching?.date ?: LocalDate.now()).format(homeDateFormat).replaceFirstChar { it.titlecase(ru) }
             Text(today, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(dayType.label, style = MaterialTheme.typography.displaySmall)
         }
         Box(Modifier.appear(1)) { DayTypePicker(dayType, onSelectDayType) }
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("Растяжка", style = MaterialTheme.typography.titleMedium)
+                Text(if (stretching?.conducted == true) "Сегодня проведена" else "Отметка за сегодня",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            OutlinedButton(enabled = stretching != null, onClick = {
+                stretching?.let { onSetStretching(it, !it.conducted) }
+            }) { Text(if (stretching?.conducted == true) "Снять отметку" else "Проведена") }
+        }
         Row(Modifier.appear(2), verticalAlignment = Alignment.CenterVertically) {
             SensorBadge(sensor, Modifier.weight(1f, fill = false))
             if (sensor.status == SensorStatus.NotSelected) {
@@ -263,7 +279,17 @@ private fun PreStart(
             Box(Modifier.appear(7)) { PlanCard(it, settings.selectedProgram) { onEditPlan(dayType) } }
         }
 
-        PermissionGate(
+        if (dayType.isSplit) {
+            val context = LocalContext.current
+            if (Permissions.canConnect(context) || Permissions.hasFineLocation(context)) {
+                StartButton("Старт", dayType.label, { onStart(dayType) })
+            } else {
+                PermissionGate(Permissions.bluetooth, "Разрешение для тренировки",
+                    "Доступ к устройствам поблизости позволяет записывать тренировку с выключенным экраном без GPS.") {
+                    StartButton("Старт", dayType.label, { onStart(dayType) })
+                }
+            }
+        } else PermissionGate(
             permissions = Permissions.location,
             title = "Доступ к геолокации",
             rationale = "Нужен, чтобы считать дистанцию, скорость и темп и записывать маршрут. " +
@@ -282,10 +308,7 @@ private fun PreStart(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                val subtitle = when (dayType) {
-                    DayType.Strength -> "силовая на площадке"
-                    DayType.Run -> settings.selectedProgram?.let { "${it.name} · затем площадка" } ?: "бег и площадка"
-                }
+                val subtitle = settings.selectedProgram?.let { "${it.name} · затем площадка" } ?: "бег и площадка"
                 StartButton("Старт", subtitle, { onStart(dayType) })
             }
         }

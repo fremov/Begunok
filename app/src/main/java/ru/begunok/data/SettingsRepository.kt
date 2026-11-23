@@ -136,7 +136,7 @@ class SettingsRepository(private val context: Context) {
         batteryHintDismissed = this[Keys.batteryHintDismissed] ?: false,
         programs = this[Keys.programs]?.let(::decodePrograms) ?: IntervalProgram.defaults,
         selectedProgramId = this[Keys.selectedProgram],
-        dayType = this[Keys.dayType]?.let { name -> DayType.entries.firstOrNull { it.name == name } },
+        dayType = DayType.fromStorage(this[Keys.dayType]),
         readingGoal = this[Keys.readingGoal] ?: ReadingStats.DEFAULT_GOAL,
         themeMode = this[Keys.themeMode]?.let { name -> ThemeMode.entries.firstOrNull { it.name == name } } ?: ThemeMode.System,
         weightGoal = this[Keys.weightTarget]?.let { target ->
@@ -223,7 +223,7 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setDayType(type: DayType?) = context.dataStore.edit {
-        if (type == null) it.remove(Keys.dayType) else it[Keys.dayType] = type.name
+        if (type == null) it.remove(Keys.dayType) else it[Keys.dayType] = type.storageKey
     }
 
     suspend fun setDayConfig(type: DayType, config: DayConfig?) = context.dataStore.edit {
@@ -240,6 +240,7 @@ class SettingsRepository(private val context: Context) {
         .put("sets", config.sets)
         .put("restSets", config.restBetweenSetsSec)
         .put("restExercises", config.restBetweenExercisesSec)
+        .put("lowerCircuit", config.lowerCircuit)
         .put(
             "slots",
             JSONArray().apply {
@@ -259,6 +260,7 @@ class SettingsRepository(private val context: Context) {
             sets = o.getInt("sets"),
             restBetweenSetsSec = o.getInt("restSets"),
             restBetweenExercisesSec = o.getInt("restExercises"),
+            lowerCircuit = o.optBoolean("lowerCircuit", true),
         )
     }.getOrNull()
 

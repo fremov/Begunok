@@ -71,7 +71,7 @@ class WorkoutService : LifecycleService() {
         when (intent?.action) {
             ACTION_START -> {
                 val type = intent.getStringExtra(EXTRA_DAY_TYPE)
-                val dayType = DayType.entries.firstOrNull { it.name == type }
+                val dayType = DayType.fromStorage(type)?.takeIf { it in DayType.selectable }
                 if (dayType != null) start(dayType) else if (tracker == null) stopSelf()
             }
             ACTION_PAUSE -> pause()
@@ -94,7 +94,8 @@ class WorkoutService : LifecycleService() {
     private fun start(dayType: DayType) {
         if (tracker != null) return
         startTime = System.currentTimeMillis()
-        val initial = WorkoutState(phase = WorkoutPhase.Running, startTime = startTime, day = dayType)
+        val initial = WorkoutState(phase = WorkoutPhase.Running, startTime = startTime, day = dayType,
+            stage = if (dayType == DayType.Run) Stage.Run else Stage.Strength)
         if (!startInForeground(initial)) {
             stopSelf()
             return
@@ -119,7 +120,7 @@ class WorkoutService : LifecycleService() {
         _state.value = initial
 
         session = lifecycleScope.launch {
-            locationJob = launch {
+            if (dayType == DayType.Run) locationJob = launch {
                 container.locationClient.updates().collect { location ->
                     fixQuality.onLocation(location)
                     if (location.hasAccuracy()) {
@@ -479,7 +480,9 @@ class WorkoutService : LifecycleService() {
     private fun startInForeground(state: WorkoutState): Boolean {
         var type = 0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            if (Permissions.hasFineLocation(this)) type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            if ((state.day == DayType.Run || !Permissions.canConnect(this)) && Permissions.hasFineLocation(this)) {
+                type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            }
             if (Permissions.canConnect(this)) type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         }
         return runCatching {
@@ -530,7 +533,7 @@ class WorkoutService : LifecycleService() {
         val state: StateFlow<WorkoutState> = _state.asStateFlow()
 
         fun start(context: Context, dayType: DayType) {
-            ContextCompat.startForegroundService(context, intent(context, ACTION_START).putExtra(EXTRA_DAY_TYPE, dayType.name))
+            ContextCompat.startForegroundService(context, intent(context, ACTION_START).putExtra(EXTRA_DAY_TYPE, dayType.storageKey))
         }
 
         fun send(context: Context, action: String) {

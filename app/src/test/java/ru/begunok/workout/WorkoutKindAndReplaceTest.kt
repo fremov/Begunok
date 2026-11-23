@@ -14,6 +14,7 @@ class WorkoutKindAndReplaceTest {
     private fun workout(id: Long, daysAgo: Long, distance: Double, dayType: String?) = WorkoutEntity(
         id = id,
         startTime = today.minusDays(daysAgo).atTime(10, 0).atZone(zone).toInstant().toEpochMilli(),
+        endTime = today.minusDays(daysAgo).atTime(10, 30).atZone(zone).toInstant().toEpochMilli(),
         durationMs = 1_800_000,
         distanceM = distance,
         upperLimit = 145,
@@ -24,12 +25,17 @@ class WorkoutKindAndReplaceTest {
         workout(1, 1, 5000.0, DayType.Run.name),
         workout(2, 2, 3000.0, DayType.Strength.name),
         workout(3, 3, 4000.0, null),
+        workout(4, 0, 800.0, "strength_upper"),
+        workout(5, 0, 700.0, "strength_lower"),
+        workout(6, 0, 0.0, "stretching"),
+        workout(7, 0, 900.0, "unknown"),
+        workout(8, 0, 10_000.0, "Run").copy(endTime = null),
     )
 
     @Test
     fun allDoesNotCountStrengthDistance() {
         val a = Analytics.build(data, emptyList(), today, zone, Period.All, WorkoutKind.All)
-        assertEquals(3, a.total)
+        assertEquals(7, a.total)
         assertEquals(9000.0, a.totalDistanceM, 0.0)
         assertEquals(listOf(5000.0, 4000.0), a.runs.map { it.distanceM }.sortedDescending())
         assertEquals(9000.0, a.weeks.sumOf { it.distanceM }, 0.0)
@@ -51,11 +57,13 @@ class WorkoutKindAndReplaceTest {
     }
 
     @Test
-    fun weekPlanIsThreeRunsAndTwoStrength() {
-        assertEquals(5, WorkoutKind.All.weekPlan)
-        assertEquals(3, WorkoutKind.Run.weekPlan)
-        assertEquals(2, WorkoutKind.Strength.weekPlan)
-        assertEquals(2, Analytics.build(data, emptyList(), today, zone, Period.All, WorkoutKind.Strength).weekPlan)
+    fun currentWeekCountsOnlyRecordedSessionsByKind() {
+        for (kind in listOf(WorkoutKind.Strength, WorkoutKind.StrengthUpper, WorkoutKind.StrengthLower, WorkoutKind.Stretching, WorkoutKind.Other)) {
+            val stats = Analytics.build(data, emptyList(), today, zone, Period.All, kind)
+            assertEquals(1, stats.total)
+            assertEquals(1, stats.thisWeek)
+            assertTrue(stats.runs.isEmpty())
+        }
     }
 
     private fun session(): StrengthSession {

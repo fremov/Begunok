@@ -11,6 +11,8 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
+import ru.begunok.workout.WorkoutKind
+
 data class DailyActivityRow(
     val day: LocalDate,
     val workouts: Int = 0,
@@ -18,6 +20,7 @@ data class DailyActivityRow(
     val pages: Int = 0,
     val showerDurationSec: Long = 0,
     val steps: Long? = null,
+    val workoutKinds: Map<String, Int> = emptyMap(),
 )
 
 object DailyActivity {
@@ -40,7 +43,9 @@ object DailyActivity {
 
         for (workout in workouts) {
             if (workout.endTime == null) continue
-            totals(dateOf(workout.startTime))?.let { it.workouts++ }
+            val day = totals(dateOf(workout.startTime)) ?: continue
+            val key = requireNotNull(WorkoutKind.recorded(workout.dayType).key)
+            day.workoutKinds[key] = (day.workoutKinds[key] ?: 0) + 1
         }
         for (entry in reading) {
             val pages = entry.toPage - entry.fromPage
@@ -65,7 +70,8 @@ object DailyActivity {
                 add(
                     DailyActivityRow(
                         day = day,
-                        workouts = totals?.workouts ?: 0,
+                        workouts = totals?.workoutKinds?.values?.sum() ?: 0,
+                        workoutKinds = totals?.workoutKinds.orEmpty(),
                         study = totals?.study ?: MathDayActivity(),
                         pages = totals?.pages ?: 0,
                         showerDurationSec = totals?.showerDurationSec ?: 0L,
@@ -79,7 +85,7 @@ object DailyActivity {
     }
 
     private class DayTotals {
-        var workouts = 0
+        val workoutKinds = mutableMapOf<String, Int>()
         var study = MathDayActivity()
         var pages = 0
         var showerDurationSec = 0L

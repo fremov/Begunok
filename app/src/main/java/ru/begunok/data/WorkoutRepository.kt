@@ -13,9 +13,22 @@ import ru.begunok.workout.DoneSet
 import ru.begunok.workout.Fix
 import ru.begunok.workout.WorkoutSummary
 import ru.begunok.workout.WorkoutTracker
+import java.time.LocalDate
+import java.time.ZoneId
 
 class WorkoutRepository(private val dao: WorkoutDao) {
     fun observeFinished(): Flow<List<WorkoutEntity>> = dao.observeFinished()
+
+    fun observeStretching(date: LocalDate, zone: ZoneId): Flow<Boolean> = dao.observeStretching(
+        date.atStartOfDay(zone).toInstant().toEpochMilli(),
+        date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli(),
+    )
+
+    suspend fun setStretching(date: LocalDate, zone: ZoneId, conducted: Boolean) {
+        val start = date.atStartOfDay(zone).toInstant().toEpochMilli()
+        val end = date.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+        dao.setStretching(start, end, System.currentTimeMillis().coerceIn(start, end - 1), conducted)
+    }
 
     fun observeWorkout(id: Long): Flow<WorkoutEntity?> = dao.observeWorkout(id)
 
@@ -28,7 +41,7 @@ class WorkoutRepository(private val dao: WorkoutDao) {
                 upperLimit = upperLimit,
                 lowerLimit = lowerLimit,
                 programName = programName,
-                dayType = day?.name,
+                dayType = day?.storageKey,
             )
         )
 

@@ -3,8 +3,10 @@ package ru.begunok.data.db
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import ru.begunok.workout.STRETCHING_KEY
 
 @Dao
 interface WorkoutDao {
@@ -29,6 +31,22 @@ interface WorkoutDao {
     @Query("DELETE FROM workouts WHERE id = :id")
     suspend fun deleteWorkout(id: Long)
 
+    @Query("SELECT EXISTS(SELECT 1 FROM workouts WHERE dayType = '$STRETCHING_KEY' AND startTime >= :start AND startTime < :end)")
+    fun observeStretching(start: Long, end: Long): Flow<Boolean>
+
+    @Query("SELECT id FROM workouts WHERE dayType = '$STRETCHING_KEY' AND startTime >= :start AND startTime < :end LIMIT 1")
+    suspend fun stretchingId(start: Long, end: Long): Long?
+
+    @Transaction
+    suspend fun setStretching(start: Long, end: Long, time: Long, conducted: Boolean) {
+        val id = stretchingId(start, end)
+        if (conducted && id == null) {
+            insertWorkout(WorkoutEntity(startTime = time, endTime = time, upperLimit = 0, dayType = STRETCHING_KEY))
+        } else if (!conducted && id != null) {
+            deleteWorkout(id)
+        }
+    }
+
     @Insert
     suspend fun insertSample(sample: SampleEntity)
 
@@ -52,7 +70,7 @@ interface WorkoutDao {
 
     @Query(
         "SELECT programName, programCompleted FROM workouts WHERE endTime IS NOT NULL AND programName IS NOT NULL " +
-            "AND (dayType IS NULL OR dayType != 'Strength') ORDER BY startTime DESC LIMIT :limit"
+            "AND (dayType IS NULL OR dayType = 'Run') ORDER BY startTime DESC LIMIT :limit"
     )
     fun observeRecentPrograms(limit: Int): Flow<List<ProgramRun>>
 
