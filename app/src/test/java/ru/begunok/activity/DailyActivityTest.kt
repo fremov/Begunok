@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import ru.begunok.data.db.ColdShowerEntity
+import ru.begunok.data.db.ExerciseSetEntity
 import ru.begunok.data.db.ReadingEntryEntity
 import ru.begunok.data.db.WorkoutEntity
 import ru.begunok.health.DailySteps
@@ -11,6 +12,7 @@ import ru.begunok.math.MathActivityEvent
 import ru.begunok.math.MathActivityKind
 import ru.begunok.math.MathDayActivity
 import ru.begunok.workout.Period
+import ru.begunok.workout.Repetitions
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
@@ -48,7 +50,8 @@ class DailyActivityTest {
         steps: List<DailySteps> = emptyList(),
         period: Period = Period.All,
         zone: ZoneId = this.zone,
-    ) = DailyActivity.build(workouts, reading, learning, showers, steps, today, period.start(today), zone)
+        sets: List<ExerciseSetEntity> = emptyList(),
+    ) = DailyActivity.build(workouts, reading, learning, showers, steps, today, period.start(today), zone, Repetitions.byWorkout(sets))
 
     @Test
     fun mixedSourcesSumWithinDay() {
@@ -77,6 +80,37 @@ class DailyActivityTest {
             ),
             rows.single(),
         )
+    }
+
+    @Test
+    fun repetitionsUseCompletedSetsAndWorkoutDatesNotTargetsKindsOrHoldTimes() {
+        val boundary = requireNotNull(Period.Month.start(today))
+        val workouts = listOf(
+            workout(boundary).copy(id = 1),
+            workout(today, "strength_lower").copy(id = 2),
+            workout(boundary.minusDays(1)).copy(id = 3),
+            workout(today, finished = false).copy(id = 4),
+            workout(today.plusDays(1)).copy(id = 5),
+        )
+        fun set(workout: Long, exercise: String, reps: Int, timed: Boolean = false) =
+            ExerciseSetEntity(workoutId = workout, exerciseId = exercise, exerciseName = exercise,
+                reps = reps, target = 99, time = millis(today), setNumber = 1, timed = timed)
+        val sets = listOf(
+            set(1, "Run:pullups", 5), set(1, "Run:pullups", 4), set(1, "Run:hanging_knees", 8),
+            set(1, "Run:lunges", 6), set(1, "Run:hang", 20), set(1, "Run:plank", 60, true),
+            set(2, "StrengthLower:upper_assisted_rows", 3), set(2, "StrengthLower:lower_calves", 7),
+            set(2, "StrengthLower:lower_sumo", 5), set(2, "StrengthLower:unlisted", 27),
+            set(2, "StrengthLower:lower_sumo", 20, true), set(2, "StrengthLower:lower_sumo", 0),
+            set(3, "Strength:lunges", 11), set(4, "Run:pushups", 42), set(5, "Run:pushups", 42),
+        )
+        val rows = build(workouts = workouts, period = Period.Month, sets = sets)
+        assertEquals(17L, rows.last().upperReps)
+        assertEquals(12L, rows.last().lowerReps)
+        assertEquals(3L, rows.first().upperReps)
+        assertEquals(19L, rows.first().lowerReps)
+        assertEquals(20L, rows.sumOf { it.upperReps })
+        assertEquals(31L, rows.sumOf { it.lowerReps })
+        assertEquals(rows, build(workouts = workouts, period = Period.Month, sets = sets))
     }
 
     @Test

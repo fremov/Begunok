@@ -7,13 +7,14 @@ export interface DayPoint {
   date: string
   value: number
   count: number
+  phases?: PhaseSeconds
 }
 
 export interface Overview {
   series: Record<Stream, {
     latest: { date: string; time?: string; value: number } | null
     days: DayPoint[]
-  }>
+  }> & { sleep: { latest: SleepNight | null; days: DayPoint[]; comparison: PhaseComparison | null } }
 }
 
 export const periods = [
@@ -25,7 +26,7 @@ export type Period = typeof periods[number][0]
 export interface SeriesWindow {
   start: string | null
   end: string | null
-  records: { date: string; value?: number }[]
+  records: { date: string; value?: number; phases?: PhaseSeconds }[]
 }
 
 export interface Series {
@@ -36,22 +37,32 @@ export interface Series {
   all_time: { daily_mean: number | null }
 }
 
+export type SleepPhase = 'light' | 'deep' | 'rem' | 'awake'
+export type PhaseSeconds = Record<SleepPhase, number | null>
+export interface SleepNight {
+  id: string
+  date: string
+  value: number
+  phases: PhaseSeconds
+  score: number | null
+}
+export interface PhaseComparison {
+  previous_date: string | null
+  phases: Record<SleepPhase, { previous: number | null; week_mean: number | null }>
+}
 export interface SleepRecord {
   id: string
   start: string
   end: string
-  stages: { start: string; end: string; stage: string }[]
+  value: number
+  segments: [number, number, string][]
 }
 
 export interface SleepDetails {
   date: string
-  records: SleepRecord[]
-  comparison: {
-    minutes: number | null
-    previous_date: string | null
-    previous_minutes: number | null
-    earlier_mean_minutes: number | null
-  }
+  sessions: SleepRecord[]
+  primary: SleepNight | null
+  comparison: PhaseComparison
 }
 
 export async function request<T>(url: string, init?: RequestInit): Promise<T> {

@@ -11,6 +11,7 @@ import { buildHistory, isolatedPoints, timeTrace } from './history'
 import { DAY, dateLabel, dayStamp, formatValue, isoDate, metricFor, metrics, numberLabel, rangeLabel, shortDateLabel, streams, type Stream } from './metrics'
 import RequestState from './RequestState.vue'
 import SleepPanel from './SleepPanel.vue'
+import SleepHistoryPlot from './SleepHistoryPlot.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,7 +23,8 @@ const palette = usePalette()
 const compare = ref(true)
 const picked = ref<string>()
 const showRows = ref(false)
-watch([stream, period], () => { picked.value = undefined; showRows.value = false })
+watch(stream, () => { picked.value = undefined })
+watch([stream, period], () => { showRows.value = false })
 
 function navigate(key: 'stream' | 'period', value: string) {
   void router.push({ name: 'history', query: { stream: stream.value, period: period.value, [key]: value } })
@@ -146,7 +148,12 @@ function pickPoint(stamp: number) {
       <RequestState v-if="state.status === 'loading'" loading />
       <RequestState v-else-if="state.status === 'error'" :message="state.message" @retry="retry" />
       <template v-else-if="model">
-        <section class="panel" aria-labelledby="history-metric-title">
+        <section v-if="stream === 'sleep' && state.status === 'ready'" class="panel">
+          <h2>Фазы по ночам</h2>
+          <p class="panel-note">Самый длинный сеанс по дате пробуждения. Выберите ночь на графике или в списке ниже.</p>
+          <SleepHistoryPlot :records="state.data.current.records" :selected="selectedDate" @pick="picked = $event" />
+        </section>
+        <section v-else class="panel" aria-labelledby="history-metric-title">
           <div class="panel-heading">
             <div>
               <h2 id="history-metric-title">{{ metric.name }}</h2>

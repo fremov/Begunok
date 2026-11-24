@@ -76,6 +76,11 @@ class HealthAutoSync(private val context: Context, private val repository: Healt
         historyStore.dailySteps(start, end)
     }
 
+    internal suspend fun sleepReports(zone: ZoneId): List<SleepReport> = withContext(Dispatchers.IO) {
+        initializeHistory(LocalDate.now(zone))?.let { error(it) }
+        historyStore.sleepReports(zone)
+    }
+
     private suspend fun initializeHistory(today: LocalDate): String? = initializationMutex.withLock {
         if (initialized) return@withLock null
         try {

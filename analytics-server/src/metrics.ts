@@ -16,7 +16,7 @@ export const metrics = {
   steps: { name: 'Шаги', unit: 'шаг.', total: true, description: 'Число шагов за день по данным Health Connect.' },
   active_kcal: { name: 'Активные калории', unit: 'ккал', total: true, description: 'Энергия активности за день без учёта основного обмена.' },
   distance: { name: 'Расстояние', unit: 'км', total: true, digits: 2, scale: 1000, description: 'Расстояние за день по данным Health Connect.' },
-  sleep: { name: 'Сон', unit: 'мин', duration: 'minutes', total: true, scale: 60, description: 'Сумма длительностей сеансов по дате пробуждения, без известных периодов бодрствования.' },
+  sleep: { name: 'Сон', unit: 'мин', duration: 'minutes', total: true, scale: 60, description: 'Основной сеанс по дате пробуждения, без известных периодов бодрствования.' },
   shower: { name: 'Холодный душ', unit: 'мин', duration: 'seconds', total: true, scale: 60, description: 'Суммарная длительность записанных сеансов за день.' },
   weight: { name: 'Вес', unit: 'кг', digits: 1, description: 'Средний вес по взвешиваниям за день.' },
 } satisfies Record<string, Metric>

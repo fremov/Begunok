@@ -25,6 +25,8 @@ internal fun writePhoneCalendar(sink: BufferedSink, source: String, rows: List<D
             put("pages", row.pages)
             put("showerDurationSec", row.showerDurationSec)
             put("steps", row.steps ?: JSONObject.NULL)
+            put("upperReps", row.upperReps)
+            put("lowerReps", row.lowerReps)
         }.toString())
     }
     // No valid complete JSON document exists until every source and every row has been read.

@@ -210,6 +210,24 @@ internal class HealthHistoryStore(context: Context) : SQLiteOpenHelper(
         return result
     }
 
+    // Sleep lives in daily JSON. Do not load unrelated pulse, oxygen or stress tables.
+    @Synchronized
+    fun sleepReports(zone: ZoneId): List<SleepReport> {
+        val nights = mutableListOf<SleepNight>()
+        val durationOnly = mutableMapOf<LocalDate, Duration>()
+        readableDatabase.query("daily", arrayOf("date", "data"), null, null, null, null, "date ASC").use { cursor ->
+            while (cursor.moveToNext()) {
+                val data = JSONObject(cursor.getString(1))
+                val sessions = decodeNights(data.optJSONArray("sleepNights"))
+                if (sessions.isNotEmpty()) nights.addAll(sessions)
+                else if (!data.isNull("sleepSeconds")) {
+                    durationOnly[LocalDate.parse(cursor.getString(0))] = Duration.ofSeconds(data.getLong("sleepSeconds"))
+                }
+            }
+        }
+        return sleepReports(nights, durationOnly, zone)
+    }
+
     @Synchronized
     fun analyticsDateBounds(zone: ZoneId): ClosedRange<LocalDate>? {
         val db = readableDatabase

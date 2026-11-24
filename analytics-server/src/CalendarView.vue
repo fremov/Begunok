@@ -13,6 +13,7 @@ interface PhoneDay {
   workouts: number; topics: number; tasks: number; reviews: number
   pages: number; showerDurationSec: number; steps: number | null
   workoutKinds?: Partial<Record<WorkoutKind, number>>
+  upperReps?: number; lowerReps?: number
 }
 const groups = [
   ['ai', 'Нейросети'], ['study', 'Обучение'], ['development', 'Разработка'],
@@ -209,6 +210,8 @@ async function navigateDays(event: KeyboardEvent) {
           <div><dt><i data-activity="reading" aria-hidden="true"></i>Чтение</dt><dd>{{ numberLabel(phone.pages) }} стр.</dd></div>
           <div><dt><i data-activity="shower" aria-hidden="true"></i>Холодный душ</dt><dd>{{ durationLabel(phone.showerDurationSec, true) }}</dd></div>
           <div><dt><i data-activity="steps" aria-hidden="true"></i>Шаги</dt><dd>{{ phone.steps == null ? 'Нет данных' : numberLabel(phone.steps) }}</dd></div>
+          <div><dt><i data-activity="training" aria-hidden="true"></i>Повторения · верх тела</dt><dd>{{ phone.upperReps == null ? 'Нет данных' : numberLabel(phone.upperReps) }}</dd></div>
+          <div><dt><i data-activity="training" aria-hidden="true"></i>Повторения · низ тела</dt><dd>{{ phone.lowerReps == null ? 'Нет данных' : numberLabel(phone.lowerReps) }}</dd></div>
         </dl>
         <p v-else class="insight-note">За этот день нет данных с телефона.</p>
       </section>

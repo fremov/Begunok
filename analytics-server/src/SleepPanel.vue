@@ -6,6 +6,7 @@ import ChartPlot from './ChartPlot.vue'
 import { usePalette } from './charts'
 import { dateLabel, durationLabel } from './metrics'
 import RequestState from './RequestState.vue'
+import SleepComparison from './SleepComparison.vue'
 import { clock, offsetLabel, phases, sleepAnalysis } from './sleep'
 
 const props = defineProps<{ selectedDate?: string; dates: string[] }>()
@@ -13,12 +14,12 @@ const emit = defineEmits<{ change: [date: string] }>()
 const palette = usePalette()
 const date = computed(() => props.selectedDate && props.dates.includes(props.selectedDate) ? props.selectedDate : null)
 const { state, retry } = useResource<SleepDetails>(() => date.value ? `/v1/sleep?date=${date.value}` : null)
-const index = ref(0)
-watch(date, () => { index.value = 0 })
+const sessionId = ref<string>()
+watch(date, () => { sessionId.value = undefined })
 const sessions = computed(() => state.value.status === 'ready'
-  ? state.value.data.records.map(sleepAnalysis).filter(session => session !== null).sort((a, b) => a.start - b.start)
+  ? state.value.data.sessions.map(sleepAnalysis)
   : [])
-const session = computed(() => sessions.value[index.value] ?? sessions.value[0])
+const session = computed(() => sessions.value.find(s => s.id === sessionId.value) ?? sessions.value[0])
 const totals = computed(() => {
   const counts = new Map<number, number>()
   for (const { start, end, phase } of session.value?.segments ?? []) counts.set(phase, (counts.get(phase) ?? 0) + (end - start) / 1000)
@@ -64,8 +65,7 @@ const option = computed<EChartsOption | undefined>(() => {
     ],
   }
 })
-const comparison = computed(() => state.value.status === 'ready' ? state.value.data.comparison : null)
-const minutes = (value: number | null) => value === null ? '—' : durationLabel(value * 60)
+const detail = computed(() => state.value.status === 'ready' ? state.value.data : null)
 </script>
 
 <template>
@@ -89,11 +89,11 @@ const minutes = (value: number | null) => value === null ? '—' : durationLabel
     <p v-else-if="state.status === 'ready' && !session" class="empty-notice">Нет сохранённых сеансов за эту дату.</p>
     <template v-else-if="date && session && option">
       <div class="sleep-session">
-        <p>{{ clock(session.start, session.offset) }}–{{ clock(session.end, session.offset) }} ({{ offsetLabel(session.offset) }}) · сна {{ durationLabel(session.seconds) }}</p>
+        <p>{{ session.startLabel }}–{{ session.endLabel }} · сеанс {{ durationLabel((session.end - session.start) / 1000) }} · без известного бодрствования {{ durationLabel(session.seconds) }} · шкала {{ offsetLabel(session.offset) }}</p>
         <label v-if="sessions.length > 1" class="sleep-control">
           <span class="field-label">Сеанс</span>
-          <select v-model="index">
-            <option v-for="(item, i) in sessions" :key="item.id" :value="i">{{ clock(item.start, item.offset) }}–{{ clock(item.end, item.offset) }}</option>
+          <select :value="session.id" @change="sessionId = ($event.target as HTMLSelectElement).value">
+            <option v-for="item in sessions" :key="item.id" :value="item.id">{{ item.startLabel }}–{{ item.endLabel }}{{ item.id === detail?.primary?.id ? ' · основной' : '' }}</option>
           </select>
         </label>
       </div>
@@ -105,11 +105,8 @@ const minutes = (value: number | null) => value === null ? '—' : durationLabel
           {{ phases[phase][1] }} <strong>{{ durationLabel(value, true) }}</strong>
         </li>
       </ul>
-      <dl v-if="comparison" class="stats" aria-label="Сравнение ночей">
-        <div><dt>Выбранная ночь</dt><dd>{{ minutes(comparison.minutes) }}</dd></div>
-        <div><dt>Предыдущая ночь</dt><dd>{{ minutes(comparison.previous_minutes) }}</dd><small v-if="comparison.previous_date">{{ dateLabel(comparison.previous_date) }}</small></div>
-        <div><dt>Среднее по более ранним ночам</dt><dd>{{ minutes(comparison.earlier_mean_minutes) }}</dd></div>
-      </dl>
+      <SleepComparison v-if="detail?.primary && session.id === detail.primary.id" :night="detail.primary" :comparison="detail.comparison" />
+      <p v-else class="panel-note">Сравнение и оценка доступны только для основного сеанса ночи.</p>
       <details class="data-details">
         <summary>Интервалы по фазам</summary>
         <div class="table-scroll" tabindex="0" role="region" aria-label="Интервалы по фазам сна">

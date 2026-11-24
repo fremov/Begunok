@@ -372,6 +372,10 @@ private fun ActivityNumbers(rows: List<DailyActivityRow>, colors: ActivityColors
         if (breakdown.isNotEmpty()) {
             Text(breakdown.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = colors.training)
         }
+        Text(
+            "Повторения: верх тела — ${rows.sumOf { it.upperReps }}, низ тела — ${rows.sumOf { it.lowerReps }}",
+            style = MaterialTheme.typography.bodySmall, color = colors.training,
+        )
     }
 }
 

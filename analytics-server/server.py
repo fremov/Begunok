@@ -6,6 +6,7 @@ from collections import defaultdict
 from contextlib import closing
 from hashlib import sha256
 from datetime import date, datetime, timedelta, timezone
+from fractions import Fraction
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -50,7 +51,7 @@ LOGGER = logging.getLogger(__name__)
 ADB_ENDPOINT = ("127.0.0.1", 5037)
 PROVIDER = "content://ru.begunok.analytics"
 PHONE_FIELDS = {"workouts", "topics", "tasks", "reviews", "pages", "showerDurationSec", "steps"}
-PHONE_KIND_FIELDS = PHONE_FIELDS | {"workoutKinds"}
+PHONE_ALLOWED_FIELDS = PHONE_FIELDS | {"workoutKinds", "upperReps", "lowerReps"}
 WORKOUT_KINDS = {"run", "strength", "strength_upper", "strength_lower", "stretching", "other"}
 PC_GROUPS = {"ai", "study", "development", "games", "leisure", "other"}
 # Base64 expands this to at most 3200 ASCII bytes, below adb shell's 4 KiB service limit.
@@ -328,7 +329,7 @@ def _calendar_rows(days, *, phone, details=None):
         if not isinstance(row, dict):
             raise BadRequest("invalid calendar day")
         if phone:
-            if row.keys() not in (PHONE_FIELDS, PHONE_KIND_FIELDS):
+            if not PHONE_FIELDS <= row.keys() <= PHONE_ALLOWED_FIELDS:
                 raise BadRequest("invalid phone calendar fields")
         elif not row.keys() <= PC_GROUPS:
             raise BadRequest("unknown PC calendar group")
@@ -418,20 +419,7 @@ def parse_batch(body):
     return stream, month, records
 
 
-def merged_duration(intervals):
-    total = 0
-    start = end = None
-    for next_start, next_end in sorted(intervals):
-        if start is None:
-            start, end = next_start, next_end
-        elif next_start > end:
-            total += end - start
-            start, end = next_start, next_end
-        elif next_end > end:
-            end = next_end
-    if start is not None:
-        total += end - start
-    return total
+SLEEP_PHASES = ("light", "deep", "rem", "awake")
 
 
 def sleep_metrics(record):
@@ -440,8 +428,7 @@ def sleep_metrics(record):
         raise BadRequest("sleep end must follow start")
     if not isinstance(record["stages"], list):
         raise BadRequest("sleep stages must be an array")
-    intervals = defaultdict(list)
-    awake = []
+    events = [(start, "", 0), (end, "", 0)]
     for entry in record["stages"]:
         if not isinstance(entry, dict) or entry.keys() != {"start", "end", "stage"}:
             raise BadRequest("each sleep stage must contain start, end and stage")
@@ -451,14 +438,69 @@ def sleep_metrics(record):
         left, right = instant(entry["start"], "stage start"), instant(entry["end"], "stage end")
         if right <= left:
             raise BadRequest("stage end must follow start")
-        # Keep source intervals intact in the API while limiting metrics to the session.
-        clipped = max(start, left), min(end, right)
-        if clipped[0] < clipped[1]:
-            intervals[stage].append(clipped)
-            if stage in {"awake", "out_of_bed"}:
-                awake.append(clipped)
-    duration = (end - start - merged_duration(awake)) / NANOS_PER_SECOND
-    return start, duration, {stage: merged_duration(samples) / NANOS_PER_SECOND for stage, samples in intervals.items()}
+        left, right = max(start, left), min(end, right)
+        if left < right:
+            phase = "awake" if stage == "out_of_bed" else stage
+            events.extend(((left, phase, 1), (right, phase, -1)))
+    active = defaultdict(int)
+    segments = []
+    totals = defaultdict(int)
+    last = start
+    recorded_awake = 0
+    for at, stage, delta in sorted(events):
+        if at > last:
+            if active["awake"]:
+                recorded_awake += at - last
+            phases = {key for key, count in active.items() if count}
+            if phases & {"light", "deep", "rem"}:
+                phases.discard("sleeping")
+            phase = phases.pop() if len(phases) == 1 else "unknown"
+            totals[phase] += at - last
+            if segments and segments[-1][2] == phase:
+                segments[-1][1] = at
+            else:
+                segments.append([last, at, phase])
+            last = at
+        active[stage] += delta
+    elapsed = end - start
+    asleep = elapsed - recorded_awake
+    score = None
+    if "unknown" not in totals and totals.keys() & {"light", "deep", "rem"}:
+        episodes = sum(s[2] == "awake" for s in segments[1:-1])
+        score = int(Fraction(1, 2) + 50 * min(Fraction(asleep, 28800 * NANOS_PER_SECOND), 1)
+                    + 30 * Fraction(asleep, elapsed) + 4 * max(0, 5 - episodes))
+    seconds = {key: value / NANOS_PER_SECOND for key, value in totals.items()}
+    return {
+        "id": record["id"], "date": record["date"], "start": record["start"], "end": record["end"],
+        "rank": (-elapsed, start, record["id"]), "value": asleep / NANOS_PER_SECOND,
+        "phases": {key: seconds.get(key) for key in SLEEP_PHASES}, "score": score, "totals": seconds,
+        "segments": [[(left - start) / NANOS_PER_SECOND, (right - start) / NANOS_PER_SECOND, phase]
+                     for left, right, phase in segments],
+    }
+
+
+def primary_nights(records):
+    selected = {}
+    for record in records:
+        night = sleep_metrics(record)
+        day = night["date"]
+        if day not in selected or night["rank"] < selected[day]["rank"]:
+            selected[day] = night
+    return selected
+
+
+def compact_night(night):
+    return {key: night[key] for key in ("id", "date", "value", "phases", "score")}
+
+
+def sleep_summary(nights):
+    seconds = sum(n["value"] for n in nights)
+    stages = defaultdict(float)
+    for night in nights:
+        for key, value in night["totals"].items():
+            stages[key] += value / 60
+    return {"count": len(nights), "mean_minutes": seconds / (60 * len(nights)) if nights else None,
+            "total_minutes": seconds / 60, "stage_minutes": dict(stages)}
 
 
 def record_rows(stream, month, records):
@@ -484,8 +526,9 @@ def record_rows(stream, month, records):
             raise BadRequest("record value must be a finite number within the supported range")
         stages = None
         if stream == "sleep":
-            start, value, stages = sleep_metrics(record)
-            recorded_at = recorded_at or start
+            night = sleep_metrics(record)
+            value, stages = night["value"], night["totals"]
+            recorded_at = recorded_at or night["rank"][1]
         yield (
             stream, month, record_id, record_date, f"{recorded_at:021d}" if recorded_at is not None else "",
             float(value) if value is not None else None, json_text(record), json_text(stages) if stages is not None else None,
@@ -682,34 +725,32 @@ class Store:
 
     @classmethod
     def summary(cls, connection, stream, bounds):
-        if stream != "sleep":
-            count, low, high, mean, total = cls.select(
-                connection, "COUNT(value), MIN(value), MAX(value), AVG(value), TOTAL(value)", stream, bounds,
-            ).fetchone()
-            return {"count": count, "min": low, "max": high, "mean": mean, "total": total}
-        count, seconds = cls.select(connection, "COUNT(*), TOTAL(value)", stream, bounds).fetchone()
-        stages = defaultdict(float)
-        for (serialized,) in cls.select(connection, "stage_seconds", stream, bounds):
-            for stage, duration in json.loads(serialized).items():
-                stages[stage] += duration
-        return {
-            "count": count,
-            "mean_minutes": seconds / (60 * count) if count else None,
-            "total_minutes": seconds / 60,
-            "stage_minutes": {stage: duration / 60 for stage, duration in stages.items()},
-        }
+        count, low, high, mean, total = cls.select(
+            connection, "COUNT(value), MIN(value), MAX(value), AVG(value), TOTAL(value)", stream, bounds,
+        ).fetchone()
+        return {"count": count, "min": low, "max": high, "mean": mean, "total": total}
 
     @classmethod
-    def records(cls, connection, stream, bounds, *, sleep_details=False):
-        if stream == "sleep" and not sleep_details:
-            return [
-                {"id": record_id, "date": day, "value": value}
-                for record_id, day, value in cls.select(connection, "id, date, value", stream, bounds, ordered=True)
-            ]
+    def records(cls, connection, stream, bounds):
         return [json.loads(payload) for (payload,) in cls.select(connection, "payload", stream, bounds, ordered=True)]
 
     @classmethod
     def series_for(cls, connection, stream, period, current, previous, *, sleep_details=False):
+        if stream == "sleep":
+            source = cls.records(connection, stream, None)
+            nights = primary_nights(source)
+            all_time = sleep_summary(list(nights.values()))
+            all_time["daily_mean"] = None if not nights else all_time["mean_minutes"] * 60
+
+            def sleep_window(bounds):
+                selected = [night for day, night in nights.items() if bounds is None or bounds[0] <= day <= bounds[1]]
+                first, last = bounds or ((selected[0]["date"], selected[-1]["date"]) if selected else (None, None))
+                records = ([r for r in source if bounds is None or first <= r["date"] <= last] if sleep_details
+                           else [compact_night(night) for night in selected])
+                return {"start": first, "end": last, "records": records, "summary": sleep_summary(selected)}
+
+            return {"stream": stream, "period": period, "current": sleep_window(current),
+                    "previous": sleep_window(previous) if previous else None, "all_time": all_time}
         all_time = cls.summary(connection, stream, None)
         aggregate = "TOTAL(value)" if stream in TOTAL_STREAMS else "AVG(value)"
         all_time["daily_mean"] = connection.execute(f"""
@@ -720,7 +761,7 @@ class Store:
         """, (stream,)).fetchone()[0]
 
         def window(bounds):
-            records = cls.records(connection, stream, bounds, sleep_details=sleep_details)
+            records = cls.records(connection, stream, bounds)
             if bounds is None:
                 start = records[0]["date"] if records else None
                 end = records[-1]["date"] if records else None
@@ -765,6 +806,16 @@ class Store:
         with closing(self.connect()) as connection, connection:
             connection.execute("BEGIN")
             for stream in STREAMS:
+                if stream == "sleep":
+                    nights = primary_nights(self.records(connection, stream, recent))
+                    day = connection.execute("SELECT MAX(date) FROM records WHERE stream = 'sleep'").fetchone()[0]
+                    latest = self.sleep_detail(connection, day) if day else None
+                    result[stream] = {
+                        "latest": latest["primary"] if latest else None,
+                        "comparison": latest["comparison"] if latest else None,
+                        "days": [dict(compact_night(n), count=1) for n in nights.values()],
+                    }
+                    continue
                 days = self.daily(connection, stream, recent)
                 row = connection.execute("""
                     SELECT date, value, payload FROM records
@@ -784,29 +835,30 @@ class Store:
                 result[stream] = {"latest": latest, "days": days}
         return {"series": result}
 
+    @classmethod
+    def sleep_detail(cls, connection, day):
+        records = cls.records(connection, "sleep", (day, day))
+        sessions = sorted((sleep_metrics(r) for r in records), key=lambda n: n["rank"])
+        primary = sessions[0] if sessions else None
+        previous = connection.execute("SELECT MAX(date) FROM records WHERE stream = 'sleep' AND date < ?", (day,)).fetchone()[0]
+        anchor = date.fromisoformat(day)
+        start = date.fromordinal(max(1, anchor.toordinal() - 7)).isoformat()
+        prior = primary_nights(cls.records(connection, "sleep", (min(start, previous or start), day)))
+        comparisons = {}
+        for phase in SLEEP_PHASES:
+            observed = [n["phases"][phase] for d, n in prior.items() if start <= d < day and n["phases"][phase] is not None]
+            comparisons[phase] = {"previous": prior[previous]["phases"][phase] if previous else None,
+                                  "week_mean": sum(observed) / len(observed) if observed else None}
+        return {"stream": "sleep", "date": day, "records": records,
+                "sessions": [{key: n[key] for key in ("id", "start", "end", "value", "segments")} for n in sessions],
+                "primary": compact_night(primary) if primary else None,
+                "summary": sleep_summary(sessions[:1]),
+                "comparison": {"previous_date": previous, "phases": comparisons}}
+
     def sleep_on(self, day):
-        bounds = (day, day)
         with closing(self.connect()) as connection, connection:
             connection.execute("BEGIN")
-            current, previous, mean = connection.execute("""
-                WITH nights AS (
-                    SELECT date, TOTAL(value) / 60 AS minutes FROM records
-                    WHERE stream = 'sleep' AND date <= ? GROUP BY date
-                )
-                SELECT (SELECT minutes FROM nights WHERE date = ?),
-                       (SELECT date FROM nights WHERE date < ? ORDER BY date DESC LIMIT 1),
-                       (SELECT AVG(minutes) FROM nights WHERE date < ?)
-            """, (day, day, day, day)).fetchone()
-            return {
-                "stream": "sleep", "date": day, "records": self.records(connection, "sleep", bounds, sleep_details=True),
-                "summary": self.summary(connection, "sleep", bounds),
-                "comparison": {
-                    "minutes": current,
-                    "previous_date": previous,
-                    "previous_minutes": self.summary(connection, "sleep", (previous, previous))["total_minutes"] if previous else None,
-                    "earlier_mean_minutes": mean,
-                },
-            }
+            return self.sleep_detail(connection, day)
 
 
 class Handler(BaseHTTPRequestHandler):

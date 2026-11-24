@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MonitorWeight
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Shower
 import androidx.compose.material3.DrawerState
@@ -98,6 +99,8 @@ import ru.begunok.ui.settings.SettingsScreen
 import ru.begunok.ui.settings.SettingsViewModel
 import ru.begunok.ui.shower.ShowerScreen
 import ru.begunok.ui.shower.ShowerViewModel
+import ru.begunok.ui.sleep.SleepScreen
+import ru.begunok.ui.sleep.SleepViewModel
 import ru.begunok.ui.weight.WeightScreen
 import ru.begunok.ui.weight.WeightViewModel
 import ru.begunok.ui.workout.WorkoutDetailScreen
@@ -122,6 +125,7 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
     Reading("Чтение", Icons.AutoMirrored.Filled.MenuBook, Group.Habits),
     Math("Математика", Icons.Filled.Calculate, Group.Learning),
     Weight("Вес", Icons.Filled.MonitorWeight, Group.Health),
+    Sleep("Сон", Icons.Filled.Bedtime, Group.Health),
     Finance("Финансы", Icons.Filled.AccountBalanceWallet, Group.Money),
     Lol("League of Legends", Icons.Filled.SportsEsports, Group.Games),
     Settings("Настройки", Icons.Filled.Settings, Group.App),
@@ -277,7 +281,7 @@ private fun AppNavHost(
                 },
                 label = "section",
             ) { current ->
-                SectionContent(current, navController, container, stopRequested, onStopRequestHandled)
+                SectionContent(current, navController, container, stopRequested, onStopRequestHandled, open)
             }
         }
         screen(HISTORY) {
@@ -349,6 +353,7 @@ private fun SectionContent(
     container: AppContainer,
     stopRequested: Boolean,
     onStopRequestHandled: () -> Unit,
+    open: (Section) -> Unit,
 ) {
     when (section) {
         Section.Workout -> HomeScreen(
@@ -384,6 +389,7 @@ private fun SectionContent(
             onOpenLesson = { id -> navController.navigate("math/${Uri.encode(id)}") },
         )
         Section.Weight -> WeightScreen(viewModel { WeightViewModel(container.weight, container.settings) })
+        Section.Sleep -> SleepScreen(viewModel { SleepViewModel(container.healthAutoSync) }, onSettings = { open(Section.Settings) })
         Section.Finance -> FinanceScreen(viewModel { FinanceViewModel(container.finance, container.appContext) })
         Section.Lol -> LolScreen(viewModel { LolViewModel(container.lolSettings) })
         Section.Settings -> SettingsScreen(

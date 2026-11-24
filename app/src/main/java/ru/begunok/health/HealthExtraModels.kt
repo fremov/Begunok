@@ -13,36 +13,21 @@ data class SleepNight(
     val stages: List<SleepStageSample> = emptyList(),
     val source: String = "",
 ) {
-    // Keep source samples intact; clipping is only for interval-derived metrics.
-    private val clippedStages = stages.mapNotNull { stage ->
-        val from = maxOf(start, stage.start)
-        val until = minOf(end, stage.end)
-        if (until.isAfter(from)) stage.copy(start = from, end = until) else null
-    }
-    private val sleepingIntervals = mergeSleepIntervals(clippedStages.filter { it.kind.isSleep() }.map { it.start to it.end })
-    private val awakeIntervals = mergeSleepIntervals(clippedStages.filter {
-        it.kind == SleepStageKind.AWAKE || it.kind == SleepStageKind.OUT_OF_BED
-    }.map { it.start to it.end })
-
-    // An unstaged session still provides its recorded duration, not estimated sleep stages.
-    val sleepDuration: Duration = if (!end.isAfter(start)) Duration.ZERO
-        else Duration.between(start, end) - sleepIntervalDuration(awakeIntervals)
-
-    private val fullyStaged = end.isAfter(start) && sleepIntervalDuration(mergeSleepIntervals(
-        clippedStages.filter { it.kind != SleepStageKind.UNKNOWN }.map { it.start to it.end }
-    )) == Duration.between(start, end)
-    val awakeDuration: Duration? = if (awakeIntervals.isNotEmpty() || fullyStaged)
-        sleepIntervalDuration(awakeIntervals) else null
-    // Only internal wake episodes count: bedtime latency and the final waking are excluded.
-    val awakeningCount: Int? = if (awakeIntervals.isEmpty() && fullyStaged) 0
-    else if (sleepingIntervals.isEmpty() || awakeIntervals.isEmpty()) null else awakeIntervals.count { awake ->
-        sleepingIntervals.any { it.first.isBefore(awake.first) } &&
-            sleepingIntervals.any { it.second.isAfter(awake.second) }
-    }
-
-    fun stageDuration(kind: SleepStageKind): Duration? {
-        if (clippedStages.none { it.kind == kind }) return null
-        return sleepIntervalDuration(mergeSleepIntervals(clippedStages.filter { it.kind == kind }.map { it.start to it.end }))
+    // This is the retained/exported total, even for providers with no detailed staging.
+    val sleepDuration: Duration = if (end <= start) Duration.ZERO else {
+        var until = start
+        var awake = Duration.ZERO
+        for (stage in stages.asSequence()
+            .filter { it.kind == SleepStageKind.AWAKE || it.kind == SleepStageKind.OUT_OF_BED }
+            .sortedBy { it.start }) {
+            val from = maxOf(until, stage.start)
+            val to = minOf(end, stage.end)
+            if (to > from) {
+                awake += Duration.between(from, to)
+                until = to
+            }
+        }
+        Duration.between(start, end) - awake
     }
 }
 
@@ -50,33 +35,9 @@ data class StressSample(val time: Instant, val score: Int)
 
 data class VitalitySample(val time: Instant, val score: Double, val earned: Double? = null)
 
-private fun SleepStageKind.isDetailedSleep(): Boolean =
+internal fun SleepStageKind.isDetailedSleep(): Boolean =
     this == SleepStageKind.LIGHT || this == SleepStageKind.DEEP || this == SleepStageKind.REM
 
-private fun SleepStageKind.isSleep(): Boolean = this == SleepStageKind.SLEEPING || isDetailedSleep()
-
-private fun mergeSleepIntervals(intervals: List<Pair<Instant, Instant>>): List<Pair<Instant, Instant>> {
-    if (intervals.isEmpty()) return emptyList()
-    val sorted = intervals.sortedBy { it.first }
-    val merged = ArrayList<Pair<Instant, Instant>>()
-    var start = sorted.first().first
-    var end = sorted.first().second
-    for (index in 1 until sorted.size) {
-        val interval = sorted[index]
-        if (interval.first.isAfter(end)) {
-            merged.add(start to end)
-            start = interval.first
-            end = interval.second
-        } else if (interval.second.isAfter(end)) {
-            end = interval.second
-        }
-    }
-    merged.add(start to end)
-    return merged
-}
-
-private fun sleepIntervalDuration(intervals: List<Pair<Instant, Instant>>): Duration =
-    intervals.fold(Duration.ZERO) { total, interval -> total + Duration.between(interval.first, interval.second) }
 
 fun normalizeSleepNights(nights: List<SleepNight>): List<SleepNight> {
     val ranked = nights.filter { it.end.isAfter(it.start) }.sortedWith(

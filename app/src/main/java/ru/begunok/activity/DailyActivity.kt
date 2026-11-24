@@ -7,11 +7,11 @@ import ru.begunok.health.DailySteps
 import ru.begunok.math.MathActivityEvent
 import ru.begunok.math.MathDayActivity
 import ru.begunok.math.mathActivityByDay
+import ru.begunok.workout.Repetitions
+import ru.begunok.workout.WorkoutKind
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-
-import ru.begunok.workout.WorkoutKind
 
 data class DailyActivityRow(
     val day: LocalDate,
@@ -21,10 +21,12 @@ data class DailyActivityRow(
     val showerDurationSec: Long = 0,
     val steps: Long? = null,
     val workoutKinds: Map<String, Int> = emptyMap(),
+    val upperReps: Long = 0,
+    val lowerReps: Long = 0,
 )
 
 object DailyActivity {
-    fun build(
+    internal fun build(
         workouts: List<WorkoutEntity>,
         reading: List<ReadingEntryEntity>,
         learning: List<MathActivityEvent>,
@@ -33,6 +35,7 @@ object DailyActivity {
         today: LocalDate,
         start: LocalDate?,
         zone: ZoneId = ZoneId.systemDefault(),
+        repetitions: Map<Long, Repetitions> = emptyMap(),
     ): List<DailyActivityRow> {
         val days = mutableMapOf<LocalDate, DayTotals>()
         fun dateOf(millis: Long) = Instant.ofEpochMilli(millis).atZone(zone).toLocalDate()
@@ -46,6 +49,10 @@ object DailyActivity {
             val day = totals(dateOf(workout.startTime)) ?: continue
             val key = requireNotNull(WorkoutKind.recorded(workout.dayType).key)
             day.workoutKinds[key] = (day.workoutKinds[key] ?: 0) + 1
+            repetitions[workout.id]?.let {
+                day.upperReps += it.upper
+                day.lowerReps += it.lower
+            }
         }
         for (entry in reading) {
             val pages = entry.toPage - entry.fromPage
@@ -76,6 +83,8 @@ object DailyActivity {
                         pages = totals?.pages ?: 0,
                         showerDurationSec = totals?.showerDurationSec ?: 0L,
                         steps = totals?.steps,
+                        upperReps = totals?.upperReps ?: 0L,
+                        lowerReps = totals?.lowerReps ?: 0L,
                     ),
                 )
                 if (day == first) break
@@ -90,5 +99,7 @@ object DailyActivity {
         var pages = 0
         var showerDurationSec = 0L
         var steps: Long? = null
+        var upperReps = 0L
+        var lowerReps = 0L
     }
 }

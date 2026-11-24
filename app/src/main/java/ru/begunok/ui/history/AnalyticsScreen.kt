@@ -1,6 +1,5 @@
 package ru.begunok.ui.history
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
@@ -48,7 +45,7 @@ import ru.begunok.ui.theme.StageColors
 import ru.begunok.ui.theme.numberStyle
 import ru.begunok.workout.countsDistance
 import ru.begunok.workout.Period
-import ru.begunok.workout.WorkoutKind
+import ru.begunok.workout.Repetitions
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -64,9 +61,6 @@ class AnalyticsViewModel internal constructor(
     calendar: ActivityCalendar,
     healthAutoSync: HealthAutoSync,
 ) : ViewModel() {
-    private val _kind = MutableStateFlow(WorkoutKind.All)
-    val kind: StateFlow<WorkoutKind> = _kind.asStateFlow()
-
     private val activityReload = MutableStateFlow(0)
     private val _activitySelection = MutableStateFlow(ActivityCalendarPeriod())
     internal val activitySelection = _activitySelection.asStateFlow()
@@ -97,7 +91,7 @@ class AnalyticsViewModel internal constructor(
     }
 
     internal val analytics =
-        combine(repository.observeFinished(), showers.observeAll(), _kind, stepTotal) { workouts, showerSessions, kind, steps ->
+        combine(repository.observeFinished(), showers.observeAll(), repository.observeAllSets().map { Repetitions.byWorkout(it) }, stepTotal) { workouts, showerSessions, reps, steps ->
             val zone = ZoneId.systemDefault()
             val today = LocalDate.now(zone)
             val week = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -107,23 +101,24 @@ class AnalyticsViewModel internal constructor(
             var count = 0
             var meters = 0.0
             var millis = 0L
+            var upperReps = 0L
+            var lowerReps = 0L
             for (workout in workouts) {
-                if (!kind.includes(workout)) continue
                 val date = day(workout.startTime)
                 if (date < start || date > today) continue
                 if (date >= week) weekCount++
                 count++
                 if (workout.countsDistance()) meters += workout.distanceM
                 millis += workout.durationMs
+                reps[workout.id]?.let {
+                    upperReps += it.upper
+                    lowerReps += it.lower
+                }
             }
             val showerSeconds = showerSessions.sumOf { if (day(it.time) in start..today) it.durationSec.toLong() else 0L }
-            ActivitySummary(weekCount, count, meters, millis, showerSeconds, steps)
+            ActivitySummary(weekCount, count, meters, millis, showerSeconds, steps, upperReps, lowerReps)
         }.flowOn(Dispatchers.Default)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-
-    fun setKind(value: WorkoutKind) {
-        _kind.value = value
-    }
 }
 
 internal data class ActivitySummary(
@@ -133,6 +128,8 @@ internal data class ActivitySummary(
     val totalTimeMs: Long,
     val coldShowerDurationSec: Long,
     val steps: Long?,
+    val upperReps: Long,
+    val lowerReps: Long,
 )
 
 private val ru = Locale.forLanguageTag("ru")
@@ -152,7 +149,6 @@ fun AnalyticsScreen(viewModel: AnalyticsViewModel) {
 @Composable
 private fun ActivityContent(viewModel: AnalyticsViewModel) {
     val analytics by viewModel.analytics.collectAsStateWithLifecycle()
-    val kind by viewModel.kind.collectAsStateWithLifecycle()
     val dailyActivity by viewModel.dailyActivity.collectAsStateWithLifecycle()
     val activitySelection by viewModel.activitySelection.collectAsStateWithLifecycle()
     LifecycleResumeEffect(viewModel) {
@@ -167,24 +163,21 @@ private fun ActivityContent(viewModel: AnalyticsViewModel) {
             Text("Загружаем тренировки…")
             return@Column
         }
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            WorkoutKind.entries.forEach { k ->
-                FilterChip(selected = k == kind, onClick = { viewModel.setKind(k) }, label = { Text(k.label) })
-            }
-        }
         Row(Modifier.fillMaxWidth().appear(0), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Tile("${a.thisWeek}", "на этой неделе", Modifier.weight(1f), StageColors.Done)
             Tile("${a.total}", "за месяц", Modifier.weight(1f), activityColors.training)
         }
-        if (kind != WorkoutKind.Stretching) Row(Modifier.fillMaxWidth().appear(1), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            if (kind == WorkoutKind.Run || kind == WorkoutKind.All) {
-                Tile(km(a.totalDistanceM), "км за месяц", Modifier.weight(1f), StageColors.Run)
-            }
+        Row(Modifier.fillMaxWidth().appear(1), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Tile(km(a.totalDistanceM), "км за месяц", Modifier.weight(1f), StageColors.Run)
             Tile(Format.duration(a.totalTimeMs), "время", Modifier.weight(1f), MaterialTheme.colorScheme.secondary)
         }
         Row(Modifier.fillMaxWidth().appear(2), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Tile(Format.duration(a.coldShowerDurationSec * 1000), "холодный душ", Modifier.weight(1f), activityColors.showers)
             Tile(a.steps?.toString() ?: "—", "шагов", Modifier.weight(1f), activityColors.steps)
+        }
+        Row(Modifier.fillMaxWidth().appear(3), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Tile(a.upperReps.toString(), "повторений · верх тела", Modifier.weight(1f), activityColors.training)
+            Tile(a.lowerReps.toString(), "повторений · низ тела", Modifier.weight(1f), activityColors.training)
         }
     }
 }

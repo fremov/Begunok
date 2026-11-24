@@ -320,7 +320,7 @@ class AnalyticsIntegrationTest(unittest.TestCase):
         day, stretch_only, legacy = "2026-03-04", "2026-03-02", "2026-02-01"
         self.collect.return_value = pc_snapshot({stretch_only: {"study": 90}})
         kinds = {"run": 2, "strength_upper": 1, "strength_lower": 1, "strength": 1, "stretching": 1, "other": 1}
-        combined = dict(PHONE_DAY, workouts=sum(kinds.values()), workoutKinds=kinds)
+        combined = dict(PHONE_DAY, workouts=sum(kinds.values()), workoutKinds=kinds, upperReps=39, lowerReps=0)
         self.calendar_output = phone_calendar({
             day: combined, stretch_only: dict(PHONE_DAY, workoutKinds={"stretching": 1}), legacy: PHONE_DAY,
         })
@@ -333,6 +333,7 @@ class AnalyticsIntegrationTest(unittest.TestCase):
 
         del kinds["stretching"]
         combined["workouts"] -= 1
+        combined["upperReps"] = 17
         self.calendar_output = phone_calendar({day: combined, legacy: PHONE_DAY})
         self.assertEqual(self.usb_post(IMPORT), {"count": 0})
         rows = self.get("/v1/calendar?period=2026")["days"]
@@ -396,6 +397,8 @@ class AnalyticsIntegrationTest(unittest.TestCase):
                     phone_calendar({}, complete=1), b'{"days":{},"days":{},"source":"abc","complete":true}',
                     phone_calendar(dict(initial, **{"2023-02-29": PHONE_DAY})),
                     phone_calendar({"2024-01-01": dict(PHONE_DAY, steps=False)}),
+                    phone_calendar({"2024-01-01": dict(PHONE_DAY, upperReps=True)}),
+                    phone_calendar({"2024-01-01": dict(PHONE_DAY, lowerReps=-2)}),
                     phone_calendar({"2024-01-01": dict(PHONE_DAY, pages=-1)}),
                     phone_calendar({"2024-01-01": dict(PHONE_DAY, title="private-title")}),
                     phone_calendar({"2024-01-01": {"steps": 3}})]
@@ -648,12 +651,11 @@ class AnalyticsIntegrationTest(unittest.TestCase):
         self.assertEqual(detail["records"], [night])
         self.assertEqual(detail["summary"], {
             "count": 1, "mean_minutes": 460, "total_minutes": 460,
-            "stage_minutes": {"awake": 15, "out_of_bed": 10, "deep": 90, "rem": 60},
+            "stage_minutes": {"awake": 20, "deep": 90, "rem": 60, "unknown": 310},
         })
-        self.assertEqual(detail["comparison"], {
-            "minutes": 460, "previous_date": "2026-09-01",
-            "previous_minutes": 300, "earlier_mean_minutes": 300,
-        })
+        self.assertEqual(detail["comparison"]["previous_date"], "2026-09-01")
+        self.assertTrue(all(row == {"previous": None, "week_mean": None} for row in detail["comparison"]["phases"].values()))
+        self.assertIsNone(detail["primary"]["score"])
         self.assertEqual(self.get("/v1/sleep?date=2026-09-30")["records"], [])
         self.get("/v1/sleep?date=2026-10-01&period=all", expected_status=400)
         query = "period=month&end=2026-10-31"
@@ -663,7 +665,46 @@ class AnalyticsIntegrationTest(unittest.TestCase):
         self.assertEqual(comparison["previous"]["summary"]["mean_minutes"], 300)
         self.assertEqual(comparison["all_time"]["mean_minutes"], 380)
         compact = self.get("/v1/series?stream=sleep&" + query)
-        self.assertEqual(compact["current"]["records"], [sample("night", "2026-10-01", 27600)])
+        self.assertEqual(compact["current"]["records"], [detail["primary"]])
+
+    def test_sleep_primary_phase_baselines_and_score(self):
+        def session(day, name, start, end, spans):
+            def stamp(hour):
+                return f"2026-10-{day:02}T{hour:02}:00:00+05:00"
+            return sample(name, stamp(end)[:10], start=stamp(start), end=stamp(end),
+                          stages=[stage(kind, stamp(left), stamp(right)) for kind, left, right in spans])
+
+        records = [
+            session(1, "outside", 0, 8, [("deep", 0, 8)]),
+            session(3, "week-start", 0, 8, [("deep", 0, 2), ("rem", 2, 8)]),
+            session(8, "previous", 0, 8, [("deep", 0, 4), ("light", 4, 8)]),
+            session(10, "later-tie", 1, 9, [("rem", 1, 9)]),
+            session(10, "nap", 12, 13, []),
+            session(10, "primary", 0, 8, [("awake", 0, 1), ("sleeping", 1, 4), ("deep", 1, 3),
+                                           ("out_of_bed", 4, 5), ("light", 5, 7), ("awake", 7, 8)]),
+            session(11, "ambiguous", 0, 3, [("light", 0, 3), ("deep", 1, 2)]),
+            session(12, "generic", 0, 7, [("sleeping", 0, 7)]),
+            session(13, "half-up", 0, 2, [("light", 0, 2)]),
+        ]
+        self.save_batch("sleep", "2026-10", records)
+        detail = self.get("/v1/sleep?date=2026-10-10")
+        n = detail["primary"]
+        self.assertEqual((n["id"], n["score"], n["value"]), ("primary", 66, 5 * 3600))
+        self.assertEqual(n["phases"], {"light": 7200, "deep": 7200, "rem": None, "awake": 10800})
+        self.assertEqual(detail["comparison"], {
+            "previous_date": "2026-10-08", "phases": {
+                "light": {"previous": 14400, "week_mean": 14400}, "deep": {"previous": 14400, "week_mean": 10800},
+                "rem": {"previous": None, "week_mean": 21600}, "awake": {"previous": None, "week_mean": None},
+            },
+        })
+        self.assertEqual(detail["summary"]["count"], 1)
+        ambiguous = self.get("/v1/sleep?date=2026-10-11")
+        self.assertIsNone(ambiguous["primary"]["score"])
+        self.assertEqual(ambiguous["sessions"][0]["segments"], [[0, 3600, "light"], [3600, 7200, "unknown"], [7200, 10800, "light"]])
+        self.assertIsNone(self.get("/v1/sleep?date=2026-10-12")["primary"]["score"])
+        self.assertEqual(self.get("/v1/sleep?date=2026-10-13")["primary"]["score"], 63)
+        overview = self.server.store.overview(date(2026, 10, 10))["series"]["sleep"]
+        self.assertEqual(overview["days"][-1], dict(n, count=1))
 
     def test_overview_keeps_old_latest_and_aggregates_recent_days(self):
         today = date.today().isoformat()

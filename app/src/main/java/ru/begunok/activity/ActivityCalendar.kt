@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import okio.BufferedSink
 import ru.begunok.analytics.readPcCalendarChunk
 import ru.begunok.analytics.writePhoneCalendar
@@ -19,6 +20,7 @@ import ru.begunok.data.db.WorkoutEntity
 import ru.begunok.health.DailySteps
 import ru.begunok.health.HealthAutoSync
 import ru.begunok.math.MathActivityEvent
+import ru.begunok.workout.Repetitions
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -27,9 +29,10 @@ internal class PhoneCalendarData(
     private val reading: List<ReadingEntryEntity>,
     private val learning: List<MathActivityEvent>,
     private val showers: List<ColdShowerEntity>,
+    private val repetitions: Map<Long, Repetitions>,
 ) {
     fun rows(steps: List<DailySteps>, start: LocalDate?, end: LocalDate, zone: ZoneId) =
-        DailyActivity.build(workouts, reading, learning, showers, steps, end, start, zone)
+        DailyActivity.build(workouts, reading, learning, showers, steps, end, start, zone, repetitions)
 }
 
 internal class ActivityCalendar(
@@ -43,8 +46,9 @@ internal class ActivityCalendar(
 ) {
     val phone: Flow<PhoneCalendarData> = flow {
         val progress = math.observeProgress(math.catalog())
-        emitAll(combine(workouts.observeFinished(), reading.observeEntries(), progress, showers.observeAll()) {
-                sessions, entries, study, cold -> PhoneCalendarData(sessions, entries, study.events, cold)
+        val reps = workouts.observeAllSets().map { Repetitions.byWorkout(it) }
+        emitAll(combine(workouts.observeFinished(), reading.observeEntries(), progress, showers.observeAll(), reps) {
+                sessions, entries, study, cold, repetitions -> PhoneCalendarData(sessions, entries, study.events, cold, repetitions)
         })
     }
 

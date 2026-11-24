@@ -8,6 +8,8 @@ import { usePalette } from './charts'
 import { dateLabel, formatValue, localToday, metricFor, metricGroups, numberLabel, rangeLabel, recentDates, shortDateLabel, timeLabel } from './metrics'
 import { overviewInsights } from './overviewInsights'
 import RequestState from './RequestState.vue'
+import SleepHistoryPlot from './SleepHistoryPlot.vue'
+import SleepComparison from './SleepComparison.vue'
 
 const { state, retry } = useResource<Overview>(() => '/v1/overview')
 const palette = usePalette()
@@ -64,10 +66,10 @@ const groups = computed(() => {
       }
       return {
         stream, name: metric.name, latest, time: !bars ? timeLabel(latest?.time) : undefined,
-        days, unit, option, insights: overviewInsights(stream, days, today),
+        days, unit, option, insights: stream === 'sleep' ? [] : overviewInsights(stream, days, today),
         partial: bars && stream !== 'sleep' && latest?.date === today,
         aggregation: bars ? 'Итог за день' : 'Среднее за день',
-        latestLabel: bars ? 'Последний дневной итог' : 'Последний замер',
+        latestLabel: stream === 'sleep' ? 'Последняя основная ночь' : bars ? 'Последний дневной итог' : 'Последний замер',
       }
     }),
   }))
@@ -106,12 +108,16 @@ const hasData = computed(() => groups.value.some(group => group.cards.some(card 
                 История <span aria-hidden="true">↗</span>
               </RouterLink>
             </div>
-            <figure v-if="card.days.length" class="overview-figure">
+            <SleepHistoryPlot v-if="card.stream === 'sleep'" :records="card.days" compact />
+            <figure v-else-if="card.days.length" class="overview-figure">
               <figcaption>{{ card.aggregation }} · {{ card.unit }}</figcaption>
               <ChartPlot class="overview-plot" :option="card.option" :label="`${card.name}: ${card.aggregation.toLowerCase()} за 30 дней, ${card.unit}`" />
             </figure>
             <p v-else class="overview-empty">Нет данных на графике за последние 30 дней</p>
-            <section class="metric-insights" :aria-label="`${card.name}: сравнение с прошлым`">
+            <template v-if="card.stream === 'sleep'">
+              <SleepComparison v-if="state.data.series.sleep.latest && state.data.series.sleep.comparison" :night="state.data.series.sleep.latest" :comparison="state.data.series.sleep.comparison" />
+            </template>
+            <section v-else class="metric-insights" :aria-label="`${card.name}: сравнение с прошлым`">
               <h4>Что изменилось</h4>
               <p v-if="card.partial" class="insight-note">Сегодняшний итог ещё неполный и может измениться.</p>
               <dl v-if="card.insights.length" class="insight-grid">
