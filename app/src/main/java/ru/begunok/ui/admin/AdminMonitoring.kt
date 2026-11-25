@@ -75,20 +75,32 @@ private suspend fun loadChampions(): List<Champion> = withContext(Dispatchers.IO
     val max = (if (bars) (0 until count).maxOfOrNull { i -> series.sumOf { it.values.getOrElse(i) { 0.0 }.coerceAtLeast(0.0) } } else series.flatMap { it.values }.maxOrNull())?.coerceAtLeast(fixedMax)?.coerceAtLeast(1.0) ?: 1.0
     if (count == 0) { Text("История пока пуста"); return }
     Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        series.forEach { Text("● ${it.name}", color = it.color, style = MaterialTheme.typography.labelSmall) }
+        series.forEach {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("● ", color = it.color, style = MaterialTheme.typography.labelSmall)
+                Text(it.name, style = MaterialTheme.typography.labelSmall)
+            }
+        }
     }
-    Text(if (selected in labels.indices) "${labels[selected]} · " + series.joinToString(" · ") { "${it.name}: ${unit(it.values.getOrElse(selected) { 0.0 })}" } else "Максимум: ${unit(max)} · коснитесь графика", style = MaterialTheme.typography.labelSmall)
+    if (selected in labels.indices) {
+        Text(labels[selected], style = MaterialTheme.typography.labelMedium)
+        Metrics(*series.map { it.name to unit(it.values.getOrElse(selected) { 0.0 }) }.toTypedArray())
+    } else {
+        Text("Максимум: ${unit(max)} · коснитесь графика", style = MaterialTheme.typography.labelSmall)
+    }
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
     Column(Modifier.height(140.dp).width(60.dp), verticalArrangement = Arrangement.SpaceBetween) {
         listOf(1.0, 0.75, 0.5, 0.25, 0.0).forEach { Text(unit(max * it), style = MaterialTheme.typography.labelSmall, maxLines = 1) }
     }
-    Canvas(Modifier.weight(1f).height(140.dp).background(Color(0xff0b0f14)).pointerInput(count) {
+    val chartBackground = Color(0xff0b0f14)
+    val chartGrid = Color(0xff59616b)
+    Canvas(Modifier.weight(1f).height(140.dp).background(chartBackground).pointerInput(count) {
         detectTapGestures { selected = ((it.x / size.width) * count).toInt().coerceIn(0, count - 1) }
     }) {
         val step = size.width / count.coerceAtLeast(1)
         for (i in 0..4) {
             val y = size.height * i / 4
-            drawLine(Color(0xff38404a), Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx())
+            drawLine(chartGrid, Offset(0f, y), Offset(size.width, y), strokeWidth = 1.dp.toPx())
         }
         if (bars) {
             for (i in 0 until count) {
@@ -209,12 +221,15 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             listOf("Сбор", "Аналитика", "База", "Недостающее", "Журнал").forEach { name ->
-                TextButton(onClick = { tab = name }) { Text(if (tab == name) "• $name" else name) }
+                FilterChip(selected = tab == name, onClick = { tab = name }, label = { Text(name) })
             }
             TextButton(onClick = { refresh++ }) { Text("Обновить") }
         }
         Column(Modifier.fillMaxSize().verticalScroll(pageScroll).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+            if (loading) {
+                LinearProgressIndicator(Modifier.fillMaxWidth())
+                Text("Загрузка данных…", style = MaterialTheme.typography.bodySmall)
+            }
             if (error.isNotEmpty()) Text("Ошибка: $error", color = MaterialTheme.colorScheme.error)
             when (tab) {
                 "Сбор" -> {
@@ -225,7 +240,7 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
                         val stale = state == "running" && crawler.optLong("updatedAt") > 0 && (status?.optLong("now") ?: 0) - crawler.optLong("updatedAt") > 600
                         Text(if (stale) "Служба не отмечалась больше 10 минут" else when (state) {
                             "running" -> "Сбор идёт"; "paused" -> "Пауза"; "disk" -> "Пауза: мало места"; "queue-empty" -> "Очередь пуста — нужен посев"; "key-error" -> "Ключ Riot не принят"; "stopped" -> "Служба остановлена"; else -> "Служба ещё не отмечалась"
-                        }, fontWeight = FontWeight.Bold)
+                        }, fontWeight = FontWeight.Bold, color = if (stale || state in listOf("disk", "queue-empty", "key-error", "stopped")) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)
                         if (crawler.optLong("startedAt") > 0) Text("Служба работает ${(status?.optLong("now")?.minus(crawler.optLong("startedAt")) ?: 0).coerceAtLeast(0) / 60} мин")
                         when (state) {
                             "paused" -> Text("Сбор продолжится с того же места.")
@@ -233,8 +248,7 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
                             "key-error" -> Text("Служба повторит попытку через 10 минут; замените ключ на сервере и перезапустите crawler.")
                         }
                         val p = crawler.obj("progress")
-                        Text("Матчей: ${p.value("matches")} · темп: ${p.value("rate")}/ч · повторов: ${p.value("duplicates")} · пропущено старых: ${p.value("oldSkipped")}")
-                        Text("Игроков: ${p.value("players")} · запросов: ${p.value("requests")} · отметка: ${time(crawler.optLong("updatedAt"))}")
+                        Metrics("Матчей" to p.value("matches"), "Темп" to "${p.value("rate")}/ч", "Повторов" to p.value("duplicates"), "Пропущено старых" to p.value("oldSkipped"), "Игроков" to p.value("players"), "Запросов" to p.value("requests"), "Последняя отметка" to time(crawler.optLong("updatedAt")))
                         listOf("target", "window", "error").forEach { if (p.optString(it).isNotBlank()) Text(p.optString(it)) }
                         val paused = crawler.optBoolean("paused")
                         Button(enabled = !busy, onClick = {
@@ -248,7 +262,10 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
                         }) { Text(if (paused) "Продолжить" else "Пауза") }
                         Text("Пауза действует после текущего матча. Приложение имеет приоритет запросов Riot.", style = MaterialTheme.typography.bodySmall)
                     }
-                    stats?.let { Text("Матчей в базе: ${it.value("matches")} · за час: ${it.value("lastHour")} · темп: ${it.obj("rate").value("perHour")}/ч · очередь: ${it.value("queue")}") }
+                    stats?.let {
+                        Subheading("База сейчас")
+                        Metrics("Матчей" to it.value("matches"), "За час" to it.value("lastHour"), "Темп" to "${it.obj("rate").value("perHour")}/ч", "Очередь" to it.value("queue"))
+                    }
                     SystemSection(system, analytics)
                 }
                 "Аналитика" -> analytics?.let { AnalyticsSection(it) } ?: Text("Нет данных аналитики")
@@ -262,10 +279,34 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
 
 @Composable private fun Heading(text: String) { Text(text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold) }
 @Composable private fun Subheading(text: String) { Text(text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold) }
+
+@Composable private fun Metrics(vararg items: Pair<String, String>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        items.toList().chunked(2).forEach { row ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                row.forEach { (label, value) ->
+                    Column(Modifier.weight(1f)) {
+                        Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                if (row.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable private fun DetailGroup(title: String, content: @Composable ColumnScope.() -> Unit) {
+    var expanded by remember(title) { mutableStateOf(false) }
+    Column {
+        TextButton(onClick = { expanded = !expanded }) { Text("$title ${if (expanded) "↑" else "↓"}") }
+        if (expanded) Column(verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
+    }
+}
 @Composable private fun Options(title: String, options: List<Pair<String, String>>, selected: String, select: (String) -> Unit) {
     Text(title, style = MaterialTheme.typography.labelLarge)
     Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-        options.forEach { (id, label) -> TextButton(onClick = { select(id) }) { Text(if (id == selected) "• $label" else label) } }
+        options.forEach { (id, label) -> FilterChip(selected = id == selected, onClick = { select(id) }, label = { Text(label) }) }
     }
 }
 
@@ -273,11 +314,14 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     Heading("Сервер")
     if (system == null) { Text("Нет состояния сервера"); return }
     val mem = system.obj("memory"); val disk = system.obj("disk"); val current = system.obj("current")
-    Text("Процессор: ${current.value("cpu")}% · ядер: ${system.value("cores")} · нагрузка: ${system.arr("load").let { a -> (0 until a.length()).joinToString(" / ") { a.optString(it) } }} · ожидание диска: ${current.value("iowait")}%")
+    Subheading("Процессор")
+    Metrics("Загрузка" to "${current.value("cpu")}%", "Ядер" to system.value("cores"), "Нагрузка" to system.arr("load").let { a -> (0 until a.length()).joinToString(" / ") { a.optString(it) } }, "Ожидание диска" to "${current.value("iowait")}%")
     LinearProgressIndicator(progress = { (current.optDouble("cpu", 0.0) / 100).toFloat().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
-    Text("Память: ${size(mem.optDouble("used"))} из ${size(mem.optDouble("total"))} · кеш ${size(mem.optDouble("cache"))} · swap ${size(mem.optDouble("swapUsed"))} из ${size(mem.optDouble("swapTotal"))}")
+    Subheading("Память")
+    Metrics("Использовано" to "${size(mem.optDouble("used"))} из ${size(mem.optDouble("total"))}", "Кеш" to size(mem.optDouble("cache")), "Swap" to "${size(mem.optDouble("swapUsed"))} из ${size(mem.optDouble("swapTotal"))}")
     LinearProgressIndicator(progress = { (mem.optDouble("used", 0.0) / mem.optDouble("total", 0.0).coerceAtLeast(1.0)).toFloat().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
-    Text("Диск: ${size(disk.optDouble("used"))} из ${size(disk.optDouble("total"))} · свободно ${size(disk.optDouble("free"))} · чтение ${size(current.optDouble("read"))}/с · запись ${size(current.optDouble("write"))}/с")
+    Subheading("Диск")
+    Metrics("Использовано" to "${size(disk.optDouble("used"))} из ${size(disk.optDouble("total"))}", "Свободно" to size(disk.optDouble("free")), "Чтение" to "${size(current.optDouble("read"))}/с", "Запись" to "${size(current.optDouble("write"))}/с")
     LinearProgressIndicator(progress = { (disk.optDouble("used", 0.0) / disk.optDouble("total", 0.0).coerceAtLeast(1.0)).toFloat().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
     Text("Сервер работает: ${system.optLong("uptimeS") / 3600} ч")
     var span by remember { mutableStateOf("hour") }
@@ -293,7 +337,13 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     val stopped = names.filter { !services.obj(it).optBoolean("running") }
     if (stopped.isNotEmpty()) Text("Не работают: ${stopped.joinToString()}. Проверьте журнал и docker compose ps.", color = MaterialTheme.colorScheme.error)
     names.forEach { name -> val s = services.obj(name)
-        Text("$name · ${if (s.optBoolean("running")) "работает" else "остановлена"} · ${s.optString("about")}\nCPU ${s.value("cpu")}% · память ${size(s.optDouble("memory"))} · чтение ${size(s.optDouble("read"))}/с · запись ${size(s.optDouble("write"))}/с · процессов ${s.value("pids")} · OOM ${s.value("oomKills")}")
+        HorizontalDivider()
+        Text(name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+        Text(if (s.optBoolean("running")) "Работает" else "Остановлена", color = if (s.optBoolean("running")) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)
+        if (s.optString("about").isNotBlank()) Text(s.optString("about"), style = MaterialTheme.typography.bodySmall)
+        DetailGroup("Показатели службы") {
+            Metrics("Процессор" to "${s.value("cpu")}%", "Память" to size(s.optDouble("memory")), "Чтение" to "${size(s.optDouble("read"))}/с", "Запись" to "${size(s.optDouble("write"))}/с", "Процессов" to s.value("pids"), "OOM" to s.value("oomKills"))
+        }
     }
     Subheading("История служб за час")
     val history = system.arr("serviceHistory").objects()
@@ -303,7 +353,7 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     analytics?.let { a ->
         val key = a.obj("key"); val windows = key.obj("windows"); val app = windows.obj("app"); val crawl = windows.obj("crawl")
         Subheading("Лимит ключа Riot")
-        Text("За 2 минуты: ${app.optInt("twoMinutes") + crawl.optInt("twoMinutes")} из 95 · сбор ${crawl.optInt("twoMinutes")} · приложение ${app.optInt("twoMinutes")}\nЗа секунду: ${app.optInt("second") + crawl.optInt("second")} из 18")
+        Metrics("За 2 минуты" to "${app.optInt("twoMinutes") + crawl.optInt("twoMinutes")} из 95", "За секунду" to "${app.optInt("second") + crawl.optInt("second")} из 18", "Сбор за 2 минуты" to crawl.optInt("twoMinutes").toString(), "Приложение за 2 минуты" to app.optInt("twoMinutes").toString())
         val now = a.optLong("now")
         val buckets = key.arr("buckets").objects()
         val times = generateSequence((now - 300) / 10 * 10) { it + 10 }.takeWhile { it <= now }.toList()
@@ -327,11 +377,18 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     val yesterdayByNow = sum(dayStart(1), now - 86400 + 1, "matches", hours)
     val week = sum(now - 7 * 86400, now + 1, "matches", hours)
     val best = (0 until 30).map { offset -> offset to sum(dayStart(offset), if (offset == 0) now + 1 else dayStart(offset - 1), "matches", hours) }.maxByOrNull { it.second }
-    Text("Сегодня: $today · вчера к этому часу: $yesterdayByNow${if (yesterdayByNow > 0) " (${percent(today.toDouble() / yesterdayByNow - 1)})" else ""}")
-    Text("Вчера: $yesterday · игроков обойдено ${sum(dayStart(1), dayStart(0), "players", players)}")
-    Text("За последний час: ${sum(now - 3600, now + 1, "matches", hours)} · с timeline ${sum(now - 3600, now + 1, "timeline", hours)}")
-    Text("За 7 дней: $week · в среднем ${week / 7} в сутки · лучшие сутки: ${best?.second ?: 0} (${best?.let { time(dayStart(it.first)) } ?: "—"})")
-    Text("Игроков обойдено сегодня: ${sum(dayStart(0), now + 1, "players", players)}")
+    Metrics(
+        "Матчей сегодня" to today.toString(),
+        "Вчера к этому часу" to "$yesterdayByNow${if (yesterdayByNow > 0) " (${percent(today.toDouble() / yesterdayByNow - 1)})" else ""}",
+        "Матчей вчера" to yesterday.toString(),
+        "Игроков вчера" to sum(dayStart(1), dayStart(0), "players", players).toString(),
+        "За последний час" to sum(now - 3600, now + 1, "matches", hours).toString(),
+        "С timeline за час" to sum(now - 3600, now + 1, "timeline", hours).toString(),
+        "За 7 дней" to week.toString(),
+        "В среднем за сутки" to (week / 7).toString(),
+        "Лучшие сутки" to "${best?.second ?: 0} (${best?.let { time(dayStart(it.first)) } ?: "—"})",
+        "Игроков сегодня" to sum(dayStart(0), now + 1, "players", players).toString()
+    )
     val byHour = hours.associateBy { it.optLong("h") }
     val last = now / 3600 * 3600
     val hourTimes = (47 downTo 0).map { last - it * 3600 }
@@ -347,7 +404,8 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     val ranks = a.arr("tiers").objects(); val total = ranks.sumOf { it.optLong("day") }
     val rankMax = ranks.maxOfOrNull { it.optDouble("week", 0.0) }?.coerceAtLeast(1.0) ?: 1.0
     ranks.forEach {
-        Text("${rank(it.value("tier"))} · за сутки ${it.value("day")} (${percent(if (total == 0L) 0.0 else it.optDouble("day") / total)}) · за неделю ${it.value("week")}")
+        Text(rank(it.value("tier")), style = MaterialTheme.typography.titleSmall)
+        Metrics("За сутки" to "${it.value("day")} (${percent(if (total == 0L) 0.0 else it.optDouble("day") / total)})", "За неделю" to it.value("week"))
         LinearProgressIndicator(progress = { (it.optDouble("week", 0.0) / rankMax).toFloat().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
     }
 }
@@ -356,15 +414,14 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     Heading("База и покрытие")
     if (s.optBoolean("empty")) { Text("База пуста — сделайте посев в обслуживании"); return }
     if (s.optString("error").isNotBlank()) Text(s.optString("error"), color = MaterialTheme.colorScheme.error)
-    Text("Матчей: ${s.value("matches")} · с timeline: ${s.value("withTimeline")} · наблюдений: ${s.value("participants")}")
-    Text("За час: ${s.value("lastHour")} · за сутки: ${s.value("lastDay")} · темп: ${s.obj("rate").value("perHour")}/ч · очередь: ${s.value("queue")} · игроков: ${s.value("players")}")
-    Text("Размер: ${size(s.optDouble("sizeBytes"))} · последний матч: ${time(s.optLong("lastFetchedAt"))}")
+    Metrics("Матчей" to s.value("matches"), "С timeline" to s.value("withTimeline"), "Наблюдений" to s.value("participants"), "Игроков" to s.value("players"), "За час" to s.value("lastHour"), "За сутки" to s.value("lastDay"), "Темп" to "${s.obj("rate").value("perHour")}/ч", "Очередь" to s.value("queue"), "Размер базы" to size(s.optDouble("sizeBytes")), "Последний матч" to time(s.optLong("lastFetchedAt")))
     Subheading("Патчи")
     val patches = s.arr("patches").objects()
     val packMin = s.obj("coverage").optDouble("packMinMatches", 1000.0)
     val patchMax = maxOf(packMin, patches.maxOfOrNull { it.optDouble("matches", 0.0) } ?: 0.0)
     patches.forEach { p ->
-        TextButton(onClick = { pick(p.optString("patch")) }) { Text("${p.value("patch")}${if (p.optString("patch") == s.optString("packPatch")) " · пак" else ""} · матчей ${p.value("matches")} · timeline ${p.value("timeline")}") }
+        TextButton(onClick = { pick(p.optString("patch")) }) { Text("Патч ${p.value("patch")}${if (p.optString("patch") == s.optString("packPatch")) " · пак" else ""}") }
+        Metrics("Матчей" to p.value("matches"), "С timeline" to p.value("timeline"))
         MarkedProgress(p.optDouble("matches", 0.0), patchMax, packMin, if (p.optDouble("timeline", 0.0) >= packMin) Color(0xff4ad66d) else Color(0xffc8aa6e))
     }
     Subheading("Ранг посева")
@@ -379,14 +436,17 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     if (history.isEmpty()) Text("История пока пуста")
     history.forEach { p ->
         fun elapsed(start: String, end: String): String = if (p.optLong(start) <= 0 || p.optLong(end) <= 0) "—" else String.format(Locale("ru"), "%.1f ч", (p.optLong(end) - p.optLong(start)).coerceAtLeast(0) / 3600.0)
-        Text("${p.value("patch")} · вышел ${time(p.optLong("releasedAt"))} · сбор ${time(p.optLong("firstFetchedAt"))} (через ${elapsed("releasedAt", "firstFetchedAt")}) · 1000 матчей за ${elapsed("firstFetchedAt", "reached1000At")} · пак ${time(p.optLong("firstPackAt"))} (через ${elapsed("releasedAt", "firstPackAt")}) · матчей ${p.value("matches")} · ${if (p.optLong("droppedAt") > 0) "удалён ${time(p.optLong("droppedAt"))}" else "на диске"}")
+        DetailGroup("Патч ${p.value("patch")}") {
+            Metrics("Вышел" to time(p.optLong("releasedAt")), "Начало сбора" to time(p.optLong("firstFetchedAt")), "До начала сбора" to elapsed("releasedAt", "firstFetchedAt"), "До 1000 матчей" to elapsed("firstFetchedAt", "reached1000At"), "Первый пак" to time(p.optLong("firstPackAt")), "До первого пака" to elapsed("releasedAt", "firstPackAt"), "Матчей" to p.value("matches"), "Хранение" to if (p.optLong("droppedAt") > 0) "Удалён ${time(p.optLong("droppedAt"))}" else "На диске")
+        }
     }
     s.optJSONObject("coverage")?.let { c ->
         Subheading("Покрытие патча ${c.value("patch")}")
-        Text("Матчей ${c.value("matches")}, с timeline ${c.value("withTimeline")} · наблюдений ${c.value("observations")} · чемпионов ${c.value("champions")} · порог пака ${c.value("packMinMatches")}")
+        Metrics("Матчей" to c.value("matches"), "С timeline" to c.value("withTimeline"), "Наблюдений" to c.value("observations"), "Чемпионов" to c.value("champions"), "Порог пака" to c.value("packMinMatches"))
         listOf("base" to "Чемпион + роль в паке", "baseReliable" to "Чемпион + роль надёжно", "tier" to "По ранговым корзинам", "matchup" to "Матчапы в паке", "matchupReliable" to "Матчапы надёжно").forEach { (key, title) ->
             val f = c.obj(key)
-            Text("$title: ${percent(f.optDouble("share"))} · ${f.value("bucketsOk")} из ${f.value("buckets")} · порог ${f.value("threshold")}", fontWeight = FontWeight.SemiBold)
+            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Metrics("Покрытие" to percent(f.optDouble("share")), "Корзин готово" to "${f.value("bucketsOk")} из ${f.value("buckets")}", "Порог" to f.value("threshold"))
             f.arr("targets").objects().forEach { t ->
                 val needed = t.optLong("matches", -1); val more = (needed - c.optLong("matches")).coerceAtLeast(0); val rate = s.obj("rate").optDouble("perHour")
                 Text("${percent(t.optDouble("share"))}: ${if (needed < 0) "оценить нельзя" else if (more == 0L) "уже есть" else "нужно ≈ $needed матчей, ещё $more${if (rate > 0) String.format(Locale("ru"), ", ≈ %.1f ч", more / rate) else ""}"}", style = MaterialTheme.typography.bodySmall)
@@ -413,7 +473,7 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     fun rowStatus(r: JSONObject) = if (r.optInt("games") < pack) "bad" else if (r.optInt("games") < reliable) "warn" else "ok"
     fun weakest(r: JSONObject) = tiers.minOf { r.obj("tiers").optInt(it.first) }
     Heading("Чего не хватает · ${c.value("patch")}")
-    Text("Всего ролей ${rows.size} · не в паке ${rows.count { rowStatus(it) == "bad" }} · недостаточно надёжно ${rows.count { rowStatus(it) == "warn" }} · надёжно ${rows.count { rowStatus(it) == "ok" }} · корзина меньше 20: ${rows.count { weakest(it) < 20 }}")
+    Metrics("Всего ролей" to rows.size.toString(), "Не в паке" to rows.count { rowStatus(it) == "bad" }.toString(), "Недостаточно надёжно" to rows.count { rowStatus(it) == "warn" }.toString(), "Надёжно" to rows.count { rowStatus(it) == "ok" }.toString(), "Корзина меньше 20" to rows.count { weakest(it) < 20 }.toString())
     Row(Modifier.horizontalScroll(rememberScrollState())) {
         listOf("bad" to "Не в паке", "warn" to "В паке", "ok" to "Надёжно").forEach { (id, label) ->
             TextButton(onClick = { status = if (status == id) "all" else id }) { Text("$label: ${rows.count { rowStatus(it) == id }}") }
@@ -425,7 +485,9 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     } else if (champions == null) Text("Загрузка справочника чемпионов…") else {
         val seen = rows.map { it.optString("champion").lowercase(Locale.ROOT) }.toSet()
         val unseen = champions.orEmpty().filter { it.id.lowercase(Locale.ROOT) !in seen }.sortedBy { it.name }
-        if (unseen.isNotEmpty()) Text("Ни одной игры на патче (${unseen.size}): ${unseen.joinToString { it.name }}")
+        if (unseen.isNotEmpty()) DetailGroup("Без игр на патче: ${unseen.size}") {
+            unseen.forEach { Text(it.name, style = MaterialTheme.typography.bodyMedium) }
+        }
     }
     TextButton(onClick = { below = if (below == "20" && tier.isEmpty()) "0" else "20"; tier = "" }) { Text("Показать роли с почти пустой корзиной") }
     Options("Статус", listOf("all" to "Все", "bad" to "Не в паке", "warn" to "В паке", "ok" to "Надёжно"), status) { status = it }
@@ -456,15 +518,13 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
             }
             Text("${championName(r)} · ${roles.find { it.first == r.optString("role") }?.second ?: r.value("role")}", fontWeight = FontWeight.SemiBold)
         }
-        Text("Игр $games · ${when (rowStatus(r)) { "bad" -> "не в паке"; "warn" -> "в паке"; else -> "надёжно" }} · доля ${percent(r.optDouble("share"))} · матчапов ${r.value("matchups")} · нужно матчей $need")
+        Text(when (rowStatus(r)) { "bad" -> "Не в паке"; "warn" -> "В паке, недостаточно надёжно"; else -> "Надёжно" }, color = if (rowStatus(r) == "bad") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+        Metrics("Игр" to games.toString(), "Доля" to percent(r.optDouble("share")), "Матчапов" to r.value("matchups"), "Нужно матчей" to need)
         MarkedProgress(games.toDouble(), reliable.toDouble(), pack.toDouble(), tierColor(if (games < pack) 0 else if (games < reliable) 20 else 150))
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            tiers.forEach { (id, label) ->
-                val count = r.obj("tiers").optInt(id)
-                Text("$label: $count", color = tierColor(count), style = MaterialTheme.typography.bodySmall)
-            }
+        DetailGroup("Игры по корзинам") {
+            Metrics(*tiers.map { (id, label) -> label to r.obj("tiers").optInt(id).toString() }.toTypedArray())
         }
-        Text("Слабее всего: ${weakestTier?.second ?: "—"}", color = tierColor(weakest(r)), style = MaterialTheme.typography.bodySmall)
+        Text("Слабее всего: ${weakestTier?.second ?: "—"}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -487,7 +547,9 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     shown.forEach { line ->
         val raw = line.optString("level")
         val isError = raw == "error" || (raw.isEmpty() || raw == "info") && Regex("traceback|error|ошибк|не удал|сбой", RegexOption.IGNORE_CASE).containsMatchIn(line.optString("text"))
-        val color = if (isError) Color(0xffff5f56) else if (raw == "warn") Color(0xfff0b44c) else if (line.optBoolean("system")) Color(0xffc8aa6e) else MaterialTheme.colorScheme.onSurface
-        Text("${time(line.optLong("t"))} · ${line.value("source")} · ${line.value("level")}\n${line.optString("text")}", color = color, style = MaterialTheme.typography.bodySmall)
+        val color = if (isError) MaterialTheme.colorScheme.error else if (raw == "warn" || line.optBoolean("system")) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+        HorizontalDivider()
+        Text("${time(line.optLong("t"))} · ${line.value("source")} · ${line.value("level")}", color = color, style = MaterialTheme.typography.labelMedium)
+        Text(line.optString("text"), style = MaterialTheme.typography.bodyMedium)
     }
 }

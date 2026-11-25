@@ -8,13 +8,16 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -93,9 +96,12 @@ fun AdminScreen() {
             scope.launch { try { action() } catch (e: Exception) { error = e.message ?: "Ошибка запроса" } }
         } else if (action != null) error = "Подтверждение устройства отменено"
     }
-    val request: suspend (String, String, JSONObject) -> JSONObject = { method, path, body -> adminRequest(context, method, path, body) }
+    val request: suspend (String, String, JSONObject) -> JSONObject = remember(context) {
+        { method, path, body -> adminRequest(context, method, path, body) }
+    }
     LaunchedEffect(Unit) {
         var cursor = 0L
+        var logInitialized = false
         var tick = 0
         while (true) {
             if (tick % 2 == 0) {
@@ -109,10 +115,11 @@ fun AdminScreen() {
                 if (lines != null) for (i in 0 until lines.length()) {
                     val line = lines.optJSONObject(i) ?: continue
                     val text = line.optString("text")
-                    if (line.optString("level") == "error" ||
-                        (line.optString("level").isBlank() && Regex("traceback|error|ошибк", RegexOption.IGNORE_CASE).containsMatchIn(text))) unread++
+                    if (logInitialized && (line.optString("level") == "error" ||
+                        (line.optString("level").isBlank() && Regex("traceback|error|ошибк", RegexOption.IGNORE_CASE).containsMatchIn(text)))) unread++
                 }
                 cursor = log.optLong("cursor", cursor)
+                logInitialized = true
             } catch (e: CancellationException) { throw e }
             catch (_: Exception) { }
             tick++
@@ -146,18 +153,39 @@ fun AdminScreen() {
             val key = current.optJSONObject("key")
             val jobs = current.optJSONArray("jobs")
             val active = if (jobs == null) emptyList() else (0 until jobs.length()).mapNotNull { jobs.optJSONObject(it) }.filter { it.optBoolean("running") }
-            val crawlText = if (crawler?.optString("state") == "running") "Сбор идёт · +${crawler?.optJSONObject("progress")?.optInt("matches") ?: 0}" else "Сбор не идёт · ${crawler?.optString("state").orEmpty()}"
-            Text("${if (key?.optBoolean("found") == true) "Ключ Riot найден" else "Ключа Riot нет"} · $crawlText", Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
-            if (active.isNotEmpty()) Text(active.joinToString(" · ") { it.optString("title") }, Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
+            val crawlText = if (crawler?.optString("state") == "running") "Сбор идёт · +${crawler.optJSONObject("progress")?.optInt("matches") ?: 0}" else "Сбор не идёт · ${crawler?.optString("state").orEmpty()}"
+            Surface(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {
+                Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                    Text(crawlText, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(if (key?.optBoolean("found") == true) "Ключ Riot найден" else "Ключ Riot не найден",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (active.isNotEmpty()) Text(active.joinToString(" · ") { it.optString("title") },
+                        style = MaterialTheme.typography.bodySmall)
+                }
+            }
             val hour = problems?.optInt("errorsHour") ?: 0
             val day = problems?.optInt("errorsDay") ?: 0
             if (hour > 0 || day > 0 || unread > 0) TextButton(onClick = { section = 0; unread = 0; logSignal++ }) {
                 Text("${if (hour > 0) "Ошибок за час: $hour" else "Ошибок за сутки: $day"} · новых: $unread")
             }
         }
-        ScrollableTabRow(selectedTabIndex = section, edgePadding = 8.dp) {
-            listOf("Мониторинг", "Управление", "Сервер", "Файлы пака").forEachIndexed { index, title ->
-                Tab(selected = section == index, onClick = { section = index }, text = { Text(title) })
+        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+            listOf(listOf("Мониторинг", "Управление"), listOf("Сервер", "Файлы пака")).forEachIndexed { row, titles ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    titles.forEachIndexed { column, title ->
+                        val index = row * 2 + column
+                        FilterChip(
+                            selected = section == index,
+                            onClick = { section = index },
+                            label = { Text(title) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
             }
         }
         error?.let { message ->
@@ -187,23 +215,45 @@ private fun HostPanel(request: suspend (String, String, JSONObject) -> JSONObjec
     }
     LaunchedEffect(Unit) { refresh() }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Состояние диска", style = MaterialTheme.typography.titleLarge)
-        if (loading) CircularProgressIndicator()
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-        disk?.let { value ->
-            val free = value.optLong("freeBytes", -1)
-            val total = value.optLong("totalBytes", -1)
-            if (free >= 0 && total > 0) Text("Свободно: %.1f ГиБ из %.1f ГиБ (%.0f%%)".format(free / 1073741824.0, total / 1073741824.0, 100.0 * free / total))
-            val smart = value.optJSONObject("smart")
-            val state = if (smart == null || smart.isNull("passed")) "недоступно" else if (smart.optBoolean("passed")) "исправен" else "обнаружена проблема"
-            Text("SMART: $state")
-            smart?.optString("message")?.takeIf { it.isNotBlank() }?.let { Text(it) }
+        Text("Сервер", style = MaterialTheme.typography.titleLarge)
+        Surface(Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceVariant) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("Диск", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                if (loading) LinearProgressIndicator(Modifier.fillMaxWidth())
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                disk?.let { value ->
+                    val free = value.optLong("freeBytes", -1)
+                    val total = value.optLong("totalBytes", -1)
+                    if (free >= 0 && total > 0) {
+                        Text("%.1f ГиБ свободно".format(free / 1073741824.0), style = MaterialTheme.typography.headlineSmall)
+                        Text("из %.1f ГиБ · %.0f%%".format(total / 1073741824.0, 100.0 * free / total),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        LinearProgressIndicator(progress = { (free.toFloat() / total).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                    }
+                    val smart = value.optJSONObject("smart")
+                    val state = if (smart == null || smart.isNull("passed")) "недоступен" else if (smart.optBoolean("passed")) "исправен" else "обнаружена проблема"
+                    Text("SMART: $state", fontWeight = FontWeight.Medium)
+                    smart?.optString("message")?.takeIf { it.isNotBlank() }?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                }
+                OutlinedButton(onClick = { scope.launch { refresh() } }, enabled = !loading) { Text("Обновить") }
+            }
         }
-        OutlinedButton(onClick = { scope.launch { refresh() } }, enabled = !loading) { Text("Обновить диск") }
-        HorizontalDivider()
-        Text("Службы", style = MaterialTheme.typography.titleLarge)
-        listOf("db", "crawler", "ladder", "maintain", "api", "dashboard", "proxy", "backup").forEach { service ->
-            Row { RadioButton(selected = selected == service, onClick = { selected = service }); Text(service, Modifier.padding(top = 12.dp)) }
+        Text("Управление службами", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text("Выберите службу для перезапуска", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        val services = listOf(
+            "db" to "База PostgreSQL", "crawler" to "Сбор матчей", "ladder" to "База игроков",
+            "maintain" to "Обслуживание и пак", "api" to "Шлюз приложения", "dashboard" to "Пульт",
+            "proxy" to "HTTPS", "backup" to "Резервные копии",
+        )
+        services.forEach { (service, label) ->
+            Row(
+                Modifier.fillMaxWidth().clickable { selected = service },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(selected = selected == service, onClick = null)
+                Text(label, Modifier.weight(1f))
+                Text(service, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
         Button(onClick = {
             val service = selected
