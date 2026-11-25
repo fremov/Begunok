@@ -159,8 +159,6 @@ fun HomeScreen(
                         onPause = viewModel::pause,
                         onResume = viewModel::resume,
                         onStop = { confirmStop = true },
-                        onBreak = viewModel::toBreak,
-                        onStrength = viewModel::toStrength,
                         onRunResult = viewModel::setRunResult,
                         onSetDone = viewModel::setDone,
                         onStartTimed = viewModel::startTimed,
@@ -308,7 +306,7 @@ private fun PreStart(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                val subtitle = settings.selectedProgram?.let { "${it.name} · затем площадка" } ?: "бег и площадка"
+                val subtitle = settings.selectedProgram?.name ?: "бег"
                 StartButton("Старт", subtitle, { onStart(dayType) })
             }
         }
@@ -448,8 +446,6 @@ private fun ActiveWorkout(
     onPause: () -> Unit,
     onResume: () -> Unit,
     onStop: () -> Unit,
-    onBreak: () -> Unit,
-    onStrength: () -> Unit,
     onRunResult: (Boolean) -> Unit,
     onSetDone: (Int) -> Unit,
     onStartTimed: () -> Unit,
@@ -460,7 +456,6 @@ private fun ActiveWorkout(
     onFinish: () -> Unit,
 ) {
     val paused = state.phase == WorkoutPhase.Paused
-    var confirmBreak by rememberSaveable { mutableStateOf(false) }
     if (state.stage != Stage.Run) KeepScreenOn()
     Box(Modifier.fillMaxSize()) {
         Column(
@@ -510,21 +505,6 @@ private fun ActiveWorkout(
                                     .height(200.dp)
                                     .clip(RoundedCornerShape(24.dp)),
                             )
-                            if (state.day == DayType.Run && state.workoutId != null) {
-                                OutlinedButton(onClick = { confirmBreak = true }, modifier = Modifier.fillMaxWidth()) {
-                                    Text("Закончить бег и перейти к площадке")
-                                }
-                            }
-                        }
-                        Stage.Break -> {
-                            BreakPanel(state, onStrength, onRunResult)
-                            HeartHero(sensor.heartRate, settings, paused, compact = true)
-                            MetricGrid(
-                                listOf(
-                                    "Время" to Format.duration(state.activeMs),
-                                    "Дистанция, км" to Format.distanceKm(state.distanceM),
-                                ),
-                            )
                         }
                         Stage.Strength -> {
                             state.strength?.let { StrengthPanel(it, state.levelUps, onSetDone, onStartTimed, onSkipRest, onSkipExercise, onReplaceExercise, onFinish) }
@@ -539,6 +519,7 @@ private fun ActiveWorkout(
                         }
                         Stage.Cooldown -> {
                             CooldownPanel(state)
+                            if (state.day == DayType.Run) RunResultPanel(state, onRunResult)
                             HeartHero(sensor.heartRate, settings, paused, compact = true)
                             MetricGrid(
                                 listOf(
@@ -559,20 +540,6 @@ private fun ActiveWorkout(
         }
     }
 
-    if (confirmBreak) {
-        AlertDialog(
-            onDismissRequest = { confirmBreak = false },
-            title = { Text("Закончить бег?") },
-            text = { Text("Начнётся перерыв, а потом тренировка на площадке. Вернуться к бегу будет нельзя.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    confirmBreak = false
-                    onBreak()
-                }) { Text("К площадке") }
-            },
-            dismissButton = { TextButton(onClick = { confirmBreak = false }) { Text("Отмена") } },
-        )
-    }
 }
 
 @Composable

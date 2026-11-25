@@ -77,8 +77,6 @@ class WorkoutService : LifecycleService() {
             ACTION_PAUSE -> pause()
             ACTION_RESUME -> resume()
             ACTION_STOP -> stop()
-            ACTION_BREAK -> toBreak(auto = false)
-            ACTION_STRENGTH -> toStrength()
             ACTION_SET_DONE -> setDone(intent.getIntExtra(EXTRA_REPS, 0))
             ACTION_START_TIMED -> strengthAction { s, now -> s.startTimed(now); emptyList() }
             ACTION_SKIP_REST -> strengthAction { s, now -> s.skipRest(now) }
@@ -186,20 +184,11 @@ class WorkoutService : LifecycleService() {
 
     private fun programSec(t: WorkoutTracker): Long = t.activeMs / 1000 + programOffsetSec
 
-    private fun toBreak(auto: Boolean) {
-        val t = tracker ?: return
-        if (plan == null || stage != Stage.Run) return
-        stage = Stage.Break
-        stageStartMs = t.activeMs
-        hrAlarm.reset()
-        if (auto) alerts?.play(Cues.runFinished, settings.alertOptions())
-        publish(t, container.heartRateMonitor.state.value.heartRate)
-    }
 
     private fun toStrength() {
         val t = tracker ?: return
         val p = plan ?: return
-        if (stage == Stage.Strength) return
+        if (p.type == DayType.Run || stage == Stage.Strength) return
         if (t.paused) t.resume(SystemClock.elapsedRealtime())
         stage = Stage.Strength
         stageStartMs = t.activeMs
@@ -391,7 +380,7 @@ class WorkoutService : LifecycleService() {
                 lastCountdown = -1
                 if (position.finished) {
                     onProgramCompleted()
-                    toBreak(auto = true)
+                    beginCooldown()
                     return
                 }
                 val segmentSec = when (position.kind) {
@@ -510,8 +499,6 @@ class WorkoutService : LifecycleService() {
         const val ACTION_PAUSE = "ru.begunok.workout.PAUSE"
         const val ACTION_RESUME = "ru.begunok.workout.RESUME"
         const val ACTION_STOP = "ru.begunok.workout.STOP"
-        const val ACTION_BREAK = "ru.begunok.workout.BREAK"
-        const val ACTION_STRENGTH = "ru.begunok.workout.STRENGTH"
         const val ACTION_SET_DONE = "ru.begunok.workout.SET_DONE"
         const val ACTION_START_TIMED = "ru.begunok.workout.START_TIMED"
         const val ACTION_SKIP_REST = "ru.begunok.workout.SKIP_REST"

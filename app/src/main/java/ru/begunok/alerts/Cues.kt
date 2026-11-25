@@ -35,13 +35,6 @@ object Cues {
         text = "Программа завершена. Отличная работа!",
     )
 
-    val runFinished = Cue(
-        packKey = "break",
-        beeps = listOf(Beep(660, 150), Beep(880, 150), Beep(1100, 400)),
-        vibration = longArrayOf(0, 300, 150, 300, 150, 600),
-        text = "Бег завершён. Перерыв, затем начинай тренировку на площадке",
-    )
-
     fun showerStart(sec: Int) = Cue(
         beeps = listOf(Beep(880, 180), Beep(1320, 350)),
         vibration = longArrayOf(0, 250, 120, 250),
@@ -130,14 +123,15 @@ object Cues {
             add(highHeartRate)
             add(lowHeartRate)
             add(programFinished)
-            add(runFinished)
             DayType.entries.map { DayPlan.of(it) }.forEach { plan ->
                 if (plan.warmupSec > 0) {
                     add(interval(IntervalPosition(IntervalKind.Warmup, 1, 1, plan.warmupSec, -1), plan.warmupSec, false))
                 }
-                val first = plan.strength.exercises.first()
-                if (plan.strength.restBetweenSetsSec > 0) add(rest(plan.strength.restBetweenSetsSec, first, true))
-                if (plan.strength.restBetweenExercisesSec > 0) add(rest(plan.strength.restBetweenExercisesSec, first, true))
+                val first = plan.strength.exercises.firstOrNull()
+                if (first != null) {
+                    if (plan.strength.restBetweenSetsSec > 0) add(rest(plan.strength.restBetweenSetsSec, first, true))
+                    if (plan.strength.restBetweenExercisesSec > 0) add(rest(plan.strength.restBetweenExercisesSec, first, true))
+                }
             }
             for (p in programs) {
                 for (i in 1..p.repeats) {

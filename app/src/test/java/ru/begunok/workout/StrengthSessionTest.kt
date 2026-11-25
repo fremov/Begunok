@@ -3,6 +3,7 @@ package ru.begunok.workout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import ru.begunok.data.AppSettings
 
 class StrengthSessionTest {
     @Test
@@ -75,7 +76,7 @@ class StrengthSessionTest {
     }
 
     @Test
-    fun runningDayKeepsWarmupAndSelectedRunBeforeStrength() {
+    fun runningDayKeepsWarmupAndSelectedRun() {
         val plan = DayPlan.of(DayType.Run)
         val selected = IntervalProgram.defaults.first()
         assertEquals(Stage.Run, plan.initialStage)
@@ -84,6 +85,7 @@ class StrengthSessionTest {
         assertEquals(IntervalKind.Warmup, program.positionAt(0).kind)
         assertEquals(IntervalKind.Run, program.positionAt(300).kind)
         assertEquals(null, plan.runProgram(null))
+        assertTrue(plan.strength.exercises.isEmpty())
     }
 
     @Test
@@ -96,8 +98,34 @@ class StrengthSessionTest {
     }
 
     @Test
+    fun runningPlanIgnoresExercisesInSavedSettings() {
+        val oldConfig = DayConfig(
+            slots = listOf(Slot("pull", "pullups"), Slot("push", "pushups")),
+            sets = 2,
+            restBetweenSetsSec = 0,
+            restBetweenExercisesSec = 90,
+        )
+        val settings = AppSettings(dayConfigs = mapOf(DayType.Run to oldConfig))
+        val plan = settings.dayPlan(DayType.Run)
+        assertEquals(oldConfig, settings.dayConfig(DayType.Run))
+        assertTrue(DayConfig.default(DayType.Run).slots.isEmpty())
+        assertTrue(plan.strength.exercises.isEmpty())
+        assertTrue(StrengthSession.buildSteps(plan.strength).isEmpty())
+        assertEquals(Stage.Run, plan.initialStage)
+        assertEquals(300, requireNotNull(plan.runProgram(IntervalProgram.defaults.first())).warmupSec)
+    }
+
+    @Test
     fun circuitRestsOnlyBetweenRounds() {
-        val steps = StrengthSession.buildSteps(DayPlan.of(DayType.Run).strength)
+        val strength = DayPlan.of(DayType.Strength).strength
+        val block = strength.copy(
+            exercises = strength.exercises.take(4),
+            sets = 2,
+            circuit = true,
+            restBetweenSetsSec = 0,
+            restBetweenExercisesSec = 90,
+        )
+        val steps = StrengthSession.buildSteps(block)
         assertEquals(4 + 1 + 4, steps.size)
         assertEquals(StrengthStep(true, 0, 2, 90), steps[4])
     }

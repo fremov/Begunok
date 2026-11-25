@@ -149,10 +149,6 @@ class HomeViewModel(
 
     fun stop() = WorkoutService.send(appContext, WorkoutService.ACTION_STOP)
 
-    fun toBreak() = WorkoutService.send(appContext, WorkoutService.ACTION_BREAK)
-
-    fun toStrength() = WorkoutService.send(appContext, WorkoutService.ACTION_STRENGTH)
-
     fun setDone(reps: Int) = WorkoutService.setDone(appContext, reps)
 
     fun startTimed() = WorkoutService.send(appContext, WorkoutService.ACTION_START_TIMED)

@@ -4,7 +4,7 @@ import ru.begunok.location.GpsStatus
 
 enum class WorkoutPhase { Idle, Running, Paused }
 
-enum class Stage { Run, Break, Strength, Cooldown }
+enum class Stage { Run, Strength, Cooldown }
 
 data class WorkoutState(
     val phase: WorkoutPhase = WorkoutPhase.Idle,

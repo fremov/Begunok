@@ -167,7 +167,7 @@ data class DayConfig(
     companion object {
         fun default(type: DayType): DayConfig = when (type) {
             DayType.Run -> DayConfig(
-                slots = listOf(Slot("pull", "pullups"), Slot("dips", "dips"), Slot("push", "pushups"), Slot("plank", "plank")),
+                slots = emptyList(),
                 sets = 2,
                 restBetweenSetsSec = 0,
                 restBetweenExercisesSec = 90,
@@ -227,7 +227,7 @@ data class DayPlan(
         fun key(type: DayType, variationId: String) = "${type.name}:$variationId"
 
         fun of(type: DayType, config: DayConfig = DayConfig.default(type)): DayPlan {
-            val exercises = config.slots.mapNotNull { slot ->
+            val exercises = if (type == DayType.Run) emptyList() else config.slots.mapNotNull { slot ->
                 ExerciseCatalog.variation(slot.variationId)?.copy(id = key(type, slot.variationId), variationId = slot.variationId)
             }
             return when (type) {

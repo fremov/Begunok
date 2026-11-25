@@ -41,6 +41,7 @@ class VoicePackLayoutTest {
     @Test
     fun phrasesForDefaultPrograms() {
         val phrases = Cues.packPhrases(IntervalProgram.defaults)
+        assertTrue(phrases.none { it.key == "break" })
         assertTrue(phrases.any { it.key == "rest_120" && it.text == "Отдых 2 минуты" })
         assertTrue(phrases.any { it.key == "rest_30" && it.text == "Отдых 30 секунд" })
         assertTrue(phrases.any { it.key == "rest_45" && it.text == "Отдых 45 секунд" })

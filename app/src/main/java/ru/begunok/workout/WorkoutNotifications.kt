@@ -34,7 +34,6 @@ class WorkoutNotifications(private val context: Context) {
         }.orEmpty()
         val stage = when (state.stage) {
             Stage.Run -> interval
-            Stage.Break -> "Перерыв · "
             Stage.Strength -> state.strength?.let(::strengthLine).orEmpty()
             Stage.Cooldown -> "Заминка · "
         }

@@ -121,13 +121,16 @@ private fun PanelCard(content: @Composable () -> Unit) {
 @Composable
 internal fun PlanCard(preview: PlanPreview, program: IntervalProgram?, onEdit: () -> Unit) {
     val plan = preview.plan
+    val isRun = plan.type == DayType.Run
     val strength = plan.strength
     PanelCard {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text("Программа", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-            TextButton(onClick = onEdit) {
-                Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
-                Text("  Упражнения")
+            if (!isRun) {
+                TextButton(onClick = onEdit) {
+                    Icon(Icons.Filled.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text("  Упражнения")
+                }
             }
         }
         val steps = buildList {
@@ -139,9 +142,9 @@ internal fun PlanCard(preview: PlanPreview, program: IntervalProgram?, onEdit: (
                             ?: "Бег без интервалов"
                         ),
                 )
-                add(StageColors.Rest to "Перерыв, площадка начинается по кнопке")
+                add(StageColors.Rest to if (isRun) "Заминка" else "Перерыв, площадка начинается по кнопке")
             }
-            add(StageColors.Done to strength.description)
+            if (!isRun) add(StageColors.Done to strength.description)
         }
         steps.forEachIndexed { i, (color, text) ->
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -156,22 +159,24 @@ internal fun PlanCard(preview: PlanPreview, program: IntervalProgram?, onEdit: (
                 Text(text, style = MaterialTheme.typography.bodyLarge)
             }
         }
-        if (strength.exercises.isEmpty()) {
-            Text("Упражнения не выбраны", color = MaterialTheme.colorScheme.error)
+        if (!isRun) {
+            if (strength.exercises.isEmpty()) {
+                Text("Упражнения не выбраны", color = MaterialTheme.colorScheme.error)
+            }
+            strength.exercises.forEach { exercise ->
+                val target = preview.targets[exercise.id] ?: exercise.startTarget
+                ExerciseLine(exercise, target, if (strength.circuit) null else strength.sets)
+            }
+            Text(
+                if (plan.type.isSplit) {
+                    if (plan.type == DayType.StrengthLower) "Оставляйте 1–2 повтора в запасе." else
+                        "Хват в подтягиваниях и опору в отжиманиях можно выбрать в упражнениях."
+                } else "Сделали все подходы — цель +1. Дошли до верхней границы ступени — следующая тренировка начнётся " +
+                    "со следующей, более сложной ступени.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
-        strength.exercises.forEach { exercise ->
-            val target = preview.targets[exercise.id] ?: exercise.startTarget
-            ExerciseLine(exercise, target, if (strength.circuit) null else strength.sets)
-        }
-        Text(
-            if (plan.type.isSplit) {
-                if (plan.type == DayType.StrengthLower) "Оставляйте 1–2 повтора в запасе." else
-                    "Хват в подтягиваниях и опору в отжиманиях можно выбрать в упражнениях."
-            } else "Сделали все подходы — цель +1. Дошли до верхней границы ступени — следующая тренировка начнётся " +
-                "со следующей, более сложной ступени.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
@@ -290,11 +295,7 @@ private fun HeroTitle(text: String, subtitle: String? = null) {
 }
 
 @Composable
-internal fun BreakPanel(state: WorkoutState, onStart: () -> Unit, onRunResult: (Boolean) -> Unit) {
-    Hero(StageColors.Rest) {
-        HeroTitle("ПЕРЕРЫВ", "отдохните и дойдите до площадки")
-        AnimatedNumber(Format.duration(state.activeMs - state.stageStartMs), numberStyle(72), color = Color.White)
-    }
+internal fun RunResultPanel(state: WorkoutState, onRunResult: (Boolean) -> Unit) {
     if (state.programName != null) {
         PanelCard {
             Text("Беговая часть получилась?", style = MaterialTheme.typography.titleMedium)
@@ -309,7 +310,6 @@ internal fun BreakPanel(state: WorkoutState, onStart: () -> Unit, onRunResult: (
             )
         }
     }
-    StartButton("Начать площадку", "подходы с таймером отдыха", onStart)
 }
 
 @Composable
