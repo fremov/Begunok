@@ -146,7 +146,8 @@ fun AdminScreen() {
     }
     Column(Modifier.fillMaxSize()) {
         if (offline) {
-            Text("Сервер пульта не отвечает. Проверьте WireGuard.", Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.error)
+            Text("Сервер недоступен. Проверьте WireGuard и соединение; он также может быть выключен.",
+                Modifier.padding(horizontal = 16.dp), color = MaterialTheme.colorScheme.error)
         } else status?.let { current ->
             val crawler = current.optJSONObject("crawler")
             val problems = current.optJSONObject("problems")
@@ -160,6 +161,8 @@ fun AdminScreen() {
                 color = MaterialTheme.colorScheme.surfaceVariant,
             ) {
                 Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
+                    Text("Сервер доступен", style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary)
                     Text(crawlText, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(if (key?.optBoolean("found") == true) "Ключ Riot найден" else "Ключ Riot не найден",
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -172,6 +175,10 @@ fun AdminScreen() {
             if (hour > 0 || day > 0 || unread > 0) TextButton(onClick = { section = 0; unread = 0; logSignal++ }) {
                 Text("${if (hour > 0) "Ошибок за час: $hour" else "Ошибок за сутки: $day"} · новых: $unread")
             }
+        }
+        if (!offline && status == null) {
+            Text("Проверяем сервер…", Modifier.padding(horizontal = 16.dp),
+                style = MaterialTheme.typography.bodySmall)
         }
         Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
             listOf(listOf("Мониторинг", "Управление"), listOf("Сервер", "Файлы пака")).forEachIndexed { row, titles ->
