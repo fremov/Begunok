@@ -74,6 +74,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import kotlinx.coroutines.launch
 import ru.begunok.AppContainer
+import ru.begunok.ui.admin.AdminScreen
 import ru.begunok.ui.common.LocalNavAnimatedScope
 import ru.begunok.ui.common.LocalSharedTransitionScope
 import ru.begunok.ui.history.AnalyticsScreen
@@ -128,6 +129,7 @@ private enum class Section(val label: String, val icon: ImageVector, val group: 
     Sleep("Сон", Icons.Filled.Bedtime, Group.Health),
     Finance("Финансы", Icons.Filled.AccountBalanceWallet, Group.Money),
     Lol("League of Legends", Icons.Filled.SportsEsports, Group.Games),
+    SintenceAdmin("Пульт Sintence", Icons.Filled.Settings, Group.Games),
     Settings("Настройки", Icons.Filled.Settings, Group.App),
 }
 
@@ -392,6 +394,7 @@ private fun SectionContent(
         Section.Sleep -> SleepScreen(viewModel { SleepViewModel(container.healthAutoSync) }, onSettings = { open(Section.Settings) })
         Section.Finance -> FinanceScreen(viewModel { FinanceViewModel(container.finance, container.appContext) })
         Section.Lol -> LolScreen(viewModel { LolViewModel(container.lolSettings) })
+        Section.SintenceAdmin -> AdminScreen()
         Section.Settings -> SettingsScreen(
             viewModel {
                 SettingsViewModel(container.appContext, container.settings, container.voicePack, container.heartRateMonitor.state)
