@@ -317,6 +317,14 @@ fun AdminMonitoring(request: suspend (String, String, JSONObject) -> JSONObject,
     Subheading("Процессор")
     Metrics("Загрузка" to "${current.value("cpu")}%", "Ядер" to system.value("cores"), "Нагрузка" to system.arr("load").let { a -> (0 until a.length()).joinToString(" / ") { a.optString(it) } }, "Ожидание диска" to "${current.value("iowait")}%")
     LinearProgressIndicator(progress = { (current.optDouble("cpu", 0.0) / 100).toFloat().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+    Subheading("Температура")
+    val temperatures = system.arr("temperatures").objects().mapNotNull { sensor ->
+        val celsius = sensor.optDouble("celsius", Double.NaN)
+        if (!celsius.isFinite()) null else {
+            sensor.optString("displayName").ifBlank { "${sensor.optString("chip")} · ${sensor.optString("label")}" } to String.format(Locale("ru"), "%.1f °C", celsius)
+        }
+    }
+    if (temperatures.isEmpty()) Text("Датчики температуры недоступны") else Metrics(*temperatures.toTypedArray())
     Subheading("Память")
     Metrics("Использовано" to "${size(mem.optDouble("used"))} из ${size(mem.optDouble("total"))}", "Кеш" to size(mem.optDouble("cache")), "Swap" to "${size(mem.optDouble("swapUsed"))} из ${size(mem.optDouble("swapTotal"))}")
     LinearProgressIndicator(progress = { (mem.optDouble("used", 0.0) / mem.optDouble("total", 0.0).coerceAtLeast(1.0)).toFloat().coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
